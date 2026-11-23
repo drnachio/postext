@@ -6,7 +6,7 @@ export const metadata = {
   description: 'As versões impressas de um livro, cada uma com sua encadernação, seu ISBN e sua lombada; perfis de encadernação e de papel da gráfica; a folha de capa com orelhas, sobrecapa, capa dura e guardas; o projeto e os acabamentos da capa; seu texto em Markdown; e a capa a partir do Sandbox, da linha de comando e do código',
   lang: 'pt',
   lastUpdated: '2026-11-23',
-  readingTime: '16 min',
+  readingTime: '19 min',
   order: 41,
   plainSummary: 'Esta página trata da capa de um livro impresso: a folha que envolve as páginas, com a contracapa, a lombada e a capa, e às vezes orelhas, uma sobrecapa ou guardas. Um livro pode ser impresso em várias versões, como uma brochura e uma capa dura, e cada versão tem a sua própria encadernação e o seu próprio ISBN. O Postext calcula a largura da lombada a partir do número de páginas e do papel e monta a folha no tamanho de que a gráfica precisa, com a sangria e as marcas de dobra. O projeto da capa fica nas configurações e os textos num documento Markdown, e o título e o autor vêm dos próprios dados do livro. A página mostra como fazer tudo isso no Sandbox, pela linha de comando e no código.',
 };
@@ -51,16 +51,36 @@ Cada versão indica a encadernação pelo id de um perfil ou traz o próprio per
 
 - `id` e `name`: como a versão é escolhida (o `--print-version` da linha de comando) e exibida.
 - `binding`: um perfil de encadernação (veja abaixo).
-- `isbn`: o ISBN desta versão, ISBN-10 ou ISBN-13, com ou sem hifens. Cada encadernação de um livro tem o seu. Um ISBN válido é impresso como código de barras na contracapa.
+- `isbn`: o ISBN desta versão, ISBN-10 ou ISBN-13, com ou sem hifens. Cada encadernação de um livro tem o seu. Um ISBN válido é impresso como código de barras na contracapa da folha mais externa: a sobrecapa de uma capa dura que tenha uma; senão, o revestimento ou a capa da brochura.
 - `isbnAddOn`: cinco dígitos impressos depois do código de barras. Na Espanha ele não leva preço: a agência do ISBN só o permite começando por 9, para uso próprio da editora (`90000` significa sem preço).
-- `workIsbn`: o ISBN da obra completa, para um volume de uma coleção ou de uma obra em vários volumes. O código de barras leva o `isbn` do volume; este é impresso como texto ao lado.
+- `workIsbn`: o ISBN da obra completa, para um volume de uma coleção ou de uma obra em vários volumes. O código de barras leva o `isbn` do volume; este é impresso como texto ao lado. Na sua falta, é o `isbn` da coleção que se imprime ali.
 - `flaps`: numa brochura, orelhas; numa capa dura, uma sobrecapa.
 - `caseMaterial`: numa capa dura, `printed` (a capa impressa e laminada sobre o papelão, o padrão) ou `cloth` (tecido gravado, em geral sob uma sobrecapa).
 - `overrides`: medidas em mm que esta versão define para si por cima das do perfil, quando a gráfica pede uma canaleta diferente para este livro.
 - `spineOverride`: a lombada em mm tal como a gráfica a informa, no lugar da calculada.
 - `spineText`: como o texto corre na lombada: `direction` de baixo para cima (`bottomToTop`, o costume na Espanha e o padrão) ou de cima para baixo (`topToBottom`, como prefere a ISO 6357), e `minSpine`, a lombada mais estreita que ainda recebe texto (6 mm por padrão).
 
-`production.collection` indica a coleção ou a obra em vários volumes a que o livro pertence, com o seu próprio ISBN (impresso como texto ao lado do do volume) e um `catalogue` dos seus títulos, cada um com `id`, `title` e, se quiser, uma imagem em `resource`, para as guardas.
+`production.collection` indica a coleção ou a obra em vários volumes a que o livro pertence:
+
+```ts
+production: {
+  collection: {
+    name: 'Biblioteca do Mar',
+    isbn: '978-84-0000-010-3',
+    catalogue: [
+      { id: 'reefs', title: 'Recifes', resource: 'cover-reefs' },
+      { id: 'tides', title: 'Marés', resource: 'cover-tides' },
+      { id: 'abyss', title: 'O abismo', resource: 'cover-abyss' },
+    ],
+    volume: 'tides',
+  },
+},
+```
+
+- `name`: o nome da coleção.
+- `isbn`: o ISBN da obra completa, impresso como texto ao lado do código de barras de uma versão que não indica um `workIsbn` próprio.
+- `catalogue`: os títulos da coleção em ordem, cada um com `id`, `title` e, se quiser, uma imagem em `resource` (em geral a sua capa). `::catalogue` no texto da capa os compõe como linhas, e um item `catalogue` do projeto como imagens, nas guardas ou na contracapa.
+- `volume`: o `id` da entrada do catálogo que é este livro, destacada onde quer que o catálogo seja composto. As verificações da configuração informam um `volume` que não indica nenhuma entrada.
 
 ### Perfis de encadernação
 
@@ -189,7 +209,7 @@ cover: {
 
 ### Elementos, efeitos e logotipos
 
-Sobre os fundos, o projeto posiciona três listas de itens, cada uma desenhada de trás para a frente: `elements` sob o texto, `effects` sobre ele e `logos` por cima de tudo. Um item é uma imagem (`kind: 'image'` com um `resourceId`), um bloco de cor (`'box'`) ou uma forma de cor (`'shape'`), e tem um `id` de letras, algarismos, `-` e `_`.
+Sobre os fundos, o projeto posiciona três listas de itens, cada uma desenhada de trás para a frente: `elements` sob o texto, `effects` sobre ele e `logos` por cima de tudo. Um item é uma imagem (`kind: 'image'` com um `resourceId`), um bloco de cor (`'box'`), uma forma de cor (`'shape'`) ou o catálogo da coleção (`'catalogue'`, mais abaixo), e tem um `id` de letras, algarismos, `-` e `_`.
 
 Um item é posicionado pela zona em que está, e por isso se desloca com ela quando a lombada cresce ou a encadernação muda:
 
@@ -217,6 +237,23 @@ logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8,
 - `clearance` (logotipos): a área de proteção em mm em volta do logotipo, onde nada mais deve entrar.
 
 Um bloco ou uma forma também pode levar os efeitos que um estilo de box das páginas não desenha: `radius` para cantos arredondados em mm, `stroke` para uma borda (`color` e `width` em mm), `gradient` para um degradê da sua cor até `to` num ângulo `angle` em graus (0: da esquerda para a direita; 90: de cima para baixo), e `shadow` (`color`, `opacity`, o deslocamento `x` e `y` em mm e a suavidade, `blur`). Um degradê ou uma sombra transforma o item numa imagem à parte, desenhada na resolução do PDF.
+
+Um item `catalogue` dispõe as imagens dos títulos da coleção numa grade dentro da sua caixa, para mostrar a série numa guarda sem posicionar cada capa à mão:
+
+```ts
+elements: [
+  { id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150,
+    columns: 3, gap: 4, stroke: { color: { hex: '#d8a21b', model: 'hex' }, width: 0.8 } },
+],
+```
+
+- `columns`: imagens por linha da grade (por padrão, todos os títulos numa linha).
+- `gap`: o espaço entre as imagens, em mm (3 por padrão).
+- `first` e `last`: o primeiro e o último título mostrados, pela sua posição no catálogo contando a partir de 1, para dividir um catálogo longo entre duas páginas (por padrão, todos).
+- `fit`: cada imagem cobre a sua célula, recortada (`cover`, aqui o padrão), ou cabe inteira nela (`contain`).
+- `stroke` e `radius`: a borda que contorna o título do próprio livro (`collection.volume`). Sem `stroke`, ele não é destacado.
+
+Um título sem `resource` deixa a sua célula vazia, e uma coleção sem catálogo não desenha nada. Com um `basis`, as células acompanham a escala da zona como o item.
 
 ### Sangria espelhada
 
@@ -257,6 +294,36 @@ finishes: [
 
 Um relevo ou um baixo-relevo não imprime nada. A sua forma vai para a gráfica numa chapa técnica, ao lado da [linha de faca](/pt/docs/special-inks-die-cuts#a-linha-de-faca-no-pdf): uma `Separation` chamada `Emboss` ou `Deboss`, que o preflight lista e que nenhuma prova pinta. A encadernadora faz o clichê a partir dela.
 
+### Um projeto para cada folha
+
+Uma capa dura é feita de várias folhas, e por padrão todas usam o projeto `cover` do livro. `sheets` dá a uma folha um projeto próprio, que substitui o do livro nessa folha:
+
+```ts
+cover: {
+  image: { resourceId: 'jacket-art', area: 'sheet' },
+  sheets: {
+    case: {
+      background: { hex: '#1d2a44', model: 'hex' },
+      finishes: [{ id: 'spine-foil', process: 'foil', shape: { box: { zone: 'spine', x: 1, y: 20, width: 8, height: 80 } } }],
+    },
+    endpapers: { background: { hex: '#efe6d2', model: 'hex' } },
+    endpaperBack: {
+      background: { hex: '#efe6d2', model: 'hex' },
+      elements: [{ id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150, columns: 3 }],
+    },
+  },
+},
+```
+
+As folhas se chamam:
+
+- `case`: o revestimento de uma capa dura, como um tecido com hot stamping sob uma sobrecapa impressa.
+- `jacket`: a sobrecapa.
+- `endpapers`: as duas guardas; `endpaperFront` e `endpaperBack`: uma delas, com prioridade sobre `endpapers`.
+- `cover`: a capa de uma brochura, ou o revestimento de uma capa dura que não tem projeto `case`.
+
+Cada um é um projeto completo, com todos os campos de `cover` exceto `sheets`, e não herda nada do projeto do livro: no exemplo, o revestimento não mostra a imagem da sobrecapa. Uma folha sem projeto próprio usa o do livro.
+
 ## O texto da capa
 
 O texto da capa é um documento Markdown do livro, guardado ao lado dos capítulos. Cada bloco preenche uma zona ou uma caixa de texto pelo nome:
@@ -279,11 +346,48 @@ Uma cidade que guarda os seus livros debaixo da terra, e a menina que os lê em 
 :::
 ```
 
-O texto é composto com a tipografia do livro: os seus estilos de parágrafo, estilos de caractere e fontes. Quatro estilos de parágrafo são próprios da capa, e o livro pode redefini-los: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`. A capa e a lombada que o Markdown deixa vazias recebem, a cada montagem, o título, o subtítulo e o autor do livro a partir dos metadados, compostos nesses estilos; eles nunca são copiados para o texto da capa. Um quadro `front` ou `spine` os substitui pelo seu próprio texto.
+O texto é composto com a tipografia do livro: os seus estilos de parágrafo, estilos de caractere e fontes. Seis estilos de parágrafo são próprios da capa, e o livro pode redefini-los: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`, e para o catálogo da coleção (mais abaixo) `cover-catalogue` e `cover-catalogue-current`. A capa e a lombada que o Markdown deixa vazias recebem, a cada montagem, o título, o subtítulo e o autor do livro a partir dos metadados, compostos nesses estilos; eles nunca são copiados para o texto da capa. Um quadro `front` ou `spine` os substitui pelo seu próprio texto.
 
 Um quadro para um espaço que a folha não tem (uma orelha numa folha sem orelhas, uma contracapa numa guarda) fica de fora, e a verificação avisa; um segundo quadro para o mesmo espaço também fica de fora. Escreva o texto da capa como parágrafos com estilos de parágrafo: um título `#` recebe o projeto que o livro dá aos títulos de capítulo.
 
 Um só texto de capa serve a todas as versões e a todas as folhas. Um livro em vários idiomas pode dar a cada idioma o seu.
+
+### Um texto para uma só folha
+
+Um quadro que indica uma folha com `sheet` é diagramado só nessa folha, e ali ocupa o seu espaço no lugar de um quadro que não indica nenhuma. Assim, uma capa dura sob sobrecapa pode levar na frente só o nome da coleção, enquanto a capa da sobrecapa mantém o título dos metadados:
+
+```md
+:::frame{slot="front" sheet="case"}
+**Biblioteca do Mar**
+:::
+
+:::frame{slot="flyleaf" sheet="endpapers"}
+*Do arquivo da editora*
+:::
+```
+
+`sheet` aceita os nomes de `cover.sheets`, um ou vários separados por espaços (`sheet="case jacket"`). Um quadro para `cover` chega também ao revestimento de uma capa dura, que responde tanto a `case` quanto a `cover`, enquanto um para `case` chega só ao revestimento; um para `endpapers` chega às duas guardas. Um quadro vazio para uma folha, fechado logo em seguida (`:::frame{slot="back" sheet="case"}` seguido de `:::`), deixa essa zona em branco nessa folha: tira o espaço do quadro comum a todas as folhas e não coloca nada nele. Na capa ou na lombada, também impede o título que os metadados colocariam ali. Um nome que não é de nenhuma folha é informado (`coverFrameSheetUnknown`), e um quadro que não indica nenhuma outra folha fica de fora.
+
+### O catálogo da coleção
+
+`::catalogue`, numa linha própria dentro de um quadro, compõe em ordem os títulos de `production.collection.catalogue`, um parágrafo cada: o número, um espaço de meio quadratim e o título. Os títulos vão em `cover-catalogue`, no corpo do texto e alinhados à esquerda, e o do próprio livro (`collection.volume`) em `cover-catalogue-current`, em negrito.
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+**Na mesma coleção**
+
+::catalogue{numbers="I" last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+::catalogue{numbers="I" first=7}
+:::
+```
+
+- `numbers`: o estilo de contador dos números: `1` (o padrão), `01`, `I`, `i`, `A`, `a`, ou `none` para títulos sem número.
+- `first` e `last`: o primeiro e o último título compostos, pela sua posição contando a partir de 1, para dividir uma lista longa entre as duas guardas. Cada título mantém o número da sua posição na lista completa.
+
+Um livro cuja coleção não tem catálogo não recebe nada no seu lugar.
 
 ## As verificações
 
@@ -299,9 +403,10 @@ A montagem de uma capa informa o que não conseguiu fazer como foi pedido. O San
     <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>O ISBN não é válido: o comprimento ou o dígito verificador estão errados. A capa fica sem código de barras.</td></tr>
     <tr><td><code>spineOverridden</code></td><td>A lombada foi definida à mão; são informadas a largura calculada e a usada.</td></tr>
     <tr><td><code>signatureBlanks</code></td><td>O arredondamento para cadernos inteiros acrescenta páginas em branco.</td></tr>
-    <tr><td><code>spineTooThinForText</code></td><td>A lombada é mais estreita que <code>minSpine</code> e não leva texto.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>A lombada é mais estreita que <code>minSpine</code> e não leva texto. Numa capa dura, conta a lombada do revestimento, dois papelões mais larga que as páginas.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Uma caixa de texto tem um nome que a capa não aceita.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>O texto da capa preenche um espaço que a folha não tem, ou o mesmo espaço duas vezes.</td></tr>
+    <tr><td><code>coverFrameSheetUnknown</code></td><td>Um quadro do texto da capa indica uma folha que não existe (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>A sangria espelhada deixou de fora imagens que não conseguiu ler, ou parou antes da borda da folha.</td></tr>
     <tr><td><code>coverClipSkipped</code></td><td>As imagens recortadas num contorno foram desenhadas inteiras.</td></tr>
     <tr><td><code>coverBarcodeSize</code></td><td>O código de barras foi pedido abaixo de 80 % e fica em 80 %.</td></tr>
@@ -309,7 +414,7 @@ A montagem de uma capa informa o que não conseguiu fazer como foi pedido. O San
   </tbody>
 </table>
 
-As verificações da configuração também leem `production` e `cover` como qualquer outra configuração: uma chave desconhecida, um valor do tipo errado ou um ISBN inválido é informado com o seu caminho.
+As verificações da configuração também leem `production` e `cover` como qualquer outra configuração: uma chave desconhecida, um valor do tipo errado ou um ISBN inválido é informado com o seu caminho. Cada projeto de `cover.sheets` é lido como o da própria capa, e também são informados um nome de folha que não é nenhum dos seis, `columns`, `first` e `last` de um item de catálogo que não são inteiros a partir de 1, um `gap` negativo e um `collection.volume` que não indica nenhum título do catálogo.
 
 O PDF da capa passa pelo mesmo [preflight](/pt/docs/configuration-pdf-output) que o do livro: resolução das imagens, preto, carga de tinta, os acabamentos e as chapas técnicas.
 
@@ -325,6 +430,8 @@ O painel **Capa**, na barra lateral, reúne as versões impressas e a sua capa:
 - **Arquivos para a gráfica**: **Baixar PDF da folha**, gravado com as configurações de PDF do livro (espaço de cor, perfil de saída, PDF/X), e **Baixar a capa** como imagem.
 - **Verificações**: as verificações acima.
 - **Perfis de gráfica**: perfis de encadernação copiados de um embutido e ajustados às medidas de uma gráfica, cada medida em milímetros, como proporção do formato ou por faixas de tamanho do formato, com o valor que dá para este livro; perfis de papel com fornecedor e nome comercial; e **Exportar perfis** e **Importar perfis** para o arquivo `.postext-production.json`.
+
+Os projetos de cada folha, os textos de uma só folha, o item de catálogo e o volume da coleção também são editados no painel Capa.
 
 O grupo **Projeto da capa** do painel Design reúne os fundos, a imagem, o alinhamento do texto das zonas, o tamanho do código de barras e a sangria espelhada. Toda mudança no painel Capa é um passo do histórico de desfazer.
 
@@ -376,7 +483,7 @@ O resto do módulo expõe cada etapa:
 
 - **ISBN**: `parseIsbn` lê e confere um ISBN, `isbnBarcodeSvg` desenha o código de barras EAN-13 com complemento, e `ean13CheckDigit` e `isbnCaption` fazem o resto.
 - **Medidas e folhas**: `resolveBindingMeasures` calcula as medidas de um perfil para um formato, `resolveLength` uma medida, `checkProfileAccepts` os limites; `spineFromRuns`, `pageRunsOf`, `signaturePages` e `leafMm` a lombada; `softcoverSheet`, `caseSheet`, `jacketSheet` e `endpaperSheet` cada folha, e `versionSheets` as de uma versão.
-- **O projeto**: `coverPage` compõe o modelo de página de uma folha, `coverSource` o Markdown a partir do qual ela é diagramada, `coverZoneBox` a caixa de uma zona, `placeCoverElement` e `coverElementRect` o lugar de um item, `basicShape`, `pathData` e `flattenCoverPath` as suas formas.
+- **O projeto**: `coverPage` compõe o modelo de página de uma folha, `coverSource` o Markdown a partir do qual ela é diagramada, `coverZoneBox` a caixa de uma zona, `placeCoverElement` e `coverElementRect` o lugar de um item, `basicShape`, `pathData` e `flattenCoverPath` as suas formas; `coverSheetNames` e `coverDesignFor` o projeto que uma folha usa, e `withCatalogue` e `expandCatalogueText` as imagens e as linhas do catálogo.
 - **Perfis e configurações**: `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` e `readProductionConfig`, que lê um bloco `production` de dados não confiáveis e informa o que descartou.
 - **Folio**: `folioOfBook` dá as configurações do Folio com a encadernação da primeira versão, e `productionFolioBinding` e `folioVersionOf` as de uma versão escolhida.
 

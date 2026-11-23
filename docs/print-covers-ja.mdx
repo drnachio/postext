@@ -6,7 +6,7 @@ export const metadata = {
   description: '本の印刷版ごとの製本、ISBN、背。印刷所の製本プロファイルと用紙プロファイル。袖、カバー、上製表紙、見返しを含む表紙の用紙。表紙のデザインと加工、表紙のMarkdownの文字、そしてSandbox、コマンドライン、コードでの表紙の作り方',
   lang: 'ja',
   lastUpdated: '2026-11-23',
-  readingTime: '16分',
+  readingTime: '19分',
   order: 41,
   plainSummary: "このページでは、印刷した本の表紙を扱います。ページをくるむ1枚の紙で、表4（裏表紙）、背、表1（表表紙）が並び、袖やカバー、見返しが付くこともあります。1冊の本を並製と上製のように複数の版で刷ることができ、版ごとに製本とISBNが違います。Postextはページ数と紙から背幅を計算し、印刷所が必要とする大きさで、塗り足しと折りのトンボを付けた用紙を作ります。表紙のデザインは設定に、文字はMarkdownの文書に書き、書名と著者は本自身の情報から入ります。このページでは、これをSandbox、コマンドライン、コードで行う方法を説明します。",
 };
@@ -51,16 +51,36 @@ const config: PostextConfig = {
 
 - `id`と`name`：版の選び方（コマンドラインの`--print-version`）と表示名。
 - `binding`：製本プロファイル（後述）。
-- `isbn`：この版のISBN。ISBN-10でもISBN-13でもよく、ハイフンはあってもなくてもかまいません。本の製本ごとに別のISBNがあります。有効なものは表4にバーコードとして印刷されます。
+- `isbn`：この版のISBN。ISBN-10でもISBN-13でもよく、ハイフンはあってもなくてもかまいません。本の製本ごとに別のISBNがあります。有効なものは、いちばん外側の用紙の表4にバーコードとして印刷されます。カバーを掛けた上製本ならカバーに、そうでなければ上製表紙や並製の表紙に入ります。
 - `isbnAddOn`：バーコードの後に印刷する5桁。スペインでは価格を載せません。ISBN機関は9で始まるものだけを出版社の独自用途に認めています（`90000`は価格なし）。
-- `workIsbn`：シリーズの1冊や複数巻の作品の1巻のための、作品全体のISBN。バーコードには巻の`isbn`が入り、こちらはその横に文字で印刷されます。
+- `workIsbn`：シリーズの1冊や複数巻の作品の1巻のための、作品全体のISBN。バーコードには巻の`isbn`が入り、こちらはその横に文字で印刷されます。指定がなければ、そこにはシリーズの`isbn`が入ります。
 - `flaps`：並製では袖、上製ではカバー。
 - `caseMaterial`：上製表紙の素材。`printed`（印刷して表面加工した紙を板紙にくるむもの、既定）または`cloth`（箔押ししたクロス、ふつうはカバーを掛けます）。
 - `overrides`：この版だけがプロファイルの値に優先して使う寸法（mm）。印刷所がこの1冊だけ違う溝を求めるときなどに使います。
 - `spineOverride`：計算値の代わりに使う、印刷所が示した背幅（mm）。
 - `spineText`：背の文字の組み方。`direction`は下から上へ（`bottomToTop`、スペインでふつうの向きで既定）か、上から下へ（`topToBottom`、ISO 6357が勧める向き）です。`minSpine`は文字を入れられる最も細い背幅です（既定は6 mm）。
 
-`production.collection`は、本が属するシリーズや複数巻の作品を指定します。独自のISBN（巻のISBNの横に文字で印刷）と、見返しのための書目`catalogue`を持ち、各項目に`id`、`title`、任意の画像`resource`があります。
+`production.collection`は、本が属するシリーズや複数巻の作品を指定します。
+
+```ts
+production: {
+  collection: {
+    name: '海の文庫',
+    isbn: '978-84-0000-010-3',
+    catalogue: [
+      { id: 'reefs', title: 'サンゴ礁', resource: 'cover-reefs' },
+      { id: 'tides', title: '潮', resource: 'cover-tides' },
+      { id: 'abyss', title: '深海', resource: 'cover-abyss' },
+    ],
+    volume: 'tides',
+  },
+},
+```
+
+- `name`：シリーズの名前。
+- `isbn`：作品全体のISBN。自分の`workIsbn`を持たない版では、バーコードの横に文字で印刷されます。
+- `catalogue`：シリーズの書目を順に並べたもので、各項目に`id`、`title`、任意の画像`resource`（ふつうはその本の表1）があります。表紙の文字の`::catalogue`はこれを文字の行として、デザインの`catalogue`要素は画像として、見返しや表4に組みます。
+- `volume`：書目のうち、この本にあたる項目の`id`。書目を組むところでは、どこでもこの項目が目立つように示されます。どの項目にもあたらない`volume`は、設定のチェックで報告されます。
 
 ### 製本プロファイル
 
@@ -189,7 +209,7 @@ cover: {
 
 ### 要素、効果、ロゴ
 
-地色の上に、デザインは3つの要素のリストを置きます。どれも奥から手前へ描かれます。`elements`は文字の下、`effects`は文字の上、`logos`はいちばん上です。要素は画像（`kind: 'image'`と`resourceId`）、色の箱（`'box'`）、色の形（`'shape'`）のいずれかで、英字、数字、`-`、`_`でできた`id`を持ちます。
+地色の上に、デザインは3つの要素のリストを置きます。どれも奥から手前へ描かれます。`elements`は文字の下、`effects`は文字の上、`logos`はいちばん上です。要素は画像（`kind: 'image'`と`resourceId`）、色の箱（`'box'`）、色の形（`'shape'`）、シリーズの書目（`'catalogue'`、後述）のいずれかで、英字、数字、`-`、`_`でできた`id`を持ちます。
 
 要素は置かれたゾーンを基準に配置されるので、背が太くなったり製本が変わったりすると、そのゾーンと一緒に動きます。
 
@@ -217,6 +237,23 @@ logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8,
 - `clearance`（ロゴ）：ロゴの周りでほかのものが入ってはいけない余白（mm）。
 
 箱と形には、ページの囲みスタイルでは描けない効果も付けられます。`radius`は角丸の半径（mm）、`stroke`は枠線（`color`とmmの`width`）、`gradient`は自身の色から`to`へ`angle`度で変わるグラデーション（0：左から右、90：上から下）、`shadow`は影（`color`、`opacity`、mmでのずれ`x`と`y`、ぼかし`blur`）です。グラデーションや影のある要素は、PDFの解像度で描いた独立した画像になります。
+
+`catalogue`要素は、シリーズ各巻の画像を自分の箱の中に格子状に並べます。表紙を1点ずつ手で置かなくても、見返しにシリーズを並べられます。
+
+```ts
+elements: [
+  { id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150,
+    columns: 3, gap: 4, stroke: { color: { hex: '#d8a21b', model: 'hex' }, width: 0.8 } },
+],
+```
+
+- `columns`：1行に並べる画像の数（既定ではすべての巻を1行に）。
+- `gap`：画像どうしの間隔（mm、既定は3）。
+- `first`と`last`：表示する最初と最後の巻。書目の中の位置を1から数えて指定し、長い書目を2ページに分けるのに使います（既定ではすべて）。
+- `fit`：各画像をセルいっぱいに切り抜いて敷く（`cover`、ここでの既定）か、セルの中に全体を収める（`contain`）か。
+- `stroke`と`radius`：この本自身（`collection.volume`）を囲む枠線。`stroke`がなければ印は付きません。
+
+`resource`のない巻はセルが空になり、書目のないシリーズでは何も描かれません。`basis`があれば、セルも要素と同じようにゾーンに合わせて伸縮します。
 
 ### ミラー裁ち落とし
 
@@ -257,6 +294,36 @@ finishes: [
 
 浮き出しと空押しは何も刷りません。その形は[抜き型の線](/ja/docs/special-inks-die-cuts#pdfでの抜き型の線)と並ぶ技術版として印刷所に渡ります。`Emboss`または`Deboss`という名前の`Separation`で、プリフライトには挙がり、校正刷りには描かれません。製本所はこれをもとに型を作ります。
 
+### 用紙ごとのデザイン
+
+上製本は何枚かの用紙でできており、既定ではどれも本の`cover`デザインを使います。`sheets`は用紙に独自のデザインを与え、その用紙では本のデザインの代わりに使われます。
+
+```ts
+cover: {
+  image: { resourceId: 'jacket-art', area: 'sheet' },
+  sheets: {
+    case: {
+      background: { hex: '#1d2a44', model: 'hex' },
+      finishes: [{ id: 'spine-foil', process: 'foil', shape: { box: { zone: 'spine', x: 1, y: 20, width: 8, height: 80 } } }],
+    },
+    endpapers: { background: { hex: '#efe6d2', model: 'hex' } },
+    endpaperBack: {
+      background: { hex: '#efe6d2', model: 'hex' },
+      elements: [{ id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150, columns: 3 }],
+    },
+  },
+},
+```
+
+用紙の名前は次のとおりです。
+
+- `case`：上製表紙。たとえば、印刷したカバーの下にある箔押しのクロス装。
+- `jacket`：カバー。
+- `endpapers`：前後両方の見返し。`endpaperFront`と`endpaperBack`はどちらか一方で、`endpapers`より優先されます。
+- `cover`：並製の表紙、または`case`のデザインを持たない上製表紙。
+
+どれも`sheets`以外の`cover`の項目をすべて持つ完全なデザインで、本のデザインから何も引き継ぎません。上の例では、上製表紙にカバーの画像は出ません。独自のデザインを持たない用紙は本のデザインを使います。
+
 ## 表紙の文字
 
 表紙の文字は本のMarkdown文書のひとつで、章と並べて置かれます。各ブロックが、名前でひとつのゾーンかテキスト枠を埋めます。
@@ -279,11 +346,48 @@ finishes: [
 :::
 ```
 
-文字は本の文字組みで組まれます。本の段落スタイル、文字スタイル、フォントです。4つの段落スタイルは表紙専用で、本で定義し直すこともできます。`cover-title`、`cover-subtitle`、`cover-author`、`cover-spine`です。Markdownが空けておいた表1と背には、組むたびに本のメタデータから書名、副題、著者がこれらのスタイルで入ります。表紙の文字にコピーされることはありません。`front`や`spine`の枠を書けば、その文字に置き換わります。
+文字は本の文字組みで組まれます。本の段落スタイル、文字スタイル、フォントです。6つの段落スタイルは表紙専用で、本で定義し直すこともできます。`cover-title`、`cover-subtitle`、`cover-author`、`cover-spine`と、シリーズの書目（後述）のための`cover-catalogue`と`cover-catalogue-current`です。Markdownが空けておいた表1と背には、組むたびに本のメタデータから書名、副題、著者がこれらのスタイルで入ります。表紙の文字にコピーされることはありません。`front`や`spine`の枠を書けば、その文字に置き換わります。
 
 用紙にないスロット（袖のない用紙の袖、見返しの表4など）の枠は省かれ、チェックがそれを知らせます。同じスロットの2つ目の枠も省かれます。表紙の文字は段落と段落スタイルで書いてください。`#`の見出しには、本が章見出しに付けたデザインが使われます。
 
 表紙の文字はひとつで、すべての版とすべての用紙に使われます。複数の言語の本では、言語ごとに別の文字を持たせることもできます。
+
+### 1枚の用紙だけの文字
+
+`sheet`で用紙を指定した枠は、その用紙にだけ組まれ、そこでは用紙を指定しない枠より優先してスロットを使います。カバーを掛けた上製本なら、上製表紙の表にはシリーズ名だけを入れ、カバーの表1にはメタデータの書名を残せます。
+
+```md
+:::frame{slot="front" sheet="case"}
+**海の文庫**
+:::
+
+:::frame{slot="flyleaf" sheet="endpapers"}
+*出版社の資料室から*
+:::
+```
+
+`sheet`には`cover.sheets`の名前を、1つか、スペースで区切って複数書きます（`sheet="case jacket"`）。上製表紙は`case`と`cover`の両方にあたるので、`cover`の枠は上製表紙にも組まれ、`case`の枠は上製表紙にだけ組まれます。`endpapers`の枠は両方の見返しに組まれます。1枚の用紙のための空の枠をすぐに閉じる（`:::frame{slot="back" sheet="case"}`の直後に`:::`）と、その用紙のそのゾーンは何もない状態になります。すべての用紙に共通の枠からスロットを取り、そこに何も置かないからです。表1や背では、メタデータから入るはずの書名も入らなくなります。どの用紙の名前でもないものは報告され（`coverFrameSheetUnknown`）、ほかの用紙を指定していない枠は外されます。
+
+### シリーズの書目
+
+枠の中の独立した行に書いた`::catalogue`は、`production.collection.catalogue`の書名を順に、1冊1段落で組みます。番号、二分アキ、書名の順です。書名は`cover-catalogue`で本文の大きさの左揃え、この本自身（`collection.volume`）は`cover-catalogue-current`で太字になります。
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+**同じシリーズから**
+
+::catalogue{numbers="I" last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+::catalogue{numbers="I" first=7}
+:::
+```
+
+- `numbers`：番号のカウンタースタイル。`1`（既定）、`01`、`I`、`i`、`A`、`a`、番号を付けない`none`。
+- `first`と`last`：組む最初と最後の巻。位置を1から数えて指定し、長い書目を前後の見返しに分けるのに使います。どの巻も書目全体での位置の番号を保ちます。
+
+シリーズに書目がない本では、ここには何も組まれません。
 
 ## チェック
 
@@ -299,9 +403,10 @@ finishes: [
     <tr><td><code>isbnInvalid</code>、<code>coverIsbnInvalid</code></td><td>ISBNが無効です。桁数かチェックディジットが合いません。表紙にバーコードは入りません。</td></tr>
     <tr><td><code>spineOverridden</code></td><td>背幅は手で設定されています。計算値と使った値の両方が示されます。</td></tr>
     <tr><td><code>signatureBlanks</code></td><td>折丁の整数倍にそろえたことで白ページが増えます。</td></tr>
-    <tr><td><code>spineTooThinForText</code></td><td>背が<code>minSpine</code>より細く、文字が入りません。</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>背が<code>minSpine</code>より細く、文字が入りません。上製本では、本文より板紙2枚分広い上製表紙の背で判断します。</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>表紙で使えない名前のテキスト枠があります。</td></tr>
     <tr><td><code>coverSlotUnknown</code>、<code>coverSlotRepeated</code></td><td>表紙の文字が、用紙にないスロットを埋めているか、同じスロットを2回埋めています。</td></tr>
+    <tr><td><code>coverFrameSheetUnknown</code></td><td>表紙の文字の枠が、存在しない用紙を指定しています（<code>sheet="…"</code>）。</td></tr>
     <tr><td><code>coverMirrorSkipped</code>、<code>coverMirrorCapped</code></td><td>ミラー裁ち落としで読めない画像を省いたか、用紙の端まで届きませんでした。</td></tr>
     <tr><td><code>coverClipSkipped</code></td><td>輪郭で切り抜く画像を全体のまま描きました。</td></tr>
     <tr><td><code>coverBarcodeSize</code></td><td>バーコードが80 %未満で指定されたため80 %にしました。</td></tr>
@@ -309,7 +414,7 @@ finishes: [
   </tbody>
 </table>
 
-設定のチェックも、ほかの設定と同じように`production`と`cover`を読みます。不明なキー、種類の違う値、無効なISBNはパス付きで報告されます。
+設定のチェックも、ほかの設定と同じように`production`と`cover`を読みます。不明なキー、種類の違う値、無効なISBNはパス付きで報告されます。`cover.sheets`の各デザインも表紙そのもののデザインと同じように読まれます。さらに、6つの名前のどれでもない用紙名、書目要素の1以上の整数でない`columns`、`first`、`last`、負の`gap`、書目のどの巻にもあたらない`collection.volume`も報告されます。
 
 表紙のPDFは、本のPDFと同じ[プリフライト](/ja/docs/configuration-pdf-output)を通ります。画像の解像度、墨、インキ総量、加工と技術版です。
 
@@ -325,6 +430,8 @@ finishes: [
 - **印刷所用ファイル**：本のPDF設定（色空間、出力プロファイル、PDF/X）で書き出す**用紙のPDFをダウンロード**と、画像として書き出す**表紙をダウンロード**。
 - **チェック**：上のチェック。
 - **印刷所のプロファイル**：組み込みのプロファイルを複製して印刷所の寸法に合わせた製本プロファイル。各寸法はミリ、仕上がりサイズに対する割合、判型ごとの段階のいずれかで指定し、この本での実際の値が表示されます。仕入れ先と銘柄の付いた用紙プロファイル。そして`.postext-production.json`ファイルのための**プロファイルを書き出す**と**プロファイルを読み込む**。
+
+用紙ごとのデザイン、1枚の用紙だけの文字、書目要素、シリーズの中のこの巻も、**カバー**パネルで編集します。
 
 **デザイン**パネルの**カバーデザイン**グループには、地色、画像、ゾーンごとの文字の揃え、バーコードの大きさ、ミラー裁ち落としがあります。**カバー**パネルでの変更は、どれも取り消し履歴の1ステップです。
 
@@ -376,7 +483,7 @@ const pdf = await renderToPdf([doc], {
 
 - **ISBN**：`parseIsbn`はISBNを読んで検証し、`isbnBarcodeSvg`はアドオン付きのEAN-13バーコードを描きます。残りは`ean13CheckDigit`と`isbnCaption`です。
 - **寸法と用紙**：`resolveBindingMeasures`は仕上がりサイズに対するプロファイルの寸法を、`resolveLength`は1つの寸法を、`checkProfileAccepts`は制限を計算します。背幅は`spineFromRuns`、`pageRunsOf`、`signaturePages`、`leafMm`、各用紙は`softcoverSheet`、`caseSheet`、`jacketSheet`、`endpaperSheet`、版の用紙は`versionSheets`が作ります。
-- **デザイン**：`coverPage`は用紙のページテンプレートを、`coverSource`は組むもとになるMarkdownを組み立てます。`coverZoneBox`はゾーンの枠、`placeCoverElement`と`coverElementRect`は要素の位置、`basicShape`、`pathData`、`flattenCoverPath`はその形を扱います。
+- **デザイン**：`coverPage`は用紙のページテンプレートを、`coverSource`は組むもとになるMarkdownを組み立てます。`coverZoneBox`はゾーンの枠、`placeCoverElement`と`coverElementRect`は要素の位置、`basicShape`、`pathData`、`flattenCoverPath`はその形を扱います。`coverSheetNames`と`coverDesignFor`は用紙が使うデザインを、`withCatalogue`と`expandCatalogueText`は書目の画像と文字の行を扱います。
 - **プロファイルと設定**：`BUILT_IN_BINDING_PROFILES`、`DEFAULT_BINDING_MEASURES`、`DEFAULT_SPINE_TEXT`、`exportProductionProfiles`、`importProductionProfiles`、`readProductionConfig`。最後のものは、信頼できないデータから`production`ブロックを読み、捨てたものを報告します。
 - **Folio**：`folioOfBook`は最初の版の製本を使うFolio設定を返し、`productionFolioBinding`と`folioVersionOf`は選んだ版の設定を返します。
 

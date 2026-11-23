@@ -661,6 +661,13 @@ a cover sheet.
   frames. Leave the front and spine to the metadata (title, subtitle, author in the chapters' front
   matter) unless the source sets them in a way the styles `cover-title`, `cover-subtitle`,
   `cover-author` and `cover-spine` cannot; restyle those paragraph styles first.
+- **A hardcover's sheets**: a cloth or stamped case under a printed jacket, or endpapers that differ
+  front and back, each get a design of their own in `cover.sheets` (`case`, `jacket`, `endpapers`,
+  `endpaperFront`, `endpaperBack`) and, where their text differs, frames with `sheet="…"`. An empty
+  sheet frame leaves a zone bare on that sheet (the case's front without the metadata title).
+- **A series list**: the titles of the collection on the endpapers or the back cover go in
+  `production.collection.catalogue` with `volume` naming this book, set by `::catalogue` in a frame
+  (numbered lines) or a `catalogue` element (the covers in a grid); never type the list by hand.
 - **Check**: `postext cover book.postext -o cover.pdf`, then `-o front.jpg --dpi 150` beside the source's
   front, and read the checks it prints.
 

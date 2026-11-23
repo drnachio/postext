@@ -6,7 +6,7 @@ export const metadata = {
   description: '书的各个印刷版本，各有装订、ISBN和书脊；印厂的装订配置和纸张配置；带勒口、护封、书壳和环衬的封面版面；封面的设计与工艺；封面的Markdown文字；以及在沙盒、命令行和代码中制作封面',
   lang: 'zh',
   lastUpdated: '2026-11-23',
-  readingTime: '16 分钟',
+  readingTime: '19 分钟',
   order: 41,
   plainSummary: "本页介绍印刷书的封面：包住书页的那张纸，上面有封底、书脊和封面，有时还有勒口、护封或环衬。一本书可以印成几个版本，比如平装和精装，每个版本有自己的装订和自己的ISBN。Postext根据页数和纸张算出书脊的宽度，按印厂需要的尺寸做出整张版面，带出血和折线标记。封面的设计放在设置里，文字放在一篇Markdown文档里，书名和作者取自书本身的信息。本页说明如何在沙盒中、在命令行中和在代码中完成这些工作。",
 };
@@ -51,16 +51,36 @@ const config: PostextConfig = {
 
 - `id`和`name`：如何选择这个版本（命令行的`--print-version`）以及显示的名称。
 - `binding`：装订配置（见下文）。
-- `isbn`：这个版本的ISBN，ISBN-10或ISBN-13，带不带连字符都可以。一本书的每种装订各有一个ISBN。有效的ISBN会以条码印在封底上。
+- `isbn`：这个版本的ISBN，ISBN-10或ISBN-13，带不带连字符都可以。一本书的每种装订各有一个ISBN。有效的ISBN会以条码印在最外层版面的封底上：精装带护封时印在护封上，否则印在书壳或平装封面上。
 - `isbnAddOn`：印在条码后面的五位数字。西班牙的附加码不带价格：ISBN机构只允许以9开头的附加码，供出版社自用（`90000`表示无价格）。
-- `workIsbn`：整部作品的ISBN，用于丛书中的一卷或多卷本作品的一卷。条码用这一卷的`isbn`，这个ISBN以文字印在条码旁边。
+- `workIsbn`：整部作品的ISBN，用于丛书中的一卷或多卷本作品的一卷。条码用这一卷的`isbn`，这个ISBN以文字印在条码旁边。没有设它时，那里印丛书的`isbn`。
 - `flaps`：平装书上是勒口；精装书上是护封。
 - `caseMaterial`：精装书壳的材料，`printed`（印好的封面覆膜后裱在纸板上，默认）或`cloth`（布面烫印，通常外加护封）。
 - `overrides`：这个版本自己设定、覆盖配置的尺寸（mm），用于印厂对这一本书要求不同中缝等情况。
 - `spineOverride`：印厂给出的书脊宽度（mm），代替计算值。
 - `spineText`：书脊文字的排法：`direction`为由下往上（`bottomToTop`，西班牙的通常做法，也是默认值）或由上往下（`topToBottom`，ISO 6357推荐的方向）；`minSpine`是能印文字的最窄书脊（默认6 mm）。
 
-`production.collection`指定书所属的丛书或多卷本作品，带它自己的ISBN（以文字印在这一卷的ISBN旁边），以及书目`catalogue`，每一项有`id`、`title`和可选的图片`resource`，用于环衬。
+`production.collection`指定书所属的丛书或多卷本作品：
+
+```ts
+production: {
+  collection: {
+    name: '海洋文库',
+    isbn: '978-84-0000-010-3',
+    catalogue: [
+      { id: 'reefs', title: '珊瑚礁', resource: 'cover-reefs' },
+      { id: 'tides', title: '潮汐', resource: 'cover-tides' },
+      { id: 'abyss', title: '深渊', resource: 'cover-abyss' },
+    ],
+    volume: 'tides',
+  },
+},
+```
+
+- `name`：丛书的名称。
+- `isbn`：整部作品的ISBN；版本没有自己的`workIsbn`时，以文字印在该版本的条码旁边。
+- `catalogue`：丛书的书目，按顺序排列，每一项有`id`、`title`和可选的图片`resource`（通常是那本书的封面）。封面文字中的`::catalogue`把书目排成文字行，设计中的`catalogue`元素把它们排成图片，放在环衬或封底上。
+- `volume`：书目中就是本书的那一项的`id`，书目排在哪里，这一项就在哪里突出显示。`volume`不对应任何一项时，配置检查会报告。
 
 ### 装订配置
 
@@ -189,7 +209,7 @@ cover: {
 
 ### 元素、效果和标志
 
-在底色之上，设计放置三个项目列表，每个列表从后往前画：`elements`在文字下方，`effects`在文字上方，`logos`在最上面。一个项目是一张图片（`kind: 'image'`，带`resourceId`）、一个色块（`'box'`）或一个色形（`'shape'`），并有一个由字母、数字、`-`和`_`组成的`id`。
+在底色之上，设计放置三个项目列表，每个列表从后往前画：`elements`在文字下方，`effects`在文字上方，`logos`在最上面。一个项目是一张图片（`kind: 'image'`，带`resourceId`）、一个色块（`'box'`）、一个色形（`'shape'`）或丛书的书目（`'catalogue'`，见下文），并有一个由字母、数字、`-`和`_`组成的`id`。
 
 项目按所在区域定位，所以书脊变宽或装订改变时，它随区域移动：
 
@@ -217,6 +237,23 @@ logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8,
 - `clearance`（标志）：标志四周不许别的东西进入的空白，以mm计。
 
 色块或色形还可以带上页面框样式画不出的效果：`radius`是圆角半径（mm），`stroke`是边框（`color`和以mm计的`width`），`gradient`是从它的颜色渐变到`to`，角度为`angle`度（0：从左到右；90：从上到下），`shadow`是阴影（`color`、`opacity`、以mm计的偏移`x`和`y`，以及柔和程度`blur`）。有渐变或阴影的项目会变成单独的一张图片，按PDF的分辨率绘制。
+
+`catalogue`项目把丛书各书的图片排成网格，放在自己的框内，这样不必逐一摆放封面，就能在环衬上展示整套丛书：
+
+```ts
+elements: [
+  { id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150,
+    columns: 3, gap: 4, stroke: { color: { hex: '#d8a21b', model: 'hex' }, width: 0.8 } },
+],
+```
+
+- `columns`：每行的图片数（默认所有书排成一行）。
+- `gap`：图片之间的间距，以mm计（默认3）。
+- `first`和`last`：显示的第一本和最后一本，按它们在书目中的位置从1数起，用来把很长的书目分到两页上（默认全部）。
+- `fit`：每张图片裁切后铺满自己的格子（`cover`，这里的默认值），或者完整放进格子里（`contain`）。
+- `stroke`和`radius`：围住本书（`collection.volume`）的边框。没有`stroke`时不加标记。
+
+没有`resource`的书留下空格子，没有书目的丛书什么也不画。带`basis`时，各格子和项目本身一样随区域缩放。
 
 ### 镜像出血
 
@@ -257,6 +294,36 @@ finishes: [
 
 凸印和凹印不印任何东西。它的形状放在一块技术印版上交给印厂，和[模切线](/zh/docs/special-inks-die-cuts#pdf中的模切线)放在一起：一个名为`Emboss`或`Deboss`的`Separation`，印前检查会列出它，任何打样都不绘制它。装订厂据此制作压凸版。
 
+### 每张版面各自的设计
+
+精装书由几张版面组成，默认都用书的`cover`设计。`sheets`给某张版面一个自己的设计，在那张版面上代替书的设计：
+
+```ts
+cover: {
+  image: { resourceId: 'jacket-art', area: 'sheet' },
+  sheets: {
+    case: {
+      background: { hex: '#1d2a44', model: 'hex' },
+      finishes: [{ id: 'spine-foil', process: 'foil', shape: { box: { zone: 'spine', x: 1, y: 20, width: 8, height: 80 } } }],
+    },
+    endpapers: { background: { hex: '#efe6d2', model: 'hex' } },
+    endpaperBack: {
+      background: { hex: '#efe6d2', model: 'hex' },
+      elements: [{ id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150, columns: 3 }],
+    },
+  },
+},
+```
+
+各张版面的名称：
+
+- `case`：精装的书壳，例如护封下面烫金的布面书壳。
+- `jacket`：护封。
+- `endpapers`：前后两张环衬；`endpaperFront`和`endpaperBack`：其中一张，优先于`endpapers`。
+- `cover`：平装的封面，或没有`case`设计的精装书壳。
+
+每个都是完整的设计，具有`cover`除`sheets`以外的所有字段，不从书的设计继承任何东西：在上例中，书壳不显示护封的图片。没有自己设计的版面使用书的设计。
+
 ## 封面的文字
 
 封面的文字是书中的一篇Markdown文档，和各章放在一起。每个块按名称填充一个区域或一个文本框：
@@ -279,11 +346,48 @@ finishes: [
 :::
 ```
 
-文字按书的字体排印设置排出：书的段落样式、字符样式和字体。有四个段落样式是封面专用的，书可以重新定义它们：`cover-title`、`cover-subtitle`、`cover-author`和`cover-spine`。Markdown留空的封面和书脊，每次生成时取书的元数据中的书名、副标题和作者，用这些样式排出：它们从不复制到封面的文字中。`front`或`spine`框用自己的文字代替它们。
+文字按书的字体排印设置排出：书的段落样式、字符样式和字体。有六个段落样式是封面专用的，书可以重新定义它们：`cover-title`、`cover-subtitle`、`cover-author`和`cover-spine`，以及用于丛书书目（见下文）的`cover-catalogue`和`cover-catalogue-current`。Markdown留空的封面和书脊，每次生成时取书的元数据中的书名、副标题和作者，用这些样式排出：它们从不复制到封面的文字中。`front`或`spine`框用自己的文字代替它们。
 
 版面上没有的槽位（没有勒口的版面上的勒口、环衬上的封底）的框会被略去，检查会说明；同一个槽位的第二个框也会被略去。封面的文字请用段落和段落样式来写：`#`标题会套用书给章标题的设计。
 
 一份封面文字适用于所有版本和所有版面。多语言的书可以给每种语言各写一份。
+
+### 只用于一张版面的文字
+
+用`sheet`指定了版面的框只排在那张版面上，并且在那里优先于没有指定版面的框占用槽位。这样，护封下的精装书壳正面可以只印丛书名，而护封的封面仍取元数据中的书名：
+
+```md
+:::frame{slot="front" sheet="case"}
+**海洋文库**
+:::
+
+:::frame{slot="flyleaf" sheet="endpapers"}
+*出版社档案*
+:::
+```
+
+`sheet`取`cover.sheets`中的名称，可以是一个，也可以是用空格隔开的几个（`sheet="case jacket"`）。精装书壳既对应`case`也对应`cover`，所以`cover`的框也会排到书壳上，而`case`的框只排到书壳上；`endpapers`的框排到前后两张环衬上。只用于一张版面的空框，打开后立即关闭（`:::frame{slot="back" sheet="case"}`后面紧跟`:::`），会让那张版面上的这个区域留空：它从所有版面共用的框那里拿走槽位，却什么也不放。放在封面或书脊上时，它还会挡住元数据本来要排的书名。不属于任何版面的名称会报告（`coverFrameSheetUnknown`），没有指定其他版面的框会被略去。
+
+### 丛书书目
+
+框内单独一行的`::catalogue`按顺序排出`production.collection.catalogue`中的书名，每本一段：序号、一个二分空格和书名。书名用`cover-catalogue`，正文字号，左对齐；本书（`collection.volume`）用`cover-catalogue-current`，粗体。
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+**本丛书已出**
+
+::catalogue{numbers="I" last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+::catalogue{numbers="I" first=7}
+:::
+```
+
+- `numbers`：序号的计数样式：`1`（默认）、`01`、`I`、`i`、`A`、`a`，或`none`表示不加序号。
+- `first`和`last`：排出的第一本和最后一本，按位置从1数起，用来把很长的书目分到前后两张环衬上。每本书保留它在完整书目中的序号。
+
+丛书没有书目的书，在这里什么也不排。
 
 ## 检查
 
@@ -299,9 +403,10 @@ finishes: [
     <tr><td><code>isbnInvalid</code>、<code>coverIsbnInvalid</code></td><td>ISBN无效：长度或校验位不对。封面不印条码。</td></tr>
     <tr><td><code>spineOverridden</code></td><td>书脊是手动设定的；同时给出计算宽度和实际使用的宽度。</td></tr>
     <tr><td><code>signatureBlanks</code></td><td>补足为整数个印张后增加了空白页。</td></tr>
-    <tr><td><code>spineTooThinForText</code></td><td>书脊窄于<code>minSpine</code>，不印文字。</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>书脊窄于<code>minSpine</code>，不印文字。精装书以书壳的书脊为准，它比书页宽出两块纸板。</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>有文本框的名称封面无法使用。</td></tr>
     <tr><td><code>coverSlotUnknown</code>、<code>coverSlotRepeated</code></td><td>封面文字填充了版面没有的槽位，或者把一个槽位填了两次。</td></tr>
+    <tr><td><code>coverFrameSheetUnknown</code></td><td>封面文字的某个框指定了不存在的版面（<code>sheet="…"</code>）。</td></tr>
     <tr><td><code>coverMirrorSkipped</code>、<code>coverMirrorCapped</code></td><td>镜像出血略去了无法读取的图片，或者没有延伸到版面边缘。</td></tr>
     <tr><td><code>coverClipSkipped</code></td><td>按轮廓裁切的图片按整图绘制。</td></tr>
     <tr><td><code>coverBarcodeSize</code></td><td>条码要求小于80 %，已按80 %设置。</td></tr>
@@ -309,7 +414,7 @@ finishes: [
   </tbody>
 </table>
 
-配置检查也像读其他设置一样读`production`和`cover`：未知的键、类型不对的值或无效的ISBN都会连同路径一起报告。
+配置检查也像读其他设置一样读`production`和`cover`：未知的键、类型不对的值或无效的ISBN都会连同路径一起报告。`cover.sheets`中的每个设计都像封面本身的设计一样检查；此外还会报告不属于六个名称的版面名、书目元素中不是从1起的整数的`columns`、`first`和`last`、负的`gap`，以及不对应书目中任何一本的`collection.volume`。
 
 封面的PDF经过和书的PDF相同的[印前检查](/zh/docs/configuration-pdf-output)：图片分辨率、黑色、油墨总量、工艺和技术印版。
 
@@ -325,6 +430,8 @@ finishes: [
 - **印厂文件**：**下载版面PDF**，按书的PDF设置（色彩空间、输出配置文件、PDF/X）写出；**下载封面图**，以图片形式下载封面。
 - **检查**：上面列出的检查。
 - **印厂配置**：从内置配置复制并按印厂尺寸调整的装订配置，每个尺寸可以按毫米、按成品尺寸的比例或按开本分档设定，并显示对这本书的实际数值；带供应商和商品名的纸张配置；以及用于`.postext-production.json`文件的**导出配置**和**导入配置**。
+
+单张版面的设计、只用于一张版面的文字、书目元素和丛书中的本卷，也在封面面板中编辑。
 
 版面设计面板的**封面设计**分组包含底色、图片、各区域文字的对齐方式、条码大小和镜像出血。封面面板中的每次修改都是撤销历史中的一步。
 
@@ -376,7 +483,7 @@ const pdf = await renderToPdf([doc], {
 
 - **ISBN**：`parseIsbn`读取并校验ISBN，`isbnBarcodeSvg`画出带附加码的EAN-13条码，`ean13CheckDigit`和`isbnCaption`负责其余部分。
 - **尺寸与版面**：`resolveBindingMeasures`算出配置在某个成品尺寸下的各项尺寸，`resolveLength`算出单项尺寸，`checkProfileAccepts`检查限制；`spineFromRuns`、`pageRunsOf`、`signaturePages`和`leafMm`计算书脊；`softcoverSheet`、`caseSheet`、`jacketSheet`和`endpaperSheet`生成各种版面，`versionSheets`生成一个版本的全部版面。
-- **设计**：`coverPage`组成版面的页面模板，`coverSource`生成用来排版的Markdown，`coverZoneBox`给出区域的框，`placeCoverElement`和`coverElementRect`给出项目的位置，`basicShape`、`pathData`和`flattenCoverPath`处理它的形状。
+- **设计**：`coverPage`组成版面的页面模板，`coverSource`生成用来排版的Markdown，`coverZoneBox`给出区域的框，`placeCoverElement`和`coverElementRect`给出项目的位置，`basicShape`、`pathData`和`flattenCoverPath`处理它的形状；`coverSheetNames`和`coverDesignFor`给出一张版面使用的设计，`withCatalogue`和`expandCatalogueText`给出书目的图片和文字行。
 - **配置与设置**：`BUILT_IN_BINDING_PROFILES`、`DEFAULT_BINDING_MEASURES`、`DEFAULT_SPINE_TEXT`、`exportProductionProfiles`、`importProductionProfiles`和`readProductionConfig`；最后这个从不可信的数据中读取`production`块，并报告丢弃了什么。
 - **Folio**：`folioOfBook`给出带第一个版本装订方式的Folio设置，`productionFolioBinding`和`folioVersionOf`给出所选版本的设置。
 

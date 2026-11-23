@@ -6,7 +6,7 @@ export const metadata = {
   description: "Le versioni a stampa di un libro, ognuna con la sua legatura, il suo ISBN e il suo dorso; i profili di legatura e di carta della tipografia; il foglio di copertina con alette, sovraccoperta, copertina del cartonato e risguardi; la grafica della copertina e le sue finiture; il suo testo in Markdown; e la copertina dalla Sandbox, dalla riga di comando e dal codice",
   lang: 'it',
   lastUpdated: '2026-11-23',
-  readingTime: '16 min',
+  readingTime: '19 min',
   order: 41,
   plainSummary: "Questa pagina parla della copertina di un libro stampato: il foglio che avvolge le pagine, con la quarta di copertina, il dorso e la prima, a volte con alette, una sovraccoperta o i risguardi. Un libro si può stampare in più versioni, per esempio in brossura e cartonato, e ogni versione ha la sua legatura e il suo ISBN. Postext calcola lo spessore del dorso dal numero di pagine e dalla carta, e costruisce il foglio nel formato che serve alla tipografia, con l’abbondanza e i segni di piega. La grafica della copertina sta nelle impostazioni e i suoi testi in un documento Markdown; il titolo e l’autore vengono dai dati del libro stesso. La pagina mostra come fare tutto questo nella Sandbox, dalla riga di comando e dal codice.",
 };
@@ -51,16 +51,36 @@ Ogni versione indica la sua legatura con l’id di un profilo, oppure porta il p
 
 - `id` e `name`: come si sceglie la versione (`--print-version` nella riga di comando) e come viene mostrata.
 - `binding`: un profilo di legatura (vedi sotto).
-- `isbn`: l’ISBN di questa versione, ISBN-10 o ISBN-13, con o senza trattini. Ogni legatura di un libro ha il suo. Un ISBN valido si stampa come codice a barre sulla quarta di copertina.
+- `isbn`: l’ISBN di questa versione, ISBN-10 o ISBN-13, con o senza trattini. Ogni legatura di un libro ha il suo. Un ISBN valido si stampa come codice a barre sulla quarta del foglio più esterno: la sovraccoperta di un cartonato che ne ha una, altrimenti il rivestimento o la copertina in brossura.
 - `isbnAddOn`: cinque cifre stampate dopo il codice a barre. In Spagna non riporta il prezzo: l’agenzia ISBN lo consente solo se comincia con 9, per l’uso interno dell’editore (`90000` significa senza prezzo).
-- `workIsbn`: l’ISBN dell’opera completa, per un volume di una collana o di un’opera in più volumi. Il codice a barre porta l’`isbn` del volume; questo si stampa come testo accanto.
+- `workIsbn`: l’ISBN dell’opera completa, per un volume di una collana o di un’opera in più volumi. Il codice a barre porta l’`isbn` del volume; questo si stampa come testo accanto. In sua assenza vi si stampa l’`isbn` della collana.
 - `flaps`: su una brossura, le alette; su un cartonato, una sovraccoperta.
 - `caseMaterial`: su un cartonato, `printed` (la copertina stampata e plastificata sui piatti, il valore predefinito) o `cloth` (tela impressa a secco o a caldo, di solito sotto una sovraccoperta).
 - `overrides`: misure in mm che questa versione fissa per sé sopra quelle del suo profilo, quando la tipografia chiede una cerniera diversa per questo solo libro.
 - `spineOverride`: il dorso in mm come lo indica la tipografia, al posto di quello calcolato.
 - `spineText`: come si scrive sul dorso: `direction` dal basso in alto (`bottomToTop`, l’uso abituale in Spagna e il valore predefinito) o dall’alto in basso (`topToBottom`, come preferisce la norma ISO 6357), e `minSpine`, il dorso più stretto che accoglie testo (6 mm per impostazione predefinita).
 
-`production.collection` indica la collana o l’opera in più volumi a cui appartiene il libro, con il suo ISBN (stampato come testo accanto a quello del volume) e un `catalogue` dei suoi titoli, ognuno con un `id`, un `title` e un’immagine `resource` facoltativa, per i risguardi.
+`production.collection` indica la collana o l’opera in più volumi a cui appartiene il libro:
+
+```ts
+production: {
+  collection: {
+    name: 'Biblioteca del mare',
+    isbn: '978-84-0000-010-3',
+    catalogue: [
+      { id: 'reefs', title: 'Scogliere', resource: 'cover-reefs' },
+      { id: 'tides', title: 'Maree', resource: 'cover-tides' },
+      { id: 'abyss', title: 'L’abisso', resource: 'cover-abyss' },
+    ],
+    volume: 'tides',
+  },
+},
+```
+
+- `name`: il nome della collana.
+- `isbn`: l’ISBN dell’opera completa, stampato come testo accanto al codice a barre di una versione che non indica un proprio `workIsbn`.
+- `catalogue`: i titoli della collana in ordine, ognuno con un `id`, un `title` e un’immagine `resource` facoltativa (di solito la sua prima di copertina). `::catalogue` nel testo della copertina li compone come righe, e un elemento `catalogue` della grafica come immagini, sui risguardi o in quarta.
+- `volume`: l’`id` della voce del catalogo che corrisponde a questo libro, messa in evidenza ovunque si componga il catalogo. Le verifiche della configurazione segnalano un `volume` che non indica alcuna voce.
 
 ### Profili di legatura
 
@@ -189,7 +209,7 @@ cover: {
 
 ### Elementi, effetti e loghi
 
-Sopra i fondi, la grafica dispone tre elenchi di elementi, ognuno disegnato dal fondo verso il primo piano: `elements` sotto il testo, `effects` sopra, e `logos` sopra tutto. Un elemento è un’immagine (`kind: 'image'` con un `resourceId`), un riquadro di colore (`'box'`) o una forma di colore (`'shape'`), e ha un `id` fatto di lettere, cifre, `-` e `_`.
+Sopra i fondi, la grafica dispone tre elenchi di elementi, ognuno disegnato dal fondo verso il primo piano: `elements` sotto il testo, `effects` sopra, e `logos` sopra tutto. Un elemento è un’immagine (`kind: 'image'` con un `resourceId`), un riquadro di colore (`'box'`), una forma di colore (`'shape'`) o il catalogo della collana (`'catalogue'`, più avanti), e ha un `id` fatto di lettere, cifre, `-` e `_`.
 
 Un elemento si colloca rispetto alla zona in cui si trova, così si sposta con quella zona quando il dorso cresce o la legatura cambia:
 
@@ -217,6 +237,23 @@ logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8,
 - `clearance` (loghi): lo spazio di rispetto in mm attorno al logo in cui non deve entrare nient’altro.
 
 Un riquadro o una forma può portare anche gli effetti che uno stile di riquadro di pagina non sa disegnare: `radius` per gli angoli arrotondati in mm, `stroke` per un bordo (`color` e `width` in mm), `gradient` per una sfumatura dal suo colore a `to` con un angolo di `angle` gradi (0: da sinistra a destra; 90: dall’alto in basso), e `shadow` per un’ombra (`color`, `opacity`, il suo scostamento `x` e `y` in mm, e la sua morbidezza, `blur`). Una sfumatura o un’ombra fanno dell’elemento un’immagine a sé, disegnata alla risoluzione del PDF.
+
+Un elemento `catalogue` dispone le immagini dei titoli della collana in una griglia dentro il suo riquadro, per mostrare la serie su un risguardo senza collocare a mano ogni copertina:
+
+```ts
+elements: [
+  { id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150,
+    columns: 3, gap: 4, stroke: { color: { hex: '#d8a21b', model: 'hex' }, width: 0.8 } },
+],
+```
+
+- `columns`: le immagini per riga (per impostazione predefinita, tutti i titoli su una riga).
+- `gap`: lo spazio tra le immagini, in mm (3 per impostazione predefinita).
+- `first` e `last`: il primo e l’ultimo titolo mostrati, secondo la loro posizione nel catalogo contando da 1, per dividere un catalogo lungo tra due pagine (per impostazione predefinita, tutti).
+- `fit`: ogni immagine copre la sua cella, ritagliata (`cover`, qui il valore predefinito), o vi sta intera (`contain`).
+- `stroke` e `radius`: il bordo che circonda il titolo del libro stesso (`collection.volume`). Senza `stroke` non viene messo in evidenza.
+
+Un titolo senza `resource` lascia vuota la sua cella, e una collana senza catalogo non disegna nulla. Con un `basis`, le celle si scalano con la zona come l’elemento.
 
 ### Abbondanza specchiata
 
@@ -257,6 +294,36 @@ finishes: [
 
 Un rilievo o un’impressione in incavo non stampa nulla. La sua forma va in tipografia su una lastra tecnica, accanto alla [linea di fustella](/it/docs/special-inks-die-cuts#la-linea-di-fustella-nel-pdf): una `Separation` chiamata `Emboss` o `Deboss` che il preflight elenca e che nessuna prova dipinge. Il legatore ne ricava lo stampo di rilievo.
 
+### Una grafica per ogni foglio
+
+Un cartonato è fatto di più fogli, e per impostazione predefinita tutti prendono la grafica `cover` del libro. `sheets` dà a un foglio una grafica propria, che su quel foglio sostituisce quella del libro:
+
+```ts
+cover: {
+  image: { resourceId: 'jacket-art', area: 'sheet' },
+  sheets: {
+    case: {
+      background: { hex: '#1d2a44', model: 'hex' },
+      finishes: [{ id: 'spine-foil', process: 'foil', shape: { box: { zone: 'spine', x: 1, y: 20, width: 8, height: 80 } } }],
+    },
+    endpapers: { background: { hex: '#efe6d2', model: 'hex' } },
+    endpaperBack: {
+      background: { hex: '#efe6d2', model: 'hex' },
+      elements: [{ id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150, columns: 3 }],
+    },
+  },
+},
+```
+
+I fogli si chiamano:
+
+- `case`: il rivestimento di un cartonato, per esempio una tela impressa a caldo sotto una sovraccoperta stampata.
+- `jacket`: la sovraccoperta.
+- `endpapers`: i due risguardi; `endpaperFront` e `endpaperBack`: uno dei due, con precedenza su `endpapers`.
+- `cover`: la copertina di una brossura, o il rivestimento di un cartonato che non ha una grafica `case`.
+
+Ognuna è una grafica completa, con tutti i campi di `cover` tranne `sheets`, e non prende nulla da quella del libro: nell’esempio, il rivestimento non mostra l’immagine della sovraccoperta. Un foglio senza grafica propria prende quella del libro.
+
 ## Il testo della copertina
 
 Il testo della copertina è un documento Markdown del libro, conservato accanto ai suoi capitoli. Ogni blocco riempie una zona o una casella di testo indicata per nome:
@@ -279,11 +346,48 @@ Una città che custodisce i suoi libri sottoterra, e la ragazza che li legge ad 
 :::
 ```
 
-Il testo si compone con la tipografia del libro: i suoi stili di paragrafo, gli stili di carattere e i font. Quattro stili di paragrafo sono propri della copertina, e il libro può ridefinirli: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`. La prima di copertina e il dorso che il Markdown lascia vuoti ricevono a ogni generazione il titolo, il sottotitolo e l’autore del libro dai suoi metadati, composti in questi stili: non vengono mai copiati nel testo della copertina. Un blocco `front` o `spine` li sostituisce con il proprio testo.
+Il testo si compone con la tipografia del libro: i suoi stili di paragrafo, gli stili di carattere e i font. Sei stili di paragrafo sono propri della copertina, e il libro può ridefinirli: `cover-title`, `cover-subtitle`, `cover-author` e `cover-spine`, e per il catalogo della collana (più avanti) `cover-catalogue` e `cover-catalogue-current`. La prima di copertina e il dorso che il Markdown lascia vuoti ricevono a ogni generazione il titolo, il sottotitolo e l’autore del libro dai suoi metadati, composti in questi stili: non vengono mai copiati nel testo della copertina. Un blocco `front` o `spine` li sostituisce con il proprio testo.
 
 Un blocco per una posizione che il foglio non ha (un’aletta su un foglio senza alette, una quarta di copertina su un risguardo) viene scartato, e il controllo lo segnala; anche un secondo blocco per la stessa posizione viene scartato. Scrivi il testo della copertina con paragrafi e stili di paragrafo: un titolo `#` prende la grafica che il libro dà ai titoli dei suoi capitoli.
 
 Un solo testo di copertina serve per tutte le versioni e per tutti i fogli. Un libro in più lingue può darne uno a ciascuna lingua.
+
+### Un testo per un solo foglio
+
+Un blocco che indica un foglio con `sheet` si impagina solo su quel foglio, e lì occupa la sua posizione al posto di un blocco che non ne indica nessuno. Così un cartonato sotto sovraccoperta può portare sul piatto solo il nome della collana, mentre la prima della sovraccoperta conserva il titolo dei metadati:
+
+```md
+:::frame{slot="front" sheet="case"}
+**Biblioteca del mare**
+:::
+
+:::frame{slot="flyleaf" sheet="endpapers"}
+*Dall’archivio dell’editore*
+:::
+```
+
+`sheet` accetta i nomi di `cover.sheets`, uno o più separati da spazi (`sheet="case jacket"`). Un blocco per `cover` raggiunge anche il rivestimento di un cartonato, che risponde sia a `case` sia a `cover`, mentre uno per `case` raggiunge solo il rivestimento; uno per `endpapers` raggiunge entrambi i risguardi. Un blocco vuoto per un foglio, chiuso subito (`:::frame{slot="back" sheet="case"}` seguito da `:::`), lascia quella zona vuota su quel foglio: toglie la posizione al blocco comune a tutti i fogli e non vi mette nulla. Sulla prima di copertina o sul dorso esclude anche il titolo che vi porrebbero i metadati. Un nome che non è di alcun foglio viene segnalato (`coverFrameSheetUnknown`), e un blocco che non indica nessun altro foglio viene scartato.
+
+### Il catalogo della collana
+
+`::catalogue`, su una riga a sé dentro un blocco, compone in ordine i titoli di `production.collection.catalogue`, un paragrafo ciascuno: il numero, uno spazio di mezzo quadratone e il titolo. I titoli sono composti in `cover-catalogue`, al corpo del testo e allineati a sinistra, e quello del libro stesso (`collection.volume`) in `cover-catalogue-current`, in grassetto.
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+**Nella stessa collana**
+
+::catalogue{numbers="I" last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+::catalogue{numbers="I" first=7}
+:::
+```
+
+- `numbers`: lo stile di contatore dei numeri: `1` (il predefinito), `01`, `I`, `i`, `A`, `a`, oppure `none` per titoli senza numero.
+- `first` e `last`: il primo e l’ultimo titolo composti, secondo la loro posizione contando da 1, per dividere un elenco lungo tra i due risguardi. Ogni titolo mantiene il numero della sua posizione nell’elenco completo.
+
+Un libro la cui collana non ha catalogo non riceve nulla al suo posto.
 
 ## I controlli
 
@@ -299,9 +403,10 @@ La generazione di una copertina segnala ciò che non ha potuto fare come richies
     <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>L’ISBN non si legge: la lunghezza o la cifra di controllo sono sbagliate. La copertina non ha codice a barre.</td></tr>
     <tr><td><code>spineOverridden</code></td><td>Il dorso è stato fissato a mano; si indicano sia la larghezza calcolata sia quella usata.</td></tr>
     <tr><td><code>signatureBlanks</code></td><td>L’arrotondamento a segnature intere aggiunge pagine bianche.</td></tr>
-    <tr><td><code>spineTooThinForText</code></td><td>Il dorso è più stretto di <code>minSpine</code> e non porta testo.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>Il dorso è più stretto di <code>minSpine</code> e non porta testo. In un cartonato conta il dorso del rivestimento, più largo delle pagine di due cartoni.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Una casella di testo ha un nome che la copertina non può usare.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>Il testo della copertina riempie una posizione che il foglio non ha, o la stessa posizione due volte.</td></tr>
+    <tr><td><code>coverFrameSheetUnknown</code></td><td>Un blocco del testo della copertina indica un foglio che non esiste (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>L’abbondanza specchiata ha tralasciato immagini che non ha potuto leggere, o si è fermata prima del bordo del foglio.</td></tr>
     <tr><td><code>coverClipSkipped</code></td><td>Immagini ritagliate secondo un contorno sono state disegnate intere.</td></tr>
     <tr><td><code>coverBarcodeSize</code></td><td>Il codice a barre è stato chiesto sotto l’80 % ed è fissato all’80 %.</td></tr>
@@ -309,7 +414,7 @@ La generazione di una copertina segnala ciò che non ha potuto fare come richies
   </tbody>
 </table>
 
-Anche le verifiche della configurazione leggono `production` e `cover` come qualsiasi altra impostazione: una chiave sconosciuta, un valore del tipo sbagliato o un ISBN illeggibile vengono segnalati con il loro percorso.
+Anche le verifiche della configurazione leggono `production` e `cover` come qualsiasi altra impostazione: una chiave sconosciuta, un valore del tipo sbagliato o un ISBN illeggibile vengono segnalati con il loro percorso. Ogni grafica di `cover.sheets` viene letta come quella della copertina, e vengono segnalati anche un nome di foglio che non è nessuno dei sei, `columns`, `first` e `last` di un elemento catalogo che non sono interi da 1 in su, un `gap` negativo e un `collection.volume` che non indica alcun titolo del catalogo.
 
 Il PDF della copertina passa per lo stesso [preflight](/it/docs/configuration-pdf-output) di quello del libro: risoluzione delle immagini, nero, copertura d’inchiostro, finiture e lastre tecniche.
 
@@ -325,6 +430,8 @@ Il pannello **Copertina**, nella barra laterale, contiene le versioni a stampa e
 - **File per la tipografia**: **Scarica il PDF del foglio**, scritto con le impostazioni PDF del libro (spazio colore, profilo di output, PDF/X), e **Scarica la prima di copertina** come immagine.
 - **Controlli**: i controlli descritti sopra.
 - **Profili di stampa**: profili di legatura copiati da uno incluso e adattati alle misure di una tipografia, ognuna in millimetri, come quota del formato o per scaglioni di formato, con il valore che ne risulta per questo libro; profili di carta con il fornitore e il nome commerciale; e **Esporta profili** e **Importa profili** per il file `.postext-production.json`.
+
+Le grafiche dei singoli fogli, i testi per un solo foglio, l’elemento catalogo e il volume della collana si modificano anch’essi nel pannello Copertina.
 
 Il gruppo **Grafica di copertina** del pannello Grafica contiene i fondi, l’immagine, l’allineamento del testo delle zone, la dimensione del codice a barre e l’abbondanza specchiata. Ogni modifica nel pannello Copertina è un passo della cronologia degli annullamenti.
 
@@ -376,7 +483,7 @@ Il resto del modulo espone ogni passo:
 
 - **ISBN**: `parseIsbn` legge e verifica un ISBN, `isbnBarcodeSvg` disegna il suo codice a barre EAN-13 con un add-on, `ean13CheckDigit` e `isbnCaption` fanno il resto.
 - **Misure e fogli**: `resolveBindingMeasures` calcola le misure di un profilo per un formato, `resolveLength` una misura, `checkProfileAccepts` i limiti; `spineFromRuns`, `pageRunsOf`, `signaturePages` e `leafMm` il dorso; `softcoverSheet`, `caseSheet`, `jacketSheet` e `endpaperSheet` ciascun foglio, e `versionSheets` quelli di una versione.
-- **La grafica**: `coverPage` compone il modello di pagina di un foglio, `coverSource` il Markdown da cui viene impaginato, `coverZoneBox` il riquadro di una zona, `placeCoverElement` e `coverElementRect` la posizione di un elemento, `basicShape`, `pathData` e `flattenCoverPath` le sue forme.
+- **La grafica**: `coverPage` compone il modello di pagina di un foglio, `coverSource` il Markdown da cui viene impaginato, `coverZoneBox` il riquadro di una zona, `placeCoverElement` e `coverElementRect` la posizione di un elemento, `basicShape`, `pathData` e `flattenCoverPath` le sue forme; `coverSheetNames` e `coverDesignFor` la grafica che prende un foglio, e `withCatalogue` e `expandCatalogueText` le immagini e le righe del catalogo.
 - **Profili e impostazioni**: `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` e `readProductionConfig`, che legge un blocco `production` da dati non affidabili e segnala ciò che ha scartato.
 - **Folio**: `folioOfBook` dà le impostazioni di Folio con la legatura della prima versione, e `productionFolioBinding` e `folioVersionOf` quelle di una versione scelta.
 

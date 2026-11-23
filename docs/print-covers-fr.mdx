@@ -6,7 +6,7 @@ export const metadata = {
   description: "Les versions imprimées d’un livre, chacune avec sa reliure, son ISBN et son dos ; les profils de reliure et de papier de l’imprimeur ; la feuille de couverture avec ses rabats, sa jaquette, sa couverture de cartonnage et ses gardes ; la maquette de la couverture et ses finitions ; son texte en Markdown ; et la couverture depuis le Sandbox, la ligne de commande et le code",
   lang: 'fr',
   lastUpdated: '2026-11-23',
-  readingTime: '16 min',
+  readingTime: '19 min',
   order: 41,
   plainSummary: "Cette page traite de la couverture d’un livre imprimé : la feuille qui enveloppe les pages, avec la quatrième de couverture, le dos et la première, parfois des rabats, une jaquette ou des gardes. Un livre peut s’imprimer en plusieurs versions, par exemple un broché et un relié, et chaque version a sa propre reliure et son propre ISBN. Postext calcule la largeur du dos d’après le nombre de pages et le papier, et monte la feuille au format dont l’imprimeur a besoin, avec le fond perdu et les repères de pli. La maquette de la couverture se trouve dans les réglages et ses textes dans un document Markdown ; le titre et l’auteur viennent des informations du livre lui-même. La page montre comment faire tout cela dans le Sandbox, en ligne de commande et depuis le code.",
 };
@@ -51,16 +51,36 @@ Chaque version désigne sa reliure par l’id d’un profil, ou porte le profil 
 
 - `id` et `name` : comment la version se choisit (`--print-version` en ligne de commande) et s’affiche.
 - `binding` : un profil de reliure (voir plus bas).
-- `isbn` : l’ISBN de cette version, ISBN-10 ou ISBN-13, avec ou sans tirets. Chaque reliure d’un livre a le sien. Un ISBN valide s’imprime en code-barres sur la quatrième de couverture.
+- `isbn` : l’ISBN de cette version, ISBN-10 ou ISBN-13, avec ou sans tirets. Chaque reliure d’un livre a le sien. Un ISBN valide s’imprime en code-barres sur la quatrième de la feuille la plus extérieure : la jaquette d’un cartonnage qui en porte une, sinon la couvrure ou la couverture souple.
 - `isbnAddOn` : cinq chiffres imprimés après le code-barres. En Espagne, il ne porte pas de prix : l’agence ISBN ne l’autorise que s’il commence par 9, pour l’usage propre de l’éditeur (`90000` signifie sans prix).
-- `workIsbn` : l’ISBN de l’œuvre entière, pour un volume d’une collection ou d’une œuvre en plusieurs volumes. Le code-barres porte l’`isbn` du volume ; celui-ci s’imprime en texte à côté.
+- `workIsbn` : l’ISBN de l’œuvre entière, pour un volume d’une collection ou d’une œuvre en plusieurs volumes. Le code-barres porte l’`isbn` du volume ; celui-ci s’imprime en texte à côté. À défaut, c’est l’`isbn` de la collection qui s’y imprime.
 - `flaps` : sur une couverture souple, des rabats ; sur un cartonnage, une jaquette.
 - `caseMaterial` : sur un cartonnage, `printed` (la couverture imprimée et pelliculée sur les cartons, par défaut) ou `cloth` (toile marquée, en général sous une jaquette).
 - `overrides` : des mesures en mm que cette version fixe elle-même par-dessus celles de son profil, quand l’imprimeur demande un autre mors pour ce seul livre.
 - `spineOverride` : le dos en mm tel que le donne l’imprimeur, à la place du dos calculé.
 - `spineText` : le sens du titre au dos : `direction` montant (`bottomToTop`, l’usage courant en Espagne et la valeur par défaut) ou descendant (`topToBottom`, ce que préfère la norme ISO 6357), et `minSpine`, le dos le plus étroit qui reçoit du texte (6 mm par défaut).
 
-`production.collection` nomme la collection ou l’œuvre en plusieurs volumes à laquelle appartient le livre, avec son propre ISBN (imprimé en texte à côté de celui du volume) et un `catalogue` de ses titres, chacun avec un `id`, un `title` et une image `resource` facultative, pour les gardes.
+`production.collection` nomme la collection ou l’œuvre en plusieurs volumes à laquelle appartient le livre :
+
+```ts
+production: {
+  collection: {
+    name: 'Bibliothèque de la mer',
+    isbn: '978-84-0000-010-3',
+    catalogue: [
+      { id: 'reefs', title: 'Récifs', resource: 'cover-reefs' },
+      { id: 'tides', title: 'Marées', resource: 'cover-tides' },
+      { id: 'abyss', title: 'L’Abîme', resource: 'cover-abyss' },
+    ],
+    volume: 'tides',
+  },
+},
+```
+
+- `name` : le nom de la collection.
+- `isbn` : l’ISBN de l’œuvre entière, imprimé en texte à côté du code-barres d’une version qui ne donne pas de `workIsbn` à elle.
+- `catalogue` : les titres de la collection dans l’ordre, chacun avec un `id`, un `title` et une image `resource` facultative (en général sa première de couverture). `::catalogue` dans le texte de la couverture les compose en lignes, et un élément `catalogue` de la maquette en images, sur les gardes ou en quatrième.
+- `volume` : l’`id` de l’entrée du catalogue qui correspond à ce livre, mise en évidence partout où le catalogue est composé. Les vérifications de la configuration signalent un `volume` qui ne nomme aucune entrée.
 
 ### Profils de reliure
 
@@ -189,7 +209,7 @@ cover: {
 
 ### Éléments, effets et logos
 
-Par-dessus les fonds, la maquette place trois listes d’éléments, chacune dessinée de l’arrière vers l’avant : `elements` sous le texte, `effects` par-dessus, et `logos` au-dessus de tout. Un élément est une image (`kind: 'image'` avec un `resourceId`), un aplat de couleur (`'box'`) ou une forme de couleur (`'shape'`), et a un `id` fait de lettres, de chiffres, de `-` et de `_`.
+Par-dessus les fonds, la maquette place trois listes d’éléments, chacune dessinée de l’arrière vers l’avant : `elements` sous le texte, `effects` par-dessus, et `logos` au-dessus de tout. Un élément est une image (`kind: 'image'` avec un `resourceId`), un aplat de couleur (`'box'`), une forme de couleur (`'shape'`) ou le catalogue de la collection (`'catalogue'`, plus bas), et a un `id` fait de lettres, de chiffres, de `-` et de `_`.
 
 Un élément se place par rapport à la zone où il se trouve : il se déplace donc avec cette zone quand le dos grandit ou que la reliure change.
 
@@ -217,6 +237,23 @@ logos: [{ id: 'publisher', kind: 'image', zone: 'spine', x: 1, y: 205, width: 8,
 - `clearance` (logos) : l’espace de protection en mm que rien d’autre ne doit franchir autour du logo.
 
 Un aplat ou une forme peut aussi porter les effets qu’un style d’encadré de page ne sait pas dessiner : `radius` pour des coins arrondis en mm, `stroke` pour une bordure (`color` et `width` en mm), `gradient` pour un dégradé de sa couleur vers `to` à `angle` degrés (0 : de gauche à droite ; 90 : de haut en bas), et `shadow` pour une ombre (`color`, `opacity`, son décalage `x` et `y` en mm, et sa douceur, `blur`). Un dégradé ou une ombre fait de l’élément une image à part, dessinée à la résolution du PDF.
+
+Un élément `catalogue` dispose les images des titres de la collection en grille dans son cadre, pour montrer la série sur une garde sans placer chaque couverture à la main :
+
+```ts
+elements: [
+  { id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150,
+    columns: 3, gap: 4, stroke: { color: { hex: '#d8a21b', model: 'hex' }, width: 0.8 } },
+],
+```
+
+- `columns` : le nombre d’images par rangée (par défaut, tous les titres sur une rangée).
+- `gap` : l’espace entre les images, en mm (3 par défaut).
+- `first` et `last` : le premier et le dernier titre montrés, par leur rang dans le catalogue à partir de 1, pour partager un long catalogue entre deux pages (par défaut, tous).
+- `fit` : chaque image couvre sa case, recadrée (`cover`, ici la valeur par défaut), ou y tient entière (`contain`).
+- `stroke` et `radius` : la bordure qui entoure le titre du livre lui-même (`collection.volume`). Sans `stroke`, il n’est pas mis en évidence.
+
+Un titre sans `resource` laisse sa case vide, et une collection sans catalogue ne dessine rien. Avec un `basis`, les cases suivent l’échelle de la zone comme l’élément.
 
 ### Fond perdu en miroir
 
@@ -257,6 +294,36 @@ finishes: [
 
 Un gaufrage ou un embossage en creux n’imprime rien. Sa forme part chez l’imprimeur sur une plaque technique, à côté du [tracé de découpe](/fr/docs/special-inks-die-cuts#le-tracé-de-découpe-dans-le-pdf) : une `Separation` nommée `Emboss` ou `Deboss` que le contrôle en amont liste et qu’aucune épreuve ne peint. Le relieur en tire la matrice de relief.
 
+### Une maquette pour chaque feuille
+
+Un cartonnage se compose de plusieurs feuilles, et par défaut toutes prennent la maquette `cover` du livre. `sheets` donne à une feuille une maquette à elle, qui remplace celle du livre sur cette feuille :
+
+```ts
+cover: {
+  image: { resourceId: 'jacket-art', area: 'sheet' },
+  sheets: {
+    case: {
+      background: { hex: '#1d2a44', model: 'hex' },
+      finishes: [{ id: 'spine-foil', process: 'foil', shape: { box: { zone: 'spine', x: 1, y: 20, width: 8, height: 80 } } }],
+    },
+    endpapers: { background: { hex: '#efe6d2', model: 'hex' } },
+    endpaperBack: {
+      background: { hex: '#efe6d2', model: 'hex' },
+      elements: [{ id: 'series', kind: 'catalogue', zone: 'flyleaf', x: 15, y: 40, width: 120, height: 150, columns: 3 }],
+    },
+  },
+},
+```
+
+Les feuilles se nomment :
+
+- `case` : la couvrure d’un cartonnage, par exemple une toile marquée à chaud sous une jaquette imprimée.
+- `jacket` : la jaquette.
+- `endpapers` : les deux gardes ; `endpaperFront` et `endpaperBack` : l’une d’elles, prioritaire sur `endpapers`.
+- `cover` : la couverture d’un livre à couverture souple, ou la couvrure d’un cartonnage qui n’a pas de maquette `case`.
+
+Chacune est une maquette complète, avec tous les champs de `cover` sauf `sheets`, et ne reprend rien de celle du livre : dans l’exemple, la couvrure ne montre pas l’image de la jaquette. Une feuille sans maquette à elle prend celle du livre.
+
 ## Le texte de la couverture
 
 Le texte de la couverture est un document Markdown du livre, rangé à côté de ses chapitres. Chaque bloc remplit une zone ou un bloc de texte désigné par son nom :
@@ -279,11 +346,48 @@ Une ville qui garde ses livres sous terre, et la jeune fille qui les lit à voix
 :::
 ```
 
-Le texte se compose avec la typographie du livre : ses styles de paragraphe, ses styles de caractère et ses polices. Quatre styles de paragraphe sont propres à la couverture, et le livre peut les redéfinir : `cover-title`, `cover-subtitle`, `cover-author` et `cover-spine`. La première de couverture et le dos que le Markdown laisse vides reçoivent à chaque génération le titre, le sous-titre et l’auteur du livre tirés de ses métadonnées, composés dans ces styles : ils ne sont jamais copiés dans le texte de la couverture. Un bloc `front` ou `spine` les remplace par son propre texte.
+Le texte se compose avec la typographie du livre : ses styles de paragraphe, ses styles de caractère et ses polices. Six styles de paragraphe sont propres à la couverture, et le livre peut les redéfinir : `cover-title`, `cover-subtitle`, `cover-author` et `cover-spine`, et pour le catalogue de la collection (plus bas) `cover-catalogue` et `cover-catalogue-current`. La première de couverture et le dos que le Markdown laisse vides reçoivent à chaque génération le titre, le sous-titre et l’auteur du livre tirés de ses métadonnées, composés dans ces styles : ils ne sont jamais copiés dans le texte de la couverture. Un bloc `front` ou `spine` les remplace par son propre texte.
 
 Un bloc destiné à un emplacement que la feuille n’a pas (un rabat sur une feuille sans rabats, une quatrième de couverture sur une garde) est écarté, et la vérification le signale ; un second bloc pour un même emplacement est écarté aussi. Écrivez le texte de la couverture en paragraphes et en styles de paragraphe : un titre `#` prend la maquette que le livre donne à ses titres de chapitre.
 
 Un seul texte de couverture sert à toutes les versions et à toutes les feuilles. Un livre en plusieurs langues peut en donner un à chaque langue.
+
+### Un texte pour une seule feuille
+
+Un bloc qui nomme une feuille avec `sheet` n’est mis en page que sur cette feuille, et il y prend son emplacement de préférence à un bloc qui n’en nomme aucune. Un cartonnage sous jaquette peut ainsi porter sur son plat le seul nom de la collection, tandis que la première de la jaquette garde le titre tiré des métadonnées :
+
+```md
+:::frame{slot="front" sheet="case"}
+**Bibliothèque de la mer**
+:::
+
+:::frame{slot="flyleaf" sheet="endpapers"}
+*Des archives de l’éditeur*
+:::
+```
+
+`sheet` prend les noms de `cover.sheets`, un seul ou plusieurs séparés par des espaces (`sheet="case jacket"`). Un bloc pour `cover` atteint aussi la couvrure d’un cartonnage, qui répond à la fois à `case` et à `cover`, alors qu’un bloc pour `case` n’atteint que la couvrure ; un bloc pour `endpapers` atteint les deux gardes. Un bloc vide pour une feuille, refermé aussitôt (`:::frame{slot="back" sheet="case"}` suivi de `:::`), laisse cette zone nue sur cette feuille : il prend l’emplacement au bloc commun à toutes les feuilles et n’y met rien. Sur la première ou le dos, il écarte aussi le titre que les métadonnées y placeraient. Un nom qui n’est celui d’aucune feuille est signalé (`coverFrameSheetUnknown`), et un bloc qui ne nomme aucune autre feuille est écarté.
+
+### Le catalogue de la collection
+
+`::catalogue`, seul sur sa ligne dans un bloc, compose dans l’ordre les titres de `production.collection.catalogue`, un paragraphe chacun : son numéro, une espace demi-cadratin et le titre. Les titres sont composés dans `cover-catalogue`, au corps du texte et alignés à gauche, et celui du livre lui-même (`collection.volume`) dans `cover-catalogue-current`, en gras.
+
+```md
+:::frame{slot="flyleaf" sheet="endpaperFront"}
+**Dans la même collection**
+
+::catalogue{numbers="I" last=6}
+:::
+
+:::frame{slot="flyleaf" sheet="endpaperBack"}
+::catalogue{numbers="I" first=7}
+:::
+```
+
+- `numbers` : le style de compteur des numéros : `1` (par défaut), `01`, `I`, `i`, `A`, `a`, ou `none` pour des titres sans numéro.
+- `first` et `last` : le premier et le dernier titre composés, par leur rang à partir de 1, pour partager une longue liste entre les deux gardes. Chaque titre garde le numéro de son rang dans la liste entière.
+
+Un livre dont la collection n’a pas de catalogue ne reçoit rien à sa place.
 
 ## Les vérifications
 
@@ -299,9 +403,10 @@ La génération d’une couverture signale ce qu’elle n’a pas pu faire comme
     <tr><td><code>isbnInvalid</code>, <code>coverIsbnInvalid</code></td><td>L’ISBN ne se lit pas : sa longueur ou sa clé de contrôle est fausse. La couverture n’a pas de code-barres.</td></tr>
     <tr><td><code>spineOverridden</code></td><td>Le dos a été fixé à la main ; la largeur calculée et la largeur utilisée sont indiquées toutes les deux.</td></tr>
     <tr><td><code>signatureBlanks</code></td><td>L’arrondi à des cahiers entiers ajoute des pages blanches.</td></tr>
-    <tr><td><code>spineTooThinForText</code></td><td>Le dos est plus étroit que <code>minSpine</code> et ne porte pas de texte.</td></tr>
+    <tr><td><code>spineTooThinForText</code></td><td>Le dos est plus étroit que <code>minSpine</code> et ne porte pas de texte. Sur un cartonnage, c’est le dos de la couvrure qui compte, plus large que les pages de deux cartons.</td></tr>
     <tr><td><code>coverTextBoxName</code></td><td>Un bloc de texte porte un nom que la couverture ne peut pas utiliser.</td></tr>
     <tr><td><code>coverSlotUnknown</code>, <code>coverSlotRepeated</code></td><td>Le texte de la couverture remplit un emplacement que la feuille n’a pas, ou deux fois le même.</td></tr>
+    <tr><td><code>coverFrameSheetUnknown</code></td><td>Un bloc du texte de la couverture nomme une feuille qui n’existe pas (<code>sheet="…"</code>).</td></tr>
     <tr><td><code>coverMirrorSkipped</code>, <code>coverMirrorCapped</code></td><td>Le fond perdu en miroir a laissé de côté des images qu’il n’a pas pu lire, ou s’est arrêté avant le bord de la feuille.</td></tr>
     <tr><td><code>coverClipSkipped</code></td><td>Des images découpées selon un contour ont été dessinées entières.</td></tr>
     <tr><td><code>coverBarcodeSize</code></td><td>Le code-barres a été demandé sous 80 % et est fixé à 80 %.</td></tr>
@@ -309,7 +414,7 @@ La génération d’une couverture signale ce qu’elle n’a pas pu faire comme
   </tbody>
 </table>
 
-Les vérifications de la configuration lisent aussi `production` et `cover` comme n’importe quel autre réglage : une clé inconnue, une valeur du mauvais type ou un ISBN illisible sont signalés avec leur chemin.
+Les vérifications de la configuration lisent aussi `production` et `cover` comme n’importe quel autre réglage : une clé inconnue, une valeur du mauvais type ou un ISBN illisible sont signalés avec leur chemin. Chaque maquette de `cover.sheets` est lue comme celle de la couverture, et sont signalés aussi un nom de feuille qui n’est aucun des six, des `columns`, `first` et `last` d’un élément de catalogue qui ne sont pas des entiers à partir de 1, un `gap` négatif et un `collection.volume` qui ne nomme aucun titre du catalogue.
 
 Le PDF de la couverture passe par le même [contrôle en amont](/fr/docs/configuration-pdf-output) que celui du livre : résolution de ses images, noir, taux d’encrage, ses finitions et ses plaques techniques.
 
@@ -325,6 +430,8 @@ Le panneau **Couverture**, dans la barre latérale, contient les versions imprim
 - **Fichiers pour l’imprimeur** : **Télécharger le PDF de la feuille**, écrit avec les réglages PDF du livre (espace colorimétrique, profil de sortie, PDF/X), et **Télécharger la première de couverture** sous forme d’image.
 - **Vérifications** : les vérifications ci-dessus.
 - **Profils d’imprimeur** : des profils de reliure copiés d’un profil intégré et réglés sur les mesures d’un imprimeur, chacune en millimètres, en part du format ou par paliers de format, avec ce que cela donne pour ce livre ; des profils de papier avec leur fournisseur et leur nom commercial ; et **Exporter les profils** et **Importer des profils** pour le fichier `.postext-production.json`.
+
+Les maquettes de chaque feuille, les textes d’une seule feuille, l’élément de catalogue et le volume de la collection se modifient aussi dans le panneau Couverture.
 
 Le groupe **Maquette de couverture** du panneau Maquette contient les fonds, l’image, l’alignement du texte des zones, la taille du code-barres et le fond perdu en miroir. Chaque modification dans le panneau Couverture est une étape de l’historique d’annulation.
 
@@ -376,7 +483,7 @@ Le reste du module expose chaque étape :
 
 - **ISBN** : `parseIsbn` lit et contrôle un ISBN, `isbnBarcodeSvg` dessine son code-barres EAN-13 avec un complément, `ean13CheckDigit` et `isbnCaption` font le reste.
 - **Mesures et feuilles** : `resolveBindingMeasures` calcule les mesures d’un profil pour un format, `resolveLength` une mesure, `checkProfileAccepts` les limites ; `spineFromRuns`, `pageRunsOf`, `signaturePages` et `leafMm` le dos ; `softcoverSheet`, `caseSheet`, `jacketSheet` et `endpaperSheet` chaque feuille, et `versionSheets` celles d’une version.
-- **La maquette** : `coverPage` compose le gabarit de page d’une feuille, `coverSource` le Markdown à partir duquel elle est mise en page, `coverZoneBox` le cadre d’une zone, `placeCoverElement` et `coverElementRect` la place d’un élément, `basicShape`, `pathData` et `flattenCoverPath` ses formes.
+- **La maquette** : `coverPage` compose le gabarit de page d’une feuille, `coverSource` le Markdown à partir duquel elle est mise en page, `coverZoneBox` le cadre d’une zone, `placeCoverElement` et `coverElementRect` la place d’un élément, `basicShape`, `pathData` et `flattenCoverPath` ses formes ; `coverSheetNames` et `coverDesignFor` la maquette que prend une feuille, et `withCatalogue` et `expandCatalogueText` les images et les lignes du catalogue.
 - **Profils et réglages** : `BUILT_IN_BINDING_PROFILES`, `DEFAULT_BINDING_MEASURES`, `DEFAULT_SPINE_TEXT`, `exportProductionProfiles`, `importProductionProfiles` et `readProductionConfig`, qui lit un bloc `production` depuis des données non fiables et signale ce qu’il a écarté.
 - **Folio** : `folioOfBook` donne les réglages Folio avec la reliure de la première version, et `productionFolioBinding` et `folioVersionOf` ceux d’une version choisie.
 
