@@ -1,0 +1,63 @@
+---
+title: "La tapa, la sobrecoberta i les guardes d'un cartoné"
+summary: "Les pàgines d'una rústica, ara en cartoné de tela: una altra versió amb el seu ISBN, i buildCover fa la tapa, la sobrecoberta i les dues guardes."
+plain: "Les mateixes dues llegendes de Bécquer en tapa dura: la tela que folra els cartons, la sobrecoberta de paper que l'embolica i els fulls pintats enganxats per dins. Les pàgines no canvien; cada versió té els seus plecs i el seu ISBN."
+description: "Un cartoné a Postext: una segona versió impresa sobre les mateixes pàgines, amb la tapa de tela, la sobrecoberta i dues guardes pintades fetes amb buildCover."
+question: "Com faig la tapa, la sobrecoberta i les guardes d'un cartoné amb les mateixes pàgines que la rústica?"
+aliases: ["tapa dura", "sobrecoberta", "guardes", "enquadernació en cartoné", "tapa de tela", "pestanya", "celles", "caixos", "hardcover", "dust jacket", "endpapers"]
+pageNotes: { "38": "La tapa de tela estesa: un fons verd fosc que arriba a la pestanya de 15 mm, la tapa del darrere buida, el llom retolat de baix a dalt en or i el títol, el subtítol i l'autor en or al capdamunt de la tapa del davant. Les marques de plegat assenyalen els dos caixos a banda i banda del llom.", "39": "La sobrecoberta estesa: la solapa del darrere sobre les traductores, el panell del darrere amb el text de presentació i un codi de barres ISBN sobre fons blanc, el llom, el panell del davant amb una capella en ruïnes pintada en un turó sota una serra nevada i el títol al damunt, i la solapa del davant sobre l'autor.", "40": "La guarda del davant: una vista pintada d'una ciutat antiga amb campanars i un pont de pedra sobre un riu amb boira al capvespre, i a la dreta un turó amb una capella en ruïnes entre pollancres nus. Una marca de plegat al cap i al peu assenyala el centre.", "41": "La guarda del darrere: una bassa pintada a la llum de la lluna entre roques grises i pollancres alts, una cascada petita a l'esquerra i un cim nevat al fons a la dreta." }
+---
+
+## Què compondràs
+
+Les dues llegendes de Bécquer de la rústica amb solapes, enquadernades un altre cop en un cartoné de 120 × 190 mm. Les 37 pàgines no canvien. El llibre té ara dues versions, cadascuna amb la seva enquadernació i el seu ISBN, i el cartoné dona a l'enquadernador quatre plecs. La tapa va folrada de tela verd fosc, amb el títol i l'autor estampats en or a la tapa del davant i al llom. La sobrecoberta porta la pintura, el text de presentació, el codi de barres i les dues solapes. Dins de les tapes hi ha dues guardes pintades: Sòria sobre el Duero al davant i la font de la segona llegenda al darrere.
+
+## Elaboració
+
+### 1 · Un mateix bloc de pàgines, dues versions
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. Les dues versions llegeixen el mateix `folio.paper` i les mateixes pàgines compostes: 37 pàgines, arrodonides a tres quaderns de 16, 24 fulls de 240 µm. La rústica hi suma el marge de la cola i té un llom de 6,3 mm. El cartoné hi suma, a més, els dos cartons de 2 mm, i el seu llom fa 10,3 mm. Cada versió porta el seu ISBN, tots dos números de mostra d'un bloc d'editorial que no correspon a cap llibre. El llom és recte perquè un bloc de menys de 6 mm és massa prim per arrodonir-lo; `case-round` hi sumaria 3 mm i l'arrodoniria. La tapa és de tela (`cloth`) perquè la sobrecoberta ja porta la pintura, els textos i el codi de barres, i a sota n'hi ha prou amb un títol estampat.
+
+### 2 · La tapa: pestanya, caixos i celles
+
+<Excerpt region="sheets" />
+
+La coberta d'una rústica es talla a la mida del llibre i les solapes es dobleguen al tall del davant. La tapa d'un cartoné és un folre que embolica dos cartons. Cada cartó es talla 7 mm més estret que la pàgina pel costat del llom i sobresurt 3 mm de les pàgines al cap, al peu i al tall del davant (les celles), així que fa 116 × 196 mm. Entre cada cartó i el llom queda un caix de 7 mm, on la tapa es doblega. Al voltant de tot, una pestanya de 15 mm es gira sobre els cantells dels cartons, i per això el fons de tela arriba fins a un plec de 286,3 × 226 mm. La tapa es fa amb la versió sense ISBN, perquè la tela no porti codi de barres, i amb un text de coberta buit, perquè la tapa del davant i el llom prenguin de les metadades només el títol, el subtítol i l'autor, que aquí van en or.
+
+### 3 · La sobrecoberta repeteix el disseny i el text de la coberta
+
+<Excerpt region="cover-type" />
+
+La sobrecoberta es fa amb el `cover` del mateix llibre, els mateixos estils de paràgraf i el mateix Markdown de coberta que fa servir la rústica. Els seus panells són més amples: cadascun cobreix un cartó, el caix i 3 mm més per doblegar-se sobre el cantell, 126 mm en total. Les solapes creixen fins a 80 mm, dos terços de l'amplada de pàgina, la mida per defecte d'una sobrecoberta. La pintura omple el panell del davant fins al plec, i el codi de barres queda al panell del darrere, on el llegeix el llibreter.
+
+### 4 · Les dues guardes en un document
+
+<Excerpt region="endpapers" />
+
+Una guarda té dues pàgines d'amplada: la contraguarda va enganxada al cartó i el full de guarda passa com una pàgina més. A la guarda del davant la contraguarda queda a l'esquerra, i a la del darrere, a la dreta. Cada plec fa 246 × 196 mm, amb 3 mm de sang al cap, al peu i als cantells exteriors i cap al plec, on una franja de cola de 5 mm la subjecta al bloc. Les dues pintures deixen tranquil el centre, perquè hi passa el plec. Els dos plecs tenen la mateixa mida, així que un sol document els aplega, un a cada pàgina.
+
+## Variants
+
+### Imprimeix la tapa en lloc de folrar-la de tela
+
+Treu l'entrada de la tapa de `looks` i la tapa pren el disseny del llibre: el fons de nit i la pintura a la tapa del davant.
+
+```diff
+ const looks = {
+-  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
+   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+```
+
+### Arrodoneix el llom
+
+En un llibre més gruixut, `case-round` suma 3 mm al llom de la tapa, i el de la sobrecoberta creix amb ell.
+
+```diff
+-    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-flat',
++    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-round',
+```
+
+## Errors freqüents
+
+- Els plecs van després de les pàgines del llibre a la llista capturada: la tapa a la 38, la sobrecoberta a la 39 i les guardes a la 40 i la 41. Si el llibre guanya una pàgina, tots els números es mouen.
+- Una tapa de tela sota sobrecoberta no necessita codi de barres. Si passes a buildCover la versió amb el seu ISBN, també l'imprimeix a la tapa del darrere.

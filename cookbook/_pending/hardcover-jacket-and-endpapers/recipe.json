@@ -1,0 +1,172 @@
+{
+  "$schema": "../recipe.schema.json",
+  "schemaVersion": 1,
+  "number": 197,
+  "status": "draft",
+  "chapter": "output",
+  "order": 231,
+  "level": 3,
+  "genres": [
+    "novel"
+  ],
+  "outputs": [
+    "canvas",
+    "pdf"
+  ],
+  "features": {
+    "primary": [
+      "cover-sheet",
+      "print-versions"
+    ],
+    "also": [
+      "covers",
+      "heading-styles",
+      "opener-design",
+      "design-elements",
+      "frontmatter",
+      "paragraph-styles",
+      "toc",
+      "running-heads",
+      "resources",
+      "color-palette",
+      "pdf-export",
+      "canvas-rendering"
+    ]
+  },
+  "answers": [
+    "Q235"
+  ],
+  "gotchas": [],
+  "engine": {
+    "postext": "1.92.0",
+    "postextPdf": "1.92.0"
+  },
+  "kit": [
+    "core",
+    "fonts",
+    "viewer",
+    "pdf",
+    "images"
+  ],
+  "sample": {
+    "locales": [
+      "en",
+      "es"
+    ]
+  },
+  "capture": {
+    "hero": 39,
+    "card": "page",
+    "doc": [
+      "first",
+      1,
+      2,
+      "last"
+    ],
+    "sandbox": "first",
+    "pages": [
+      3,
+      4,
+      5,
+      7,
+      9,
+      21,
+      23,
+      38,
+      39,
+      40,
+      41
+    ],
+    "expect": {
+      "raggedLines": 1
+    }
+  },
+  "downloads": {
+    "pdf": true
+  },
+  "folio": {
+    "paper": {
+      "type": "bookWove",
+      "grammage": 100,
+      "bulk": 2.4,
+      "shade": "#f7f1e3"
+    }
+  },
+  "credits": {
+    "authors": [
+      {
+        "name": "Ignacio Ferro",
+        "github": "drnachio"
+      }
+    ],
+    "text": [
+      {
+        "what": {
+          "en": "The Spirits’ Mountain and The Emerald Eyes, translated by Cornelia Frances Bates and Katharine Lee Bates, from Romantic Legends of Spain (1909), Project Gutenberg eBook #50044",
+          "es": "The Spirits’ Mountain y The Emerald Eyes, en la traducción de Cornelia Frances Bates y Katharine Lee Bates, de Romantic Legends of Spain (1909), libro electrónico n.º 50044 del Proyecto Gutenberg"
+        },
+        "who": "Gustavo Adolfo Bécquer",
+        "source": "https://www.gutenberg.org/ebooks/50044",
+        "license": "PD"
+      },
+      {
+        "what": {
+          "en": "El monte de las ánimas and Los ojos verdes, from the Obras (Madrid, Fernando Fe, 1885) as transcribed on Wikisource, accents modernised",
+          "es": "El monte de las ánimas y Los ojos verdes, de las Obras (Madrid, Fernando Fe, 1885) según la transcripción de Wikisource, con la acentuación modernizada"
+        },
+        "who": "Gustavo Adolfo Bécquer",
+        "source": "https://es.wikisource.org/wiki/El_monte_de_las_%C3%A1nimas",
+        "license": "PD"
+      }
+    ],
+    "images": [
+      {
+        "what": {
+          "en": "The dust jacket: a ruined chapel under the Moncayo on All Souls’ Night, in oils",
+          "es": "La sobrecubierta: una capilla en ruinas bajo el Moncayo la noche de difuntos, al óleo"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "moncayo-1100.jpg"
+      },
+      {
+        "what": {
+          "en": "The front endpaper: Soria above the Duero at dusk, with the Mountain of the Spirits",
+          "es": "La guarda delantera: Soria sobre el Duero al anochecer, con el monte de las Ánimas"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "soria-1300.jpg"
+      },
+      {
+        "what": {
+          "en": "The back endpaper: a spring among poplars on the slopes of the Moncayo by moonlight",
+          "es": "La guarda trasera: una fuente entre álamos en la falda del Moncayo a la luz de la luna"
+        },
+        "who": "Generated With Diffusion Models",
+        "license": "original",
+        "file": "fuente-1300.jpg"
+      }
+    ],
+    "fonts": [
+      {
+        "family": "Crimson Pro",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Cormorant Garamond",
+        "license": "OFL-1.1"
+      },
+      {
+        "family": "Josefin Sans",
+        "license": "OFL-1.1"
+      }
+    ]
+  },
+  "license": {
+    "code": "MIT",
+    "content": "CC-BY-4.0"
+  },
+  "created": "2026-11-23",
+  "updated": "2026-11-23"
+}

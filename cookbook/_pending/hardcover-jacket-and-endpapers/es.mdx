@@ -1,0 +1,63 @@
+---
+title: "La tapa, la sobrecubierta y las guardas de un cartoné"
+summary: "Las páginas de una rústica, de nuevo en cartoné de tela: otra versión con su ISBN, y buildCover hace la tapa, la sobrecubierta y las dos guardas."
+plain: "Las mismas dos leyendas de Bécquer en tapa dura: la tela que forra los cartones, la sobrecubierta de papel que la envuelve y las hojas pintadas pegadas por dentro. Las páginas no cambian; cada versión tiene sus pliegos y su ISBN."
+description: "Un cartoné en Postext: una segunda versión impresa sobre las mismas páginas, con la tapa de tela, la sobrecubierta y dos guardas pintadas hechas con buildCover."
+question: "¿Cómo hago la tapa, la sobrecubierta y las guardas de un cartoné con las mismas páginas que la rústica?"
+aliases: ["tapa dura", "sobrecubierta", "guardas", "encuadernación en cartoné", "tapa de tela", "pestaña", "cejas", "cajos", "hardcover", "dust jacket", "endpapers"]
+pageNotes: { "38": "La tapa de tela extendida: un fondo verde oscuro que llega a la pestaña de 15 mm, la tapa trasera vacía, el lomo rotulado de abajo arriba en oro y el título, el subtítulo y el autor en oro en la cabeza de la tapa delantera. Las marcas de plegado señalan los dos cajos a cada lado del lomo.", "39": "La sobrecubierta extendida: la solapa trasera sobre esta edición, el panel trasero con el texto de presentación y un código de barras ISBN sobre fondo blanco, el lomo, el panel delantero con una capilla en ruinas pintada en un cerro bajo una sierra nevada y el título encima, y la solapa delantera sobre el autor.", "40": "La guarda delantera: una vista pintada de una ciudad antigua con torres de iglesia y un puente de piedra sobre un río con niebla al anochecer, y a la derecha un cerro con una capilla en ruinas entre álamos desnudos. Una marca de plegado en cabeza y pie señala el centro.", "41": "La guarda trasera: una poza pintada a la luz de la luna entre rocas grises y álamos altos, una cascada pequeña a la izquierda y una cumbre nevada al fondo a la derecha." }
+---
+
+## Lo que vas a componer
+
+Las dos leyendas de Bécquer de la rústica con solapas, encuadernadas otra vez en un cartoné de 120 × 190 mm. Las 37 páginas no cambian. El libro tiene ahora dos versiones, cada una con su encuadernación y su ISBN, y el cartoné da al encuadernador cuatro pliegos. La tapa va forrada de tela verde oscuro, con el título y el autor estampados en oro en la tapa delantera y en el lomo. La sobrecubierta lleva la pintura, el texto de presentación, el código de barras y las dos solapas. Dentro de las tapas van dos guardas pintadas: Soria sobre el Duero delante y la fuente de la segunda leyenda detrás.
+
+## Elaboración
+
+### 1 · Un mismo bloque de páginas, dos versiones
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. Las dos versiones leen el mismo `folio.paper` y las mismas páginas compuestas: 37 páginas, redondeadas a tres cuadernillos de 16, 24 hojas de 240 µm. La rústica suma el margen de la cola y tiene un lomo de 6,3 mm. El cartoné suma además los dos cartones de 2 mm, y su lomo mide 10,3 mm. Cada versión lleva su ISBN, los dos números de muestra de un bloque de editorial que no corresponde a ningún libro. El lomo es recto porque un bloque de menos de 6 mm es demasiado fino para redondearlo; `case-round` le sumaría 3 mm y lo redondearía. La tapa es de tela (`cloth`) porque la sobrecubierta ya lleva la pintura, los textos y el código de barras, y debajo basta un título estampado.
+
+### 2 · La tapa: pestaña, cajos y cejas
+
+<Excerpt region="sheets" />
+
+La cubierta de una rústica se corta a la medida del libro y sus solapas se doblan en el corte delantero. La tapa de un cartoné es un forro que envuelve dos cartones. Cada cartón se corta 7 mm más estrecho que la página por el lado del lomo y sobresale 3 mm de las páginas en cabeza, pie y corte delantero (las cejas), así que mide 116 × 196 mm. Entre cada cartón y el lomo queda un cajo de 7 mm, donde la tapa se dobla. Alrededor de todo, una pestaña de 15 mm se vuelve sobre los cantos de los cartones, y por eso el fondo de tela llega hasta un pliego de 286,3 × 226 mm. La tapa se hace con la versión sin ISBN, para que la tela no lleve código de barras, y con un texto de cubierta vacío, para que la tapa delantera y el lomo tomen de los metadatos solo el título, el subtítulo y el autor, que aquí van en oro.
+
+### 3 · La sobrecubierta repite el diseño y el texto de la cubierta
+
+<Excerpt region="cover-type" />
+
+La sobrecubierta se hace con el `cover` del propio libro, los mismos estilos de párrafo y el mismo Markdown de cubierta que usa la rústica. Sus paneles son más anchos: cada uno cubre un cartón, el cajo y 3 mm más para doblarse sobre el canto, 126 mm en total. Las solapas crecen hasta 80 mm, dos tercios del ancho de página, la medida por omisión de una sobrecubierta. La pintura llena el panel delantero hasta el pliegue, y el código de barras queda en el panel trasero, donde lo lee el librero.
+
+### 4 · Las dos guardas en un documento
+
+<Excerpt region="endpapers" />
+
+Una guarda tiene dos páginas de ancho: la contraguarda va pegada al cartón y la hoja volante pasa como una página más. En la guarda delantera la contraguarda queda a la izquierda, y en la trasera, a la derecha. Cada pliego mide 246 × 196 mm, con 3 mm de sangrado en cabeza, pie y cantos exteriores y ninguno en el pliegue, donde una franja de cola de 5 mm la sujeta al bloque. Las dos pinturas dejan tranquilo el centro, porque por ahí pasa el pliegue. Los dos pliegos tienen la misma medida, así que un solo documento los reúne, uno en cada página.
+
+## Variantes
+
+### Imprime la tapa en vez de forrarla de tela
+
+Quita la entrada de la tapa en `looks` y la tapa toma el diseño del libro: el fondo de noche y la pintura en la tapa delantera.
+
+```diff
+ const looks = {
+-  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
+   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+```
+
+### Redondea el lomo
+
+En un libro más grueso, `case-round` suma 3 mm al lomo de la tapa, y el de la sobrecubierta crece con él.
+
+```diff
+-    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-flat',
++    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-round',
+```
+
+## Errores frecuentes
+
+- Los pliegos van después de las páginas del libro en la lista capturada: la tapa en la 38, la sobrecubierta en la 39 y las guardas en la 40 y la 41. Si el libro gana una página, todos los números se mueven.
+- Una tapa de tela bajo sobrecubierta no necesita código de barras. Si pasas a buildCover la versión con su ISBN, también lo imprime en la tapa trasera.

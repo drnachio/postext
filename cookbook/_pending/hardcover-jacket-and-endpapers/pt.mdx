@@ -1,0 +1,63 @@
+---
+title: "A capa dura, a sobrecapa e as guardas de um livro"
+summary: "As páginas de uma brochura encadernadas em tecido: outra versão com seu ISBN, e o buildCover faz a capa dura, a sobrecapa e as duas guardas."
+plain: "As mesmas duas lendas de Bécquer em capa dura: o tecido que forra os cartões, a sobrecapa de papel em volta e as folhas pintadas coladas por dentro. As páginas não mudam; cada versão tem suas folhas e seu ISBN."
+description: "Capa dura no Postext: uma segunda versão impressa sobre as mesmas páginas, com a capa de tecido, a sobrecapa e duas guardas pintadas feitas com buildCover."
+question: "Como faço a capa dura, a sobrecapa e as guardas de um livro com as mesmas páginas da brochura?"
+aliases: ["capa dura", "sobrecapa", "guardas", "encadernação cartonada", "capa de tecido", "virada", "esquadria", "junta", "hardcover", "dust jacket", "endpapers"]
+pageNotes: { "38": "A capa de tecido aberta: um fundo verde-escuro que chega à virada de 15 mm, a capa de trás vazia, a lombada escrita de baixo para cima em dourado, e o título, o subtítulo e o autor em dourado no alto da capa da frente. Marcas de dobra mostram as duas juntas dos lados da lombada.", "39": "A sobrecapa aberta: a orelha de trás sobre as tradutoras, o painel de trás com o texto de apresentação e um código de barras ISBN sobre fundo branco, a lombada, o painel da frente com uma capela em ruínas pintada num morro sob uma serra nevada e o título acima, e a orelha da frente sobre o autor.", "40": "A guarda da frente: uma vista pintada de uma cidade antiga com torres de igreja e uma ponte de pedra sobre um rio com névoa ao entardecer, e à direita um morro com uma pequena capela em ruínas entre choupos sem folhas. Uma marca de dobra no pé e na cabeça mostra o meio.", "41": "A guarda de trás: um poço d’água pintado ao luar entre rochas cinzentas e choupos altos, uma pequena cascata à esquerda e um pico nevado ao longe à direita." }
+---
+
+## O que você vai compor
+
+As duas lendas de Bécquer da brochura com orelhas, encadernadas de novo num livro de capa dura de 120 × 190 mm. As 37 páginas ficam como estão. O livro passa a ter duas versões, cada uma com sua encadernação e seu ISBN, e a capa dura dá ao encadernador quatro folhas. A capa é forrada de tecido verde-escuro, com o título e o autor gravados em dourado na capa da frente e na lombada. A sobrecapa leva a pintura, o texto de apresentação, o código de barras e as duas orelhas. Dentro das capas vão duas guardas pintadas: Soria sobre o Douro na frente e a fonte da segunda lenda atrás.
+
+## Preparo
+
+### 1 · Um só miolo, duas versões
+
+O código é [a resposta curta](#a-resposta-curta) lá em cima. As duas versões leem o mesmo `folio.paper` e as mesmas páginas diagramadas: 37 páginas, arredondadas para três cadernos de 16, 24 folhas de 240 µm. A brochura soma a margem da cola e fica com uma lombada de 6,3 mm. A capa dura soma também os dois cartões de 2 mm, e sua lombada mede 10,3 mm. Cada versão tem seu ISBN, os dois números de exemplo de um bloco de editora que não pertence a nenhum livro. A lombada é reta porque um miolo com menos de 6 mm é fino demais para arredondar; `case-round` somaria 3 mm e a arredondaria. A capa é de tecido (`cloth`) porque a sobrecapa já leva a pintura, os textos e o código de barras, e por baixo basta um título gravado.
+
+### 2 · A capa dura: virada, juntas e esquadrias
+
+<Excerpt region="sheets" />
+
+A capa de uma brochura é cortada no formato do livro e as orelhas se dobram no corte da frente. A capa de um livro de capa dura é um forro que envolve dois cartões. Cada cartão é cortado 7 mm mais estreito que a página do lado da lombada e passa 3 mm das páginas na cabeça, no pé e no corte da frente (as esquadrias), então mede 116 × 196 mm. Entre cada cartão e a lombada fica uma junta de 7 mm, onde a capa dobra. Em volta de tudo, uma virada de 15 mm se dobra sobre as bordas dos cartões, e por isso o fundo de tecido vai até uma folha de 286,3 × 226 mm. A capa é feita com a versão sem ISBN, para o tecido não levar código de barras, e com um texto de capa vazio, para que a capa da frente e a lombada tomem dos metadados só o título, o subtítulo e o autor, aqui em dourado.
+
+### 3 · A sobrecapa repete o projeto e o texto da capa
+
+<Excerpt region="cover-type" />
+
+A sobrecapa é feita com o `cover` do próprio livro, os mesmos estilos de parágrafo e o mesmo Markdown de capa que a brochura usa. Seus painéis são mais largos: cada um cobre um cartão, a junta e mais 3 mm para dobrar sobre a borda, 126 mm no total. As orelhas crescem para 80 mm, dois terços da largura da página, a medida padrão de uma sobrecapa. A pintura enche o painel da frente até a dobra, e o código de barras fica no painel de trás, onde o livreiro o lê.
+
+### 4 · As duas guardas num documento
+
+<Excerpt region="endpapers" />
+
+Uma guarda tem duas páginas de largura: a contraguarda é colada no cartão e a folha de guarda vira como uma página. Na frente a contraguarda fica à esquerda; atrás, à direita. Cada folha mede 246 × 196 mm, com 3 mm de sangria na cabeça, no pé e nas bordas externas e nenhuma na dobra, onde uma faixa de cola de 5 mm a prende ao miolo. As duas pinturas deixam o meio calmo, porque a dobra passa por ali. As duas folhas têm o mesmo formato, então um só documento reúne as duas, uma por página.
+
+## Variações
+
+### Imprima a capa em vez de forrá-la de tecido
+
+Tire a entrada da capa de `looks` e ela toma o projeto do livro: o fundo noturno e a pintura na capa da frente.
+
+```diff
+ const looks = {
+-  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
+   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+```
+
+### Arredonde a lombada
+
+Num livro mais grosso, `case-round` soma 3 mm à lombada da capa, e a da sobrecapa cresce junto.
+
+```diff
+-    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-flat',
++    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-round',
+```
+
+## Erros comuns
+
+- As folhas vêm depois das páginas do livro na lista capturada: a capa na 38, a sobrecapa na 39 e as guardas na 40 e na 41. Se o livro ganha uma página, todos os números mudam.
+- Uma capa de tecido sob sobrecapa não precisa de código de barras. Se você passar ao buildCover a versão com seu ISBN, ele também o imprime na capa de trás.

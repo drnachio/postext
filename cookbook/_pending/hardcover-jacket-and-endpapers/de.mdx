@@ -1,0 +1,63 @@
+---
+title: "Einbanddecke, Schutzumschlag und Vorsätze eines Hardcovers"
+summary: "Die Seiten eines Paperbacks, neu in Leinen gebunden: eine zweite Ausgabe mit eigener ISBN, und buildCover macht Decke, Umschlag und beide Vorsätze."
+plain: "Dieselben zwei Legenden von Bécquer als gebundenes Buch: das Leinen über den Deckeln, der Papierumschlag darum und die bemalten Blätter innen in den Deckeln. Die Seiten bleiben gleich; jede Ausgabe hat ihre Bogen und ihre ISBN."
+description: "Ein Hardcover in Postext: eine zweite Druckausgabe auf denselben Seiten, mit Leinendecke, Schutzumschlag und zwei bemalten Vorsätzen aus buildCover."
+question: "Wie mache ich Decke, Schutzumschlag und Vorsätze eines Hardcovers aus denselben Seiten wie das Paperback?"
+aliases: ["gebundene Ausgabe", "Festeinband", "Schutzumschlag", "Vorsatz", "Leineneinband", "Einschlag", "Kanten", "Falz", "hardcover", "dust jacket", "endpapers"]
+pageNotes: { "38": "Die Leinendecke flach ausgelegt: ein dunkelgrüner Grund bis in den 15 mm breiten Einschlag, der hintere Deckel leer, der Rücken von unten nach oben in Gold beschriftet, und Titel, Untertitel und Autor in Gold oben auf dem vorderen Deckel. Falzmarken zeigen die beiden Gelenke links und rechts vom Rücken.", "39": "Der Schutzumschlag flach ausgelegt: die hintere Klappe über die Übersetzerinnen, die Rückseite mit dem Klappentext und einem ISBN-Strichcode auf weißem Feld, der Rücken, die Vorderseite mit einer gemalten Kapellenruine auf einem Hügel unter einem verschneiten Kamm und dem Titel darüber, und die vordere Klappe über den Autor.", "40": "Das vordere Vorsatz: eine gemalte Ansicht einer alten Stadt mit Kirchtürmen und einer Steinbrücke über einem nebligen Fluss in der Dämmerung, rechts ein Hügel mit einer kleinen Kapellenruine zwischen kahlen Pappeln. Eine Falzmarke an Kopf und Fuß zeigt die Mitte.", "41": "Das hintere Vorsatz: ein gemalter Teich im Mondlicht zwischen grauen Felsen und hohen Pappeln, links ein kleiner Wasserfall, rechts in der Ferne ein verschneiter Gipfel." }
+---
+
+## Was Sie setzen
+
+Die beiden Legenden von Bécquer aus dem Paperback mit Klappen, ein zweites Mal gebunden, als Hardcover in 120 × 190 mm. Die 37 Seiten bleiben, wie sie sind. Das Buch hat jetzt zwei Ausgaben, jede mit eigener Bindung und eigener ISBN, und das Hardcover liefert der Buchbinderei vier Bogen. Die Decke ist mit dunkelgrünem Leinen bezogen, Titel und Autor in Gold auf dem vorderen Deckel und dem Rücken geprägt. Der Schutzumschlag trägt das Gemälde, den Klappentext, den Strichcode und die beiden Klappen. Innen in den Deckeln sitzen zwei bemalte Vorsätze: vorn Soria über dem Duero, hinten die Quelle der zweiten Legende.
+
+## Zubereitung
+
+### 1 · Ein Buchblock, zwei Ausgaben
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Beide Ausgaben lesen dasselbe `folio.paper` und dieselben umbrochenen Seiten: 37 Seiten, aufgerundet auf drei Lagen zu 16, also 24 Blatt zu je 240 µm. Das Paperback rechnet die Leimzugabe dazu und bekommt einen Rücken von 6,3 mm. Das Hardcover rechnet zusätzlich seine beiden Pappen zu 2 mm dazu, sein Rücken misst 10,3 mm. Jede Ausgabe hat ihre ISBN, beide Beispielnummern aus einem Verlagsblock, die keinem Buch gehören. Der Rücken ist gerade, weil ein Block unter 6 mm zu dünn zum Runden ist; `case-round` würde 3 mm zugeben und ihn runden. Die Decke ist aus Leinen (`cloth`), weil der Umschlag schon das Bild, die Texte und den Strichcode trägt; darunter genügt ein geprägter Titel.
+
+### 2 · Die Decke: Einschlag, Gelenke und Kanten
+
+<Excerpt region="sheets" />
+
+Der Umschlag eines Paperbacks wird auf das Format geschnitten, und seine Klappen schlagen am Vorderschnitt ein. Die Decke eines Hardcovers ist ein Bezug um zwei Pappen. Jede Pappe ist an der Rückenseite 7 mm schmaler als die Seite und steht an Kopf, Fuß und Vorderschnitt 3 mm über die Seiten hinaus (die Kanten), misst also 116 × 196 mm. Zwischen jeder Pappe und dem Rücken liegt ein Gelenk von 7 mm, in dem die Decke knickt. Rundherum schlägt ein Einschlag von 15 mm um die Pappkanten, deshalb läuft der Leinengrund bis zu einem Bogen von 286,3 × 226 mm. Die Decke entsteht aus der Ausgabe ohne ISBN, damit das Leinen keinen Strichcode trägt, und aus einem leeren Umschlagtext, damit vorderer Deckel und Rücken aus den Metadaten nur Titel, Untertitel und Autor nehmen, hier in Gold.
+
+### 3 · Der Schutzumschlag übernimmt Gestaltung und Text des Umschlags
+
+<Excerpt region="cover-type" />
+
+Der Schutzumschlag entsteht aus dem `cover` des Buches, denselben Absatzformaten und demselben Umschlag-Markdown wie das Paperback. Seine Felder sind breiter: Jedes deckt eine Pappe, das Gelenk und 3 mm mehr zum Umschlagen um die Kante, zusammen 126 mm. Die Klappen wachsen auf 80 mm, zwei Drittel der Seitenbreite, das Standardmaß eines Schutzumschlags. Das Gemälde füllt die Vorderseite bis zum Falz, und der Strichcode steht auf der Rückseite, wo die Buchhandlung ihn scannt.
+
+### 4 · Beide Vorsätze in einem Dokument
+
+<Excerpt region="endpapers" />
+
+Ein Vorsatz ist zwei Seiten breit: Das Spiegelblatt klebt auf der Pappe, das fliegende Blatt wendet sich wie eine Seite. Vorn liegt der Spiegel links, hinten rechts. Jeder Bogen misst 246 × 196 mm, mit 3 mm Anschnitt an Kopf, Fuß und Außenkanten und keinem am Falz, wo ein Leimstreifen von 5 mm ihn am Block hält. Beide Gemälde halten die Mitte ruhig, weil der Falz hindurchläuft. Die zwei Bogen haben dasselbe Format, also nimmt ein Dokument beide auf, einen je Seite.
+
+## Varianten
+
+### Die Decke bedrucken statt mit Leinen beziehen
+
+Nehmen Sie den Eintrag der Decke aus `looks`, dann übernimmt sie die Gestaltung des Buches: den Nachtgrund und das Gemälde auf dem vorderen Deckel.
+
+```diff
+ const looks = {
+-  cover: { cover: { background: col('cloth') }, paragraphStyles: gold },
+   endpaperFront: { cover: { image: { resourceId: 'soria' } } },
+```
+
+### Den Rücken runden
+
+Bei einem dickeren Buch gibt `case-round` dem Rücken der Decke 3 mm zu, und der Rücken des Umschlags wächst mit.
+
+```diff
+-    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-flat',
++    { id: 'hardcover', name: t({ en: 'Hardcover', es: 'Cartoné' }), binding: 'case-round',
+```
+
+## Häufige Fehler
+
+- Die Bogen folgen in der erfassten Liste auf die Seiten des Buches: die Decke auf Seite 38, der Umschlag auf 39, die Vorsätze auf 40 und 41. Bekommt das Buch eine Seite mehr, verschieben sich alle Nummern.
+- Eine Leinendecke unter einem Schutzumschlag braucht keinen Strichcode. Übergeben Sie buildCover die Ausgabe mit ihrer ISBN, druckt es ihn auch auf den hinteren Deckel.
