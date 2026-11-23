@@ -642,7 +642,7 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
 Les versions imprimées et la maquette de la couverture sont des réglages :
 `sandbox_set_config` écrit `production.versions`, `production.collection` et
 `cover` (`cover.textBoxes`, `cover.elements`, `cover.finishes`,
-`cover.sheets`…). Cinq outils lisent, écrivent et exportent le reste, comme le
+`cover.sheets`…). Six outils lisent, écrivent et exportent le reste, comme le
 fait le panneau Couverture :
 
 - `sandbox_cover_get` lit la couverture d’une version (`version`, la première
@@ -682,6 +682,14 @@ fait le panneau Couverture :
   omis reste tel quel. `::catalogue` dans le texte de la couverture compose les
   titres en liste, et un élément de couverture de type `catalogue` place leurs
   images. C’est une étape de l’historique d’annulation.
+- `sandbox_cover_text_box` ajoute ou modifie un bloc de texte de la maquette
+  avec laquelle la feuille est dessinée, par son `name` : son `rect`, son
+  `anchor` à une zone ou à un autre bloc (`to`, `edge`, `x`, `y`), le bloc où
+  son texte continue (`next`), la hauteur jusqu’à laquelle il grandit
+  (`maxHeight`), la façon dont son texte rétrécit (`fit`), `rotate` et
+  `verticalAlign` ; `null` retire un champ et `remove: true` le bloc. Il
+  répond avec le bloc, sa place sur la feuille et les vérifications. Une
+  étape de l’historique d’annulation.
 
 ```json
 { "slot": "back", "text": "Une ville qui garde ses livres sous terre.\n\nEt la jeune fille qui les lit à voix haute." }
@@ -790,7 +798,7 @@ chacun s’obtiennent avec `postextWebMcp.listTools()`.
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Bande dessinée** : `sandbox_inspect_comic`, `sandbox_edit_comic`.
 - **Pages composées** : `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
-- **Couvertures imprimées** : `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
+- **Couvertures imprimées** : `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Livres et fichiers** : `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.

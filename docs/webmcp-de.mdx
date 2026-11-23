@@ -676,7 +676,7 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
 Die Druckausgaben und die Gestaltung des Umschlags sind Einstellungen:
 `sandbox_set_config` schreibt `production.versions`, `production.collection`
 und `cover` (`cover.textBoxes`, `cover.elements`, `cover.finishes`,
-`cover.sheets`…). Fünf Werkzeuge lesen, schreiben und exportieren den Rest, wie
+`cover.sheets`…). Sechs Werkzeuge lesen, schreiben und exportieren den Rest, wie
 es das Bedienfeld Umschlag tut:
 
 - `sandbox_cover_get` liest den Umschlag einer Ausgabe (`version`, standardmäßig
@@ -716,6 +716,14 @@ es das Bedienfeld Umschlag tut:
   weggelassenes Feld bleibt, wie es ist. `::catalogue` im Text des Umschlags
   setzt die Titel als Liste, und ein Umschlagelement der Art `catalogue` legt
   ihre Bilder aus. Es ist ein Schritt im Verlauf zum Rückgängigmachen.
+- `sandbox_cover_text_box` fügt ein Textfeld der Gestaltung, mit der der Bogen
+  gezeichnet wird, hinzu oder ändert es, über seinen `name`: sein `rect`, sein
+  `anchor` an einer Zone oder einem anderen Feld (`to`, `edge`, `x`, `y`), das
+  Feld, in dem sein Text weiterläuft (`next`), die Höhe, bis zu der es wächst
+  (`maxHeight`), wie sein Text kleiner wird (`fit`), `rotate` und
+  `verticalAlign`; `null` entfernt ein Feld der Angabe, `remove: true` das
+  Textfeld. Die Antwort nennt das Feld, seine Stelle auf dem Bogen und die
+  Prüfungen. Ein Schritt im Rückgängig-Verlauf.
 
 ```json
 { "slot": "back", "text": "Eine Stadt, die ihre Bücher unter der Erde aufbewahrt.\n\nUnd das Mädchen, das sie laut vorliest." }
@@ -832,7 +840,7 @@ und das Schema jedes Werkzeugs liefert `postextWebMcp.listTools()`.
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Comics**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
 - **Zusammengesetzte Seiten**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
-- **Buchumschläge**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
+- **Buchumschläge**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Bücher und Dateien**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
