@@ -293,6 +293,19 @@ describe('versionSheets', () => {
     expect(v.warnings.find((w) => w.kind === 'spineOverridden')).toMatchObject({ used: 17 });
   });
 
+  it('judges the lettering by the spine that carries it: the case’s on a hardcover', () => {
+    // 60 pages: a block of about 4 mm, under the 6 mm that takes text;
+    // the case adds two boards and is wide enough.
+    const thin = [{ pages: 60, grammage: 90, bulk: 1.25 }];
+    const paper = versionSheets({ id: 'r', name: 'R', binding: 'perfect' }, trim, thin);
+    const hard = versionSheets({ id: 'c', name: 'C', binding: 'case-flat' }, trim, thin);
+    if (!('cover' in paper) || !('cover' in hard)) throw new Error('profile not found');
+    expect(paper.spine.used).toBeLessThan(6);
+    expect(paper.warnings.some((w) => w.kind === 'spineTooThinForText')).toBe(true);
+    expect(hard.spine.caseSpine).toBeGreaterThanOrEqual(6);
+    expect(hard.warnings.some((w) => w.kind === 'spineTooThinForText')).toBe(false);
+  });
+
   it('warns of a bad ISBN and of a missing profile', () => {
     const v = versionSheets({ id: 'r', name: 'R', binding: 'perfect', isbn: '978-0-306-40615-8' }, trim, runs);
     expect(v.warnings).toContainEqual({ kind: 'isbnInvalid', isbn: '978-0-306-40615-8', error: 'checksum' });

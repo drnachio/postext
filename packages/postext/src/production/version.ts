@@ -79,8 +79,11 @@ export function versionSheets(
   if (version.spineOverride !== undefined) warnings.push({ kind: 'spineOverridden', calculated: reading.spine, used });
   if (reading.blanks > 0) warnings.push({ kind: 'signatureBlanks', blanks: reading.blanks });
   warnings.push(...checkProfileAccepts(profile, trim, used));
+  // The spine that is lettered: the cover's on a softcover, the case's
+  // (boards and allowances added to the pages) on a hardcover.
+  const lettered = isCaseBinding(profile.style) ? caseSpineWidth(used, profile.style, m) : used;
   const minSpine = version.spineText?.minSpine ?? DEFAULT_SPINE_TEXT.minSpine;
-  if (used < minSpine) warnings.push({ kind: 'spineTooThinForText', spine: used, minSpine });
+  if (lettered < minSpine) warnings.push({ kind: 'spineTooThinForText', spine: lettered, minSpine });
 
   let isbn13: string | undefined;
   if (version.isbn) {
