@@ -87,6 +87,7 @@ const roundRect = (r: SheetRect): SheetRect => ({ x: round(r.x), y: round(r.y), 
 /** A placement for a box on the sheet, by the zone it falls in. */
 function placementOf(sheet: ProductionSheet, rect: SheetRect): CoverPlacement {
   const placed = placeCoverElement(sheet, { id: 'x', kind: 'box', zone: 'front', x: 0, y: 0, width: 0, height: 0 }, rect);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id: _id, kind: _kind, ...placement } = placed;
   return placement;
 }

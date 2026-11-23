@@ -48,7 +48,10 @@ function snapLinesOf(built: BuiltCover, items: readonly DesignerItem[], except: 
     box(z.rect);
     box(z.safe);
   }
-  for (const g of sheetGuides(built.sheet)) (g.orientation === 'vertical' ? xs.push(built.sheet.trim.x + g.at) : ys.push(built.sheet.trim.y + g.at));
+  for (const g of sheetGuides(built.sheet)) {
+    if (g.orientation === 'vertical') xs.push(built.sheet.trim.x + g.at);
+    else ys.push(built.sheet.trim.y + g.at);
+  }
   for (const i of items) if (i.rect && !sameRef(i, except)) box(i.rect);
   return { xs, ys };
 }

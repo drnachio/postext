@@ -37,6 +37,7 @@ export function newVersion(versions: readonly ProductionVersion[], kind: Version
 }
 
 function withVersions(production: ProductionConfig | undefined, versions: ProductionVersion[]): ProductionConfig | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { versions: _old, ...rest } = production ?? {};
   const next: ProductionConfig = versions.length > 0 ? { ...rest, versions } : rest;
   return Object.keys(next).length > 0 ? next : undefined;
@@ -66,6 +67,7 @@ export function removeVersion(production: ProductionConfig | undefined, id: stri
 
 /** The production with its collection changed; an empty one goes. */
 export function setCollection(production: ProductionConfig | undefined, collection: ProductionConfig['collection']): ProductionConfig | undefined {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { collection: _old, ...rest } = production ?? {};
   const keep = collection && (collection.name || collection.isbn || collection.catalogue?.length);
   const next: ProductionConfig = keep ? { ...rest, collection } : rest;
