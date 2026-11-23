@@ -197,10 +197,10 @@ const siteTable = (rows) => ({ headerRowCount: 1, columnWidths: [3, 1, 1.3, 1.3]
     right(figure(mw, 1)), ...n.map((v) => right(figure(v)))]),
   [{ content: '**All sites**', ...fill }, ...[2, 3, 4].map((i, k) => right(`**${figure(rows
     .reduce((sum, row) => sum + row[i], 0), k ? 0 : 1)}**`, fill))]] }); // the totals, summed
-// Accounting style: losses in brackets, and gains followed by a no-break space, as wide as a
-// bracket in a monospaced face, so the digits line up.
+// Accounting style: losses in brackets, gains followed by a no-break space as wide as a bracket
+// in a monospaced face, so the digits line up. Bold closes before it: ** after a space prints.
 const pad = '\u00a0';
-const money = (n) => (n < 0 ? `(${figure(-n)})` : `${figure(n)}${pad}`);
+const money = (n, b = '') => (n < 0 ? `${b}(${figure(-n)})${b}` : `${b}${figure(n)}${b}${pad}`);
 function statement(rows) {
   const sum = [0, 0];
   const cells = [['£ thousand', `2025${pad}`, `2024${pad}`].map(head)];
@@ -208,7 +208,7 @@ function statement(rows) {
     years.forEach((n, i) => { sum[i] += n; });
     const sub = label.startsWith('='); // a subtotal: the running sum, in bold
     cells.push(sub ? [{ content: `**${label.slice(1)}**`, ...fill },
-      ...sum.map((n) => right(`**${money(n)}**`, fill))]
+      ...sum.map((n) => right(money(n, '**'), fill))]
       : [{ content: years.length ? label : `*${label}*` }, // a label alone heads a group
         ...[0, 1].map((i) => right(years.length ? money(years[i]) : ''))]);
   }

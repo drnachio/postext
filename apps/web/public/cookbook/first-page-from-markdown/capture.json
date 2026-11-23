@@ -1,27 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "first-page-from-markdown",
-  "sourceHash": "9ceba8caab8bdad5891456e35928826669f51d518037e8f8b5fbca8f29be564e",
+  "sourceHash": "29fc0ca3c86644372e8a8e588284c23ab1bfcdfce0f5c2d4a9d51d2af960cc2a",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.93.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:35:36.692Z",
-  "verified": {
-    "postext": "1.65.0",
-    "chrome": "156.0.8078.76",
-    "at": "2026-10-31T16:48:47.304Z"
-  },
+  "chrome": "157.0.8103.79",
+  "capturedAt": "2026-11-23T17:26:42.435Z",
   "variants": {
     "en": {
-      "hash8": "ed307756",
-      "vdtHash": "b17bae9c514158d959680bef33b904542824380b",
+      "hash8": "d86cf17b",
+      "vdtHash": "240cea2df8e71ceac499a86bb5cdca73983454ad",
       "timings": {
-        "importMs": 241,
-        "fontsMs": 29,
-        "buildMs": 86,
-        "totalMs": 1167,
+        "importMs": 419,
+        "fontsMs": 26,
+        "buildMs": 97,
+        "totalMs": 1207,
         "builds": 1
       },
       "specimen": {
@@ -55,7 +50,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 149960,
+          "bytes": 149942,
           "alt": "Opening page 1: The Salt Road."
         },
         {
@@ -66,7 +61,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 136712,
+          "bytes": 136452,
           "alt": "Page 2: What came back."
         }
       ],
@@ -94,12 +89,12 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 207145,
+        "bytes": 207144,
         "folio": "579e6f1a",
         "chapters": [
           {
             "pages": 2,
-            "hash": "6993688cee5a008c",
+            "hash": "ac3a5c1e4dea650a",
             "lines": "831758c4d3c7a910"
           }
         ]
@@ -285,7 +280,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 4,
+        "iterationCount": 5,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -308,7 +303,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: en, es, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -319,13 +324,13 @@
       }
     },
     "es": {
-      "hash8": "99af28f8",
+      "hash8": "d01c1c0a",
       "vdtHash": "073c3f4bd83fcbf8654dd6065e803279b577b633",
       "timings": {
-        "importMs": 253,
-        "fontsMs": 22,
-        "buildMs": 58,
-        "totalMs": 998,
+        "importMs": 210,
+        "fontsMs": 24,
+        "buildMs": 76,
+        "totalMs": 1134,
         "builds": 1
       },
       "specimen": {
@@ -359,7 +364,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 156422,
+          "bytes": 156432,
           "alt": "Página de apertura 1: La ruta de la sal."
         },
         {
@@ -370,7 +375,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 140174,
+          "bytes": 140140,
           "alt": "Página 2: La carga de retorno."
         }
       ],
@@ -398,7 +403,7 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 207321,
+        "bytes": 207320,
         "folio": "579e6f1a",
         "chapters": [
           {
@@ -589,7 +594,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 4,
         "looseLines": {
           "count": 1,
           "share": 0.0147,
@@ -602,7 +607,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: es, en, pt, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -613,13 +623,13 @@
       }
     },
     "pt": {
-      "hash8": "260deb6c",
+      "hash8": "b56b771a",
       "vdtHash": "3c13368de844c4ec267b6db597cabe4e839852d4",
       "timings": {
-        "importMs": 207,
-        "fontsMs": 22,
-        "buildMs": 78,
-        "totalMs": 1075,
+        "importMs": 415,
+        "fontsMs": 27,
+        "buildMs": 90,
+        "totalMs": 1258,
         "builds": 1
       },
       "specimen": {
@@ -653,7 +663,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 160066,
+          "bytes": 160070,
           "alt": "Página de abertura 1: A trilha do sal."
         },
         {
@@ -664,7 +674,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 139426,
+          "bytes": 139430,
           "alt": "Página 2: A carga da volta."
         }
       ],
@@ -692,7 +702,7 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 207443,
+        "bytes": 207442,
         "folio": "579e6f1a",
         "chapters": [
           {
@@ -883,7 +893,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 3,
+        "iterationCount": 4,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -906,7 +916,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: pt, en, es, fr, de, it"
           },
           {
             "check": "sandbox",
@@ -917,13 +932,13 @@
       }
     },
     "fr": {
-      "hash8": "8c62df81",
+      "hash8": "4f1df030",
       "vdtHash": "a7553f9a8ab93d9610215087a55df347f7ffb8e4",
       "timings": {
-        "importMs": 233,
-        "fontsMs": 25,
-        "buildMs": 69,
-        "totalMs": 982,
+        "importMs": 408,
+        "fontsMs": 27,
+        "buildMs": 81,
+        "totalMs": 1154,
         "builds": 1
       },
       "specimen": {
@@ -957,7 +972,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 156980,
+          "bytes": 156978,
           "alt": "Page d’ouverture 1 : La route du sel."
         },
         {
@@ -968,7 +983,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 151378,
+          "bytes": 151352,
           "alt": "Page 2 : Le chargement du retour."
         }
       ],
@@ -996,7 +1011,7 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 207344,
+        "bytes": 207343,
         "folio": "579e6f1a",
         "chapters": [
           {
@@ -1200,7 +1215,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: fr, en, es, pt, de, it"
           },
           {
             "check": "sandbox",
@@ -1211,13 +1231,13 @@
       }
     },
     "de": {
-      "hash8": "1c33cc6b",
-      "vdtHash": "66d663579aeaa41534b7205a9c3f6bb844ea65d8",
+      "hash8": "1b74ff43",
+      "vdtHash": "ed2f9125c7dc65e162b56c3ccb48f44d2a5f55c3",
       "timings": {
-        "importMs": 167,
-        "fontsMs": 24,
-        "buildMs": 88,
-        "totalMs": 991,
+        "importMs": 215,
+        "fontsMs": 23,
+        "buildMs": 85,
+        "totalMs": 990,
         "builds": 1
       },
       "specimen": {
@@ -1251,7 +1271,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 164110,
+          "bytes": 164100,
           "alt": "Kapitelauftakt, Seite 1: Auf der Salzstraße."
         },
         {
@@ -1262,7 +1282,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 163316,
+          "bytes": 163180,
           "alt": "Seite 2: Was zurückkam."
         }
       ],
@@ -1295,8 +1315,8 @@
         "chapters": [
           {
             "pages": 2,
-            "hash": "7b6bc1aa02f669ae",
-            "lines": "79214e7d2696da03"
+            "hash": "1abb0eb91100941f",
+            "lines": "aa83754db4ed76b3"
           }
         ]
       },
@@ -1481,7 +1501,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 5,
+        "iterationCount": 3,
         "looseLines": {
           "count": 1,
           "share": 0.013,
@@ -1504,7 +1524,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: de, en, es, pt, fr, it"
           },
           {
             "check": "sandbox",
@@ -1515,13 +1545,13 @@
       }
     },
     "it": {
-      "hash8": "a56231ba",
-      "vdtHash": "67332a687a05f4ff715f4646a7dabba1d495b8a7",
+      "hash8": "df356375",
+      "vdtHash": "52e80b12cad25b46391bb161994df17f2a44efd3",
       "timings": {
-        "importMs": 173,
-        "fontsMs": 22,
-        "buildMs": 84,
-        "totalMs": 949,
+        "importMs": 221,
+        "fontsMs": 23,
+        "buildMs": 101,
+        "totalMs": 1032,
         "builds": 1
       },
       "specimen": {
@@ -1555,7 +1585,7 @@
           "h": 1333,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 152300,
+          "bytes": 152298,
           "alt": "Pagina d’apertura 1: La via del sale."
         },
         {
@@ -1566,7 +1596,7 @@
           "h": 1333,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 143428,
+          "bytes": 143208,
           "alt": "Pagina 2: Il carico del ritorno."
         }
       ],
@@ -1594,12 +1624,12 @@
       },
       "sandbox": {
         "file": "first-page-from-markdown.postext",
-        "bytes": 206923,
+        "bytes": 206922,
         "folio": "579e6f1a",
         "chapters": [
           {
             "pages": 2,
-            "hash": "0a5705d282c96d5e",
+            "hash": "f5f7739c3448770c",
             "lines": "5c9f9a01dcbb0d17"
           }
         ]
@@ -1785,7 +1815,7 @@
       },
       "diagnostics": {
         "converged": true,
-        "iterationCount": 5,
+        "iterationCount": 6,
         "looseLines": {
           "count": 0,
           "share": 0,
@@ -1798,7 +1828,17 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 155.0.8059.82: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
+          },
+          {
+            "check": "sandbox",
+            "severity": "info",
+            "detail": "book in several languages: it, en, es, pt, fr, de"
           },
           {
             "check": "sandbox",

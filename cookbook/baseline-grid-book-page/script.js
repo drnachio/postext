@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 013 · A book page on a baseline grid ═════════════════════
 // https://postext.dev/en/cookbook/baseline-grid-book-page
 // Code: MIT · Text: original (CC BY 4.0) · Pictures: drawn in code (CC BY 4.0)
-// Fonts: Vollkorn, Playfair Display, Vollkorn SC (SIL OFL 1.1) · Needs postext ≥ 1.46.2
+// Fonts: Vollkorn, Playfair Display, Vollkorn SC (SIL OFL 1.1) · Needs postext ≥ 1.88.1
 // An essay on the canon of page proportions, on a page that shows its geometry and grid.
 import {
   buildDocumentWithFonts, renderPageToCanvas, registerResourceImage,

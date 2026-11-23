@@ -1,27 +1,22 @@
 {
   "schemaVersion": 1,
   "slug": "endnotes-instead-of-footnotes",
-  "sourceHash": "5de1daa361a3859ab9d1558a862819083f96c7e79a09d17e931e48f00b7d8060",
+  "sourceHash": "cf698b9567ada38ae45a5108e5653bc35d01a1683acabeb21d5b480e1d92d597",
   "engine": {
-    "postext": "1.57.1",
+    "postext": "1.93.0",
     "source": "npm"
   },
-  "chrome": "155.0.8059.85",
-  "capturedAt": "2026-10-23T07:35:36.664Z",
-  "verified": {
-    "postext": "1.65.0",
-    "chrome": "156.0.8078.76",
-    "at": "2026-10-31T16:53:15.295Z"
-  },
+  "chrome": "157.0.8103.79",
+  "capturedAt": "2026-11-23T17:26:42.163Z",
   "variants": {
     "en": {
-      "hash8": "ddca616b",
-      "vdtHash": "a7753d5706a3721afc29144f567ffae5277b1bc5",
+      "hash8": "ee5b7a17",
+      "vdtHash": "040f9a41d82d8aea35a66735c1eca6e63b8f7c2e",
       "timings": {
-        "importMs": 393,
-        "fontsMs": 739,
-        "buildMs": 74,
-        "totalMs": 1855,
+        "importMs": 610,
+        "fontsMs": 94,
+        "buildMs": 88,
+        "totalMs": 1486,
         "builds": 1
       },
       "specimen": {
@@ -54,7 +49,7 @@
           "h": 1500,
           "file": "p01.webp",
           "strip": "p01.s.webp",
-          "bytes": 107900,
+          "bytes": 107910,
           "alt": "Opening page 15: A Candle."
         },
         {
@@ -65,7 +60,7 @@
           "h": 1500,
           "file": "p02.webp",
           "strip": "p02.s.webp",
-          "bytes": 189396,
+          "bytes": 189334,
           "alt": "Page 16."
         },
         {
@@ -76,7 +71,7 @@
           "h": 1500,
           "file": "p03.webp",
           "strip": "p03.s.webp",
-          "bytes": 181398,
+          "bytes": 181370,
           "alt": "Page 17."
         },
         {
@@ -87,7 +82,7 @@
           "h": 1500,
           "file": "p04.webp",
           "strip": "p04.s.webp",
-          "bytes": 123598,
+          "bytes": 123608,
           "alt": "Page 18. Figure 1. A candle flame as it looks under a glass shade (left) and in section (right): the dark core of wax vapour round the wick, the blue foot where the air first meets it, the bright zone where soot glows, and the faint mantle, the hottest part. Heated air rises r…"
         },
         {
@@ -98,7 +93,7 @@
           "h": 1500,
           "file": "p05.webp",
           "strip": "p05.s.webp",
-          "bytes": 128042,
+          "bytes": 128032,
           "alt": "Opening page 19: Notes."
         }
       ],
@@ -130,13 +125,13 @@
       },
       "sandbox": {
         "file": "endnotes-instead-of-footnotes.postext",
-        "bytes": 78147,
+        "bytes": 78146,
         "folio": "3d3a1e90",
         "chapters": [
           {
             "pages": 5,
-            "hash": "a300a8c593ab1f03",
-            "lines": "2ad289a71ad9a439"
+            "hash": "cf73decb04b870a7",
+            "lines": "9145e63d2eb9e21d"
           }
         ]
       },
@@ -357,7 +352,12 @@
           {
             "check": "chrome",
             "severity": "warn",
-            "detail": "Chrome 155.0.8059.85, the committed capture used 154.0.8037.98: pixels may differ"
+            "detail": "Chrome 157.0.8103.79, the committed capture used 155.0.8059.85: pixels may differ"
+          },
+          {
+            "check": "vdt",
+            "severity": "info",
+            "detail": "the layout changed since the committed capture"
           },
           {
             "check": "sandbox",

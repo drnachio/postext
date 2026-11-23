@@ -115,7 +115,7 @@
       },
       "sandbox": {
         "file": "clinical-paper-line-edges.postext",
-        "bytes": 30918,
+        "bytes": 30957,
         "folio": "0544856f",
         "keep": "last",
         "pages": 3,
@@ -421,11 +421,6 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "book in several languages: en, es"
-          },
-          {
-            "check": "sandbox",
-            "severity": "info",
-            "detail": "book in several languages: en, es"
           }
         ]
       }
@@ -536,7 +531,7 @@
       },
       "sandbox": {
         "file": "clinical-paper-line-edges.postext",
-        "bytes": 31542,
+        "bytes": 31582,
         "folio": "0544856f",
         "keep": "last",
         "pages": 3,
@@ -822,11 +817,6 @@
             "check": "sandbox",
             "severity": "info",
             "detail": "capture.sandbox keeps build 2 of 2: the bundle is that document alone"
-          },
-          {
-            "check": "sandbox",
-            "severity": "info",
-            "detail": "book in several languages: es, en"
           },
           {
             "check": "sandbox",

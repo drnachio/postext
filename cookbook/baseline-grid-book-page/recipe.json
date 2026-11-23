@@ -28,7 +28,7 @@
     "justification-lab"
   ],
   "workarounds": [],
-  "engine": { "postext": "1.46.2" },
+  "engine": { "postext": "1.88.1" },
   "kit": ["core", "fonts", "viewer", "images"],
   "sample": { "locales": ["en", "es", "pt", "fr", "de", "it"] },
   "capture": {

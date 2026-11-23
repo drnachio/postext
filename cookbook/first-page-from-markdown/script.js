@@ -1,7 +1,7 @@
 // ═══ Postext Cookbook · Nº 012 · From a Markdown string to a designed page ══════════
 // https://postext.dev/en/cookbook/first-page-from-markdown
 // Code: MIT · Text: original (CC BY 4.0) · Photo: diffusion models
-// Fonts: Newsreader, Young Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.34.0
+// Fonts: Newsreader, Young Serif, Inter Tight (SIL OFL 1.1) · Needs postext ≥ 1.88.1
 //
 // This pen sets a Markdown string with a frontmatter block on two magazine pages and paints
 // them on canvases. The whole design is in config(); swap config() for {} in the build
