@@ -890,7 +890,7 @@ Tout ce que décrit ce livre peut s’essayer tout de suite, sans écrire de cod
 
 ## Visite de l’interface
 
-:index{term="Sandbox"}L’interface reprend la disposition familière d’un éditeur, esquissée dans la :ref{id="sandbox-ui"}. Une **barre d’activité** à gauche bascule entre sept panneaux : Livres, Chapitres, Texte, Ressources, Polices, Maquette et Vérifications, ce dernier avec le nombre de problèmes en suspens. Une **barre latérale** redimensionnable accueille le panneau actif ; un clic sur l’icône active la replie. La **zone d’affichage**, à droite, montre la même mise en page dans six onglets : Canvas, PDF, Folio, HTML, EPUB 3 et SCORM. L’interface parle anglais, espagnol, catalan, français, allemand, italien, portugais du Brésil, chinois simplifié, japonais et arabe, et se lit de droite à gauche en arabe ; un réglage de grands boutons et de grands champs rend chaque commande plus facile à atteindre au doigt ou d’une main peu sûre.
+:index{term="Sandbox"}L’interface reprend la disposition familière d’un éditeur, esquissée dans la :ref{id="sandbox-ui"}. Une **barre d’activité** à gauche bascule entre huit panneaux : Livres, Chapitres, Texte, Ressources, Polices, Maquette, Couverture et Vérifications, ce dernier avec le nombre de problèmes en suspens. Une **barre latérale** redimensionnable accueille le panneau actif ; un clic sur l’icône active la replie. La **zone d’affichage**, à droite, montre la même mise en page dans six onglets : Canvas, PDF, Folio, HTML, EPUB 3 et SCORM. L’interface parle anglais, espagnol, catalan, français, allemand, italien, portugais du Brésil, chinois simplifié, japonais et arabe, et se lit de droite à gauche en arabe ; un réglage de grands boutons et de grands champs rend chaque commande plus facile à atteindre au doigt ou d’une main peu sûre.
 
 La barre latérale et la zone d’affichage se partagent la fenêtre, et la limite entre elles se déplace en la faisant glisser. Chaque panneau et la zone d’affichage retrouvent leur état d’une visite à l’autre : le zoom et le mode d’affichage du canvas, le mode de colonnes de la vue HTML, les groupes ouverts dans le panneau Maquette. Le thème et la langue de l’interface se changent au pied de la barre d’activité, et la langue de l’interface est indépendante de celle du livre.
 
@@ -1071,6 +1071,16 @@ Une **découpe**:index{term="découpes"} est le travail d’une forme de découp
 
 La page elle-même s’imprime entière. Le fabricant de formes travaille à partir du **tracé de découpe**, le contour de chaque trou, que le PDF trace sur une plaque que la presse n’encre jamais et dans un calque qu’un lecteur peut masquer, et le contrôle en amont avertit d’un trou trop proche de la coupe ou du dos, ou d’un texte resté à l’intérieur d’un trou. Le canvas et la vue HTML montrent à travers chaque trou les pages qui sont dessous, aussi loin que les trous s’alignent.
 
+## La feuille de couverture
+
+:index{term="couvertures imprimées"}La couverture d’un livre imprimé est une seule feuille pliée autour des pages : la quatrième de couverture, le dos et la première de couverture côte à côte, avec autour d’elles des rabats ou les remplis d’un cartonnage. Sa largeur dépend du livre, car le dos a l’épaisseur des pages, et Postext le calcule d’après le nombre de pages et le papier du livre. Chaque version du livre, un broché ou un relié, a sa propre feuille et son propre ISBN, que la quatrième de couverture porte imprimé en code-barres.
+
+La maquette de la feuille, son fond, ses images, ses blocs et ses finitions, fait partie de la configuration, tandis que ses mots viennent du livre. Le titre, le sous-titre et l’auteur passent des métadonnées à la première de couverture et au dos, et le texte de la quatrième de couverture est un court document Markdown à part : un nouveau texte de présentation ne touche jamais la maquette, et un titre corrigé y arrive aussitôt, sans rien recopier à la main. Le panneau **Couverture** dessine la feuille avec ses plis et son fond perdu, avertit quand le dos est trop mince pour son texte et exporte la feuille en PDF pour l’imprimeur.
+
+:::callout{type="try"}
+Ouvrez le panneau **Couverture** sur ce guide. Sa feuille de broché porte l’image de la première page en haut de la première de couverture, sous un vernis brillant, et le texte de la dernière page sur la quatrième. Sous **Fichiers pour l’imprimeur**, **Télécharger le PDF de la feuille** donne la feuille entière avec ses repères, et **Télécharger la première de couverture** la première seule, en image pour la page d’une boutique, un catalogue ou la couverture d’un EPUB.
+:::
+
 ## PDF/X
 
 Les imprimeurs demandent du **PDF/X**:index{term="PDF!PDF/X"} parce qu’il supprime les approximations. Un fichier PDF/X dit pour quelles conditions d’impression il a été fait, incorpore toutes ses polices, porte ses zones de coupe et de fond perdu et laisse de côté tout ce qu’une presse ne peut pas utiliser, comme les liens. Postext écrit les deux versions que les imprimeurs demandent le plus. Le PDF/X-1a est la version prudente : quatre encres et du gris seulement, sans transparence. Le PDF/X-4 garde la transparence et c’est aujourd’hui le choix habituel. L’une ou l’autre se choisit sous Maquette › Export › Préparation pour l’impression, ou avec l’option \`--pdfx\` de la ligne de commande.
@@ -1099,7 +1109,7 @@ L’**aperçu d’impression** montre:index{term="aperçu d’impression"} les p
 
 ## Le PDF accessible et le PDF imprimé
 
-Le PDF pour l’imprimeur et le PDF pour les lecteurs peuvent être le même fichier. La structure balisée qui rend un PDF accessible, décrite dans :ref{id="output"}, cohabite sans conflit avec les règles du PDF/X ; seuls les liens disparaissent, parce qu’une norme d’impression ne les autorise pas. Les codes QR imprimés au pied des pages restent, eux, puisqu’ils font partie du dessin de la page.
+Le PDF pour l’imprimeur et le PDF pour les lecteurs peuvent être le même fichier. La structure balisée qui rend un PDF accessible, décrite dans :ref{id="output"}, cohabite sans conflit avec les règles du PDF/X ; seuls les liens disparaissent, parce qu’une norme d’impression ne les autorise pas. Les codes QR imprimés au pied des pages restent, eux, puisqu’ils font partie du dessin de la page. Un seul fichier sert ainsi l’imprimeur et le lecteur qui écoute le livre.
 
 # Le livre en 3D {lead="Une mise en page est un ensemble de pages, mais un livre est un objet : un papier d’un certain grammage et d’une certaine teinte, une reliure qui s’ouvre d’une certaine façon, une épaisseur que la main sent. La vue Folio montre les pages sous la forme de cet objet, avant toute impression." summary="La vue Folio, les papiers, les reliures, les couvertures et la lumière"}
 

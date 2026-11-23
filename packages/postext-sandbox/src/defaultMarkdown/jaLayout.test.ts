@@ -131,8 +131,8 @@ describe('the Japanese guide laid out as a book', () => {
     // 148 since #1590: the English update added twelve sections (paragraph
     // rules, full-page figures, chapter styles, designs, PDF forms, spot
     // colours, two-colour printing, special inks, die-cuts, the 3D finishes,
-    // InDesign out and back in).
-    expect(headings.length).toBe(148);
+    // InDesign out and back in); 149 since #1670 (the cover sheet).
+    expect(headings.length).toBe(149);
     for (const h of headings) {
       // The band: three lines of the tier, whatever the heading's own pitch.
       expect(h.bbox.height / pitch, h.lines[0]?.text).toBeCloseTo(3, 1);

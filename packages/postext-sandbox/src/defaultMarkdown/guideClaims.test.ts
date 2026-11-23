@@ -366,8 +366,8 @@ describe('what the guide says about itself and the Sandbox', () => {
     const ja = japanese.default.Sandbox;
     const en = DEFAULT_LABELS as unknown as Record<string, string>;
     // The activity bar's panels, in its order (`ActivityBar.tsx`).
-    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navWarnings'];
-    const tour = claim('ja', /七つのパネルを切り替える。([^。]*)で、最後のパネル/)[1]!;
+    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navCover', 'navWarnings'];
+    const tour = claim('ja', /八つのパネルを切り替える。([^。]*)で、最後のパネル/)[1]!;
     expect(tour.split('、').map((name) => name.replace(/\*\*/g, ''))).toEqual(panels.map((key) => ja[key]));
     // Every “**…**パネル” is a panel and every “**…**グループ” a group of
     // the Design panel.
@@ -399,8 +399,8 @@ describe('what the guide says about itself and the Sandbox', () => {
     const md = DEFAULT_MARKDOWN_PT_BR;
     const pt = portuguese.default.Sandbox;
     // The activity bar's panels, in its order (`ActivityBar.tsx`).
-    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navWarnings'];
-    const tour = claim('pt-BR', /alterna entre sete painéis: ([^.]*?), este último/)[1]!;
+    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navCover', 'navWarnings'];
+    const tour = claim('pt-BR', /alterna entre oito painéis: ([^.]*?), este último/)[1]!;
     expect(tour.split(/, | e /)).toEqual(panels.map((key) => pt[key]));
     // Every “painel **…**” is a panel and every “grupo **…**” a group of
     // the Design panel.
@@ -414,8 +414,8 @@ describe('what the guide says about itself and the Sandbox', () => {
     const md = DEFAULT_MARKDOWN_FR;
     const fr = french.default.Sandbox;
     // The activity bar's panels, in its order (`ActivityBar.tsx`).
-    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navWarnings'];
-    const tour = claim('fr', /bascule entre sept panneaux\u00a0: ([^.]*?), ce dernier/)[1]!;
+    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navCover', 'navWarnings'];
+    const tour = claim('fr', /bascule entre huit panneaux\u00a0: ([^.]*?), ce dernier/)[1]!;
     expect(tour.split(/, | et /)).toEqual(panels.map((key) => fr[key]));
     // Every “panneau **…**” is a panel and every “groupe **…**” a group of
     // the Design panel.
@@ -429,8 +429,8 @@ describe('what the guide says about itself and the Sandbox', () => {
     const md = DEFAULT_MARKDOWN_DE;
     const de = german.default.Sandbox;
     // The activity bar's panels, in its order (`ActivityBar.tsx`).
-    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navWarnings'];
-    const tour = claim('de', /wechselt zwischen sieben Bedienfeldern – ([^.]*?), das letzte/)[1]!;
+    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navCover', 'navWarnings'];
+    const tour = claim('de', /wechselt zwischen acht Bedienfeldern – ([^.]*?), das letzte/)[1]!;
     expect(tour.split(/, | und /)).toEqual(panels.map((key) => de[key]));
     // Every “Bedienfeld **…**” is a panel and every “Gruppe **…**” a group
     // of the Design panel.
@@ -444,8 +444,8 @@ describe('what the guide says about itself and the Sandbox', () => {
     const md = DEFAULT_MARKDOWN_IT;
     const labels = italian.default.Sandbox;
     // The activity bar's panels, in its order (`ActivityBar.tsx`).
-    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navWarnings'];
-    const tour = claim('it', /da un pannello all’altro tra sette: ([^.]*?), quest’ultimo/)[1]!;
+    const panels = ['navBooks', 'navChapters', 'navManuscript', 'navResources', 'navFonts', 'navDesign', 'navCover', 'navWarnings'];
+    const tour = claim('it', /da un pannello all’altro tra otto: ([^.]*?), quest’ultimo/)[1]!;
     expect(tour.split(/, | e /)).toEqual(panels.map((key) => labels[key]));
     // Every “pannello **…**” is a panel and every “gruppo **…**” a group of
     // the Design panel.

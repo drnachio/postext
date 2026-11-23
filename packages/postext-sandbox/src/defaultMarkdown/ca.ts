@@ -891,7 +891,7 @@ Tot el que explica aquest llibre es pot provar ara mateix, sense escriure codi. 
 
 ## Un recorregut per la interfície
 
-:index{term="Sandbox"}La interfície segueix la disposició d'un editor conegut, esbossada a :ref{id="sandbox-ui"}. Una **barra d'activitat** a l'esquerra canvia entre set taulers —Llibres, Capítols, Text, Recursos, Fonts, Disseny i Revisió, aquest últim amb el nombre d'assumptes pendents—. Una **barra lateral** redimensionable acull el tauler actiu; si fas clic a la icona activa, es plega. El **visor**, a la dreta, mostra la mateixa maquetació en sis pestanyes: Canvas, PDF, Folio, HTML, EPUB 3 i SCORM. La interfície està en anglès, castellà, català, francès, alemany, italià, portuguès del Brasil, xinès simplificat, japonès i àrab, i en àrab va de dreta a esquerra; l'ajust **Botons i camps grans** fa que cada control sigui més fàcil d'encertar amb el dit o amb una mà poc ferma.
+:index{term="Sandbox"}La interfície segueix la disposició d'un editor conegut, esbossada a :ref{id="sandbox-ui"}. Una **barra d'activitat** a l'esquerra canvia entre vuit taulers —Llibres, Capítols, Text, Recursos, Fonts, Disseny, Coberta i Revisió, aquest últim amb el nombre d'assumptes pendents—. Una **barra lateral** redimensionable acull el tauler actiu; si fas clic a la icona activa, es plega. El **visor**, a la dreta, mostra la mateixa maquetació en sis pestanyes: Canvas, PDF, Folio, HTML, EPUB 3 i SCORM. La interfície està en anglès, castellà, català, francès, alemany, italià, portuguès del Brasil, xinès simplificat, japonès i àrab, i en àrab va de dreta a esquerra; l'ajust **Botons i camps grans** fa que cada control sigui més fàcil d'encertar amb el dit o amb una mà poc ferma.
 
 La barra lateral i el visor comparteixen la finestra, i la frontera entre tots dos es pot arrossegar. Cada tauler i el visor recorden el seu estat entre visites: l'ampliació i el mode de vista del canvas, el mode de columnes de la vista HTML, els grups oberts al tauler Disseny. El tema i l'idioma de la interfície es canvien des del peu de la barra d'activitat, i l'idioma de la interfície és independent de la llengua del llibre.
 
@@ -1074,11 +1074,21 @@ Un **troquel**:index{term="troquels"} és la feina d'un troquel de fulla d'acer 
 
 La pàgina s'imprimeix sencera. El troquelador treballa a partir de la **línia de troquel**, el contorn de cada forat, que el PDF traça en una planxa que la màquina no entinta mai i en una capa que qui llegeix pot amagar, i el preflight avisa d'un forat massa a prop del tall o del llom, o de text que ha quedat a dins. El canvas i la vista HTML mostren a través de cada forat les pàgines de sota, fins on els forats s'alineen.
 
+## El plec de coberta
+
+:index{term="cobertes per a impremta"}La coberta d'un llibre imprès és un sol plec que embolcalla les pàgines: la contracoberta, el llom i la coberta l'un al costat de l'altre, amb les solapes o el doblec de les tapes al voltant. La seva amplada depèn del llibre, perquè el llom fa el gruix de les pàgines, i Postext calcula el llom a partir del nombre de pàgines i del paper en què s'imprimeix: més pàgines, un llom més ample. Cada versió del llibre, una rústica o un cartoné, té el seu plec i el seu ISBN.
+
+El disseny del plec, amb el fons, les imatges, les caixes i els acabats, forma part de la configuració, mentre que les paraules surten del llibre. El títol, el subtítol i l'autor arriben a la coberta i al llom des de les metadades, i el text de la contracoberta és un document Markdown propi, de manera que un text de contracoberta nou no toca el disseny i un títol corregit arriba alhora a la coberta i al llom, sense copiar res a mà. El tauler **Coberta** dibuixa el plec amb els plegats i la sang, avisa quan el llom és massa estret per al seu text i exporta el plec com un PDF per a la impremta. Aquest PDF porta la sang i les marques de plegat i fa servir la configuració de PDF del llibre, PDF/X inclòs.
+
+:::callout{type="try"}
+Obre el tauler **Coberta** en aquesta guia. El plec de la rústica porta la imatge de la primera pàgina d'un costat a l'altre de la part de dalt de la coberta, amb un vernís brillant al damunt, i a la contracoberta, el text de l'última pàgina de la guia. A **Fitxers per a la impremta**, **Baixa el PDF del plec** dona el plec sencer amb les marques, i **Baixa la coberta** només la coberta, com a imatge per a la pàgina d'una botiga, un catàleg o la coberta d'un EPUB.
+:::
+
 ## PDF/X
 
 Les impremtes demanen **PDF/X**:index{term="PDF!PDF/X"} perquè elimina les conjectures. Un fitxer PDF/X diu per a quina condició d'impressió es va fer, incrusta totes les fonts, porta les caixes de tall i de sang i deixa fora tot el que una impremta no pot fer servir, com els enllaços. Postext escriu les dues versions que més demanen les impremtes. PDF/X-1a és la conservadora: només quatre tintes i gris, sense transparència. PDF/X-4 conserva la transparència i és l'elecció habitual avui. Totes dues es trien a Disseny › Exportació › Preparació per a impremta, o amb l'opció \`--pdfx\` de la línia d'ordres.
 
-Un llibre per imprimir també necessita **sang**:index{term="sang"}: les imatges i les bandes que surten de la pàgina han de passar uns quants mil·límetres més enllà del tall, perquè una fulla desviada un pèl no deixi mai una vora blanca. Els ajustos de les línies de tall afegeixen la sang i dibuixen marques de tall a les cantonades.
+Un llibre per imprimir també necessita **sang**:index{term="sang"}: les imatges i les bandes que surten de la pàgina han de passar uns quants mil·límetres més enllà del tall, perquè una fulla desviada un pèl no deixi mai una vora blanca. Els ajustos de les línies de tall afegeixen la sang i dibuixen marques de tall a les cantonades. El tall s'emporta la sang i les marques.
 
 ## El negre
 
@@ -1102,7 +1112,7 @@ La **previsualització d'impressió** mostra:index{term="previsualització d'imp
 
 ## El PDF accessible i l'imprès
 
-El PDF per a la impremta i el PDF per als lectors poden ser el mateix fitxer. L'estructura etiquetada que fa accessible un PDF, descrita a :ref{id="output"}, conviu amb les regles de PDF/X sense conflicte; només desapareixen els enllaços, perquè una norma d'impressió no els admet. El text continua sent seleccionable i el lector de pantalla el llegeix en ordre, també en el fitxer que va a impremta.
+El PDF per a la impremta i el PDF per als lectors poden ser el mateix fitxer. L'estructura etiquetada que fa accessible un PDF, descrita a :ref{id="output"}, conviu amb les regles de PDF/X sense conflicte; només desapareixen els enllaços, perquè una norma d'impressió no els admet. El text continua sent seleccionable i el lector de pantalla el llegeix en ordre, també en el fitxer que va a impremta, de manera que un sol fitxer serveix la impremta i qui escolta el llibre.
 
 # El llibre en 3D {lead="Una maquetació és un conjunt de pàgines, però un llibre és un objecte: un paper d'un cert gramatge i color, una enquadernació que obre d'una certa manera, un gruix que nota la mà. La vista Folio mostra les pàgines com aquest objecte abans d'imprimir res." summary="La vista Folio, els papers, les enquadernacions, les cobertes i la llum"}
 
