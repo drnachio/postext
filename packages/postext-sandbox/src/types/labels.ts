@@ -4987,6 +4987,14 @@ export interface SandboxLabels {
   settingsGroupModifiedMany: string;
   settingsJumpTo: string;
   settingsNextGroup: string;
+  settingsClusterBook: string;
+  settingsClusterText: string;
+  settingsClusterElements: string;
+  settingsClusterStructure: string;
+  settingsClusterOutput: string;
+  settingsGroupSwitch: string;
+  settingsAllSections: string;
+  settingsSearchShortcut: string;
   settingsSummaryTitle: string;
   settingsSummaryOneColumn: string;
   settingsSummaryTwoColumns: string;

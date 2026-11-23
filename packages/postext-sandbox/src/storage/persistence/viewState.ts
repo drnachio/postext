@@ -3,7 +3,7 @@
 // canvas, HTML, EPUB and SCORM view options and pinned toolbars (#1276:
 // split out of persistence.ts).
 import type { EpubLayout, ScormVersion } from '../../types/props.js';
-import { getStorage, SIDEBAR_WIDTH_KEY, SECTIONS_KEY, HIDDEN_PRESETS_KEY, SETTINGS_GROUP_KEY, SETTINGS_HELP_MODE_KEY, COLOR_MODES_KEY, CANVAS_VIEW_MODE_KEY, CANVAS_FIT_MODE_KEY, CANVAS_ZOOM_KEY, HTML_FONT_SCALE_KEY, HTML_COLUMN_MODE_KEY, EPUB_LAYOUT_KEY, SCORM_LAYOUT_KEY, SCORM_VERSION_KEY, SCORM_PICK_PREFIX, TOOLBAR_PINNED_PREFIX } from './storage.js';
+import { getStorage, SIDEBAR_WIDTH_KEY, SECTIONS_KEY, HIDDEN_PRESETS_KEY, SETTINGS_GROUP_KEY, SETTINGS_HELP_MODE_KEY, SETTINGS_SECTIONS_KEY, COLOR_MODES_KEY, CANVAS_VIEW_MODE_KEY, CANVAS_FIT_MODE_KEY, CANVAS_ZOOM_KEY, HTML_FONT_SCALE_KEY, HTML_COLUMN_MODE_KEY, EPUB_LAYOUT_KEY, SCORM_LAYOUT_KEY, SCORM_VERSION_KEY, SCORM_PICK_PREFIX, TOOLBAR_PINNED_PREFIX } from './storage.js';
 
 export function saveSidebarPercent(percent: number): void {
   getStorage()?.setItem(SIDEBAR_WIDTH_KEY, String(percent));
@@ -71,6 +71,24 @@ export function loadSettingsGroup(): string | null {
     return getStorage()?.getItem(SETTINGS_GROUP_KEY) ?? null;
   } catch {
     return null;
+  }
+}
+
+/** The section last open in each settings group (group id → section id):
+ *  a group opens on the section it was left on. */
+export function saveSettingsSections(sections: Readonly<Record<string, string>>): void {
+  try {
+    getStorage()?.setItem(SETTINGS_SECTIONS_KEY, JSON.stringify(sections));
+  } catch { /* storage full or blocked */ }
+}
+
+export function loadSettingsSections(): Record<string, string> {
+  try {
+    const parsed: unknown = JSON.parse(getStorage()?.getItem(SETTINGS_SECTIONS_KEY) ?? '{}');
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return {};
+    return Object.fromEntries(Object.entries(parsed).filter((e): e is [string, string] => typeof e[1] === 'string'));
+  } catch {
+    return {};
   }
 }
 

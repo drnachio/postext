@@ -28,6 +28,11 @@ interface CollapsibleSectionProps {
  *  the ones nested inside them. */
 const SectionDepthContext = createContext(0);
 
+/** The section is a page of its own (the tab of a settings group names
+ *  it): it draws no fold, and its title stays in the outline only. Off in
+ *  the search results, where the sections stack under their titles. */
+export const SectionPageContext = createContext(false);
+
 /** Collapsible settings group. Open state is remembered per `sectionId`.
  *  While the settings search is active every section is forced open and
  *  hides itself when neither its title nor any field inside matches. */
@@ -119,6 +124,42 @@ function SectionFrame({
   const isSubsection = variant === 'subsection';
   const HeadingTag = (['h4', 'h5', 'h6'] as const)[Math.min(depth, 2)]!;
   const modified = hasOverrides || overrideCount > 0;
+  const asPage = useContext(SectionPageContext) && topLevel && !search.active;
+
+  if (asPage) {
+    const resettable = hasOverrides && !!onReset;
+    return (
+      <section data-section-id={sectionId} data-section-page="">
+        <HeadingTag className="sr-only">{title}</HeadingTag>
+        {(overrideCount > 0 || resettable) && (
+          <div className="flex min-h-8 items-center justify-between gap-2 px-3 pt-1.5">
+            <span className="inline-flex items-center gap-1.5 text-[0.66rem] text-(--slate) tabular-nums">
+              {overrideCount > 0 && (
+                <>
+                  <span aria-hidden="true" className="inline-block h-1.5 w-1.5 rounded-full bg-(--brand)" />
+                  {labels.settingsModifiedCount.replace('__count__', String(overrideCount))}
+                </>
+              )}
+            </span>
+            {resettable && (
+              <ConfirmPopover message={resetConfirmMessage ?? labels.resetSectionConfirm} onConfirm={onReset}>
+                {({ open: openConfirm }) => (
+                  <IconButton
+                    label={`${resetLabel ?? labels.resetSection}: ${title}`}
+                    icon={<RotateCcw size={12} />}
+                    onClick={openConfirm}
+                  />
+                )}
+              </ConfirmPopover>
+            )}
+          </div>
+        )}
+        <SectionDepthContext value={depth + 1}>
+          <div className="@container px-3 pt-2 pb-4">{children}</div>
+        </SectionDepthContext>
+      </section>
+    );
+  }
 
   return (
     <Collapsible.Root

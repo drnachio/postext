@@ -34,6 +34,7 @@ export const SCORM_VERSION_KEY = 'postext-sandbox-scorm-version';
 export const SCORM_PICK_PREFIX = 'postext-sandbox-scorm-pick:';
 export const SETTINGS_GROUP_KEY = 'postext-sandbox-settings-group';
 export const SETTINGS_HELP_MODE_KEY = 'postext-sandbox-settings-help';
+export const SETTINGS_SECTIONS_KEY = 'postext-sandbox-settings-sections';
 export const HIDDEN_PRESETS_KEY = 'postext-sandbox-hidden-presets';
 export const TOOLBAR_PINNED_PREFIX = 'postext-sandbox-toolbar-pinned-';
 

@@ -102,6 +102,8 @@ interface MenuItemProps {
   heading?: boolean;
   /** Tooltip (the full text of a truncated item). */
   title?: string;
+  /** Set after the label, at the item's end (a count, a mark). */
+  trailing?: ReactNode;
   children: ReactNode;
 }
 
@@ -116,7 +118,7 @@ const itemClass = (heading: boolean | undefined) => (state: { highlighted: boole
     state.disabled && 'cursor-default opacity-50',
   );
 
-export function MenuItem({ icon, onClick, disabled, destructive, selected, heading, title, children }: MenuItemProps) {
+export function MenuItem({ icon, onClick, disabled, destructive, selected, heading, title, trailing, children }: MenuItemProps) {
   return (
     <MenuPrimitive.Item
       onClick={onClick}
@@ -131,7 +133,21 @@ export function MenuItem({ icon, onClick, disabled, destructive, selected, headi
     >
       {icon && <span aria-hidden="true" className="inline-flex shrink-0" style={{ color: destructive ? undefined : 'var(--slate)' }}>{icon}</span>}
       <span className="min-w-0 flex-1 truncate">{children}</span>
+      {trailing}
     </MenuPrimitive.Item>
+  );
+}
+
+/** Items under a label of their own (the groups of a cluster): the label
+ *  names the group for assistive tech and is not an item. */
+export function MenuGroup({ label, children }: { label: string; children: ReactNode }) {
+  return (
+    <MenuPrimitive.Group>
+      <MenuPrimitive.GroupLabel className="px-2 pt-2 pb-1 text-[11px] font-semibold tracking-[0.12em] text-(--slate) pt-caps select-none">
+        {label}
+      </MenuPrimitive.GroupLabel>
+      {children}
+    </MenuPrimitive.Group>
   );
 }
 
