@@ -131,11 +131,11 @@ export default function CoverPanel() {
                 </p>
               )}
             </CollapsibleSection>
+            <CollapsibleSection title={labels.coverTexts} sectionId="cover-texts" defaultOpen>
+              <CoverTexts slots={slots} sheets={edited.names} metadata={state.built?.content.metadata} />
+            </CollapsibleSection>
             <CollapsibleSection title={labels.coverDesigner} sectionId="cover-designer" defaultOpen>
               <DesignerSection />
-            </CollapsibleSection>
-            <CollapsibleSection title={labels.coverTexts} sectionId="cover-texts" defaultOpen>
-              <CoverTexts slots={slots} sheets={edited.names} />
             </CollapsibleSection>
             <CollapsibleSection title={labels.coverCollection} sectionId="cover-collection">
               <TextInput label={labels.coverCollectionName} value={production?.collection?.name ?? ''} widthCh={18} onChange={(name) => write(setCollection(production, { ...production?.collection, name }))} />

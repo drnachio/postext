@@ -401,3 +401,20 @@ describe('EDIT_CHAPTER_MARKDOWN with a balloon pin (#571)', () => {
     expect(back.markdown).toBe(page);
   });
 });
+
+describe('the Cover panel and the views (#1675)', () => {
+  it('opens on the Canvas, and another view closes it', () => {
+    const onFolio = baseState({ activeViewport: 'folio' });
+    const cover = sandboxReducer(onFolio, { type: 'SET_PANEL', payload: 'cover' });
+    expect(cover.activeViewport).toBe('canvas');
+    expect(sandboxReducer(onFolio, { type: 'TOGGLE_PANEL', payload: 'cover' }).activeViewport).toBe('canvas');
+    // The Canvas keeps the cover; another view leaves it.
+    expect(sandboxReducer(cover, { type: 'SET_VIEWPORT', payload: 'canvas' }).activePanel).toBe('cover');
+    const pdf = sandboxReducer(cover, { type: 'SET_VIEWPORT', payload: 'pdf' });
+    expect(pdf.activePanel).toBeNull();
+    expect(pdf.activeViewport).toBe('pdf');
+    // Other panels leave the view alone.
+    expect(sandboxReducer(onFolio, { type: 'SET_PANEL', payload: 'fonts' }).activeViewport).toBe('folio');
+    expect(sandboxReducer(baseState({ activePanel: 'fonts' }), { type: 'SET_VIEWPORT', payload: 'pdf' }).activePanel).toBe('fonts');
+  });
+});

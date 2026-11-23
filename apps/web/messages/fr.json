@@ -6979,6 +6979,7 @@
     "coverTexts": "Textes",
     "coverTextsIntro": "La première de couverture et le dos reprennent le titre, le sous-titre et l’auteur du livre. Activez un champ seulement pour y écrire autre chose.",
     "coverOverride": "texte propre",
+    "coverTextFromBook": "Pour l’instant : __text__ (le titre, le sous-titre et l’auteur des métadonnées du premier chapitre)",
     "coverZoneFront": "Première de couverture",
     "coverZoneBack": "Quatrième de couverture",
     "coverZoneSpine": "Dos",

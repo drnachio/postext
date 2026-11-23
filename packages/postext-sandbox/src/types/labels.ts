@@ -6513,6 +6513,8 @@ export interface SandboxLabels {
   coverTexts: string;
   coverTextsIntro: string;
   coverOverride: string;
+  /** Under a front or spine switch left off: what the sheet prints there now. __text__ */
+  coverTextFromBook: string;
   coverZoneFront: string;
   coverZoneBack: string;
   coverZoneSpine: string;

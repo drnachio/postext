@@ -6319,6 +6319,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     coverTexts: t("coverTexts"),
     coverTextsIntro: t("coverTextsIntro"),
     coverOverride: t("coverOverride"),
+    coverTextFromBook: t("coverTextFromBook"),
     coverZoneFront: t("coverZoneFront"),
     coverZoneBack: t("coverZoneBack"),
     coverZoneSpine: t("coverZoneSpine"),

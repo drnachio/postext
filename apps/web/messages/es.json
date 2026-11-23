@@ -6979,6 +6979,7 @@
     "coverTexts": "Textos",
     "coverTextsIntro": "La cubierta y el lomo toman el título, el subtítulo y el autor del libro. Activa un campo solo para escribir allí otra cosa.",
     "coverOverride": "texto propio",
+    "coverTextFromBook": "Ahora: __text__ (el título, el subtítulo y el autor de los metadatos del primer capítulo)",
     "coverZoneFront": "Cubierta",
     "coverZoneBack": "Contracubierta",
     "coverZoneSpine": "Lomo",

@@ -6979,6 +6979,7 @@
     "coverTexts": "Textos",
     "coverTextsIntro": "La coberta i el llom prenen el títol, el subtítol i l’autor del llibre. Activa un camp només per escriure-hi una altra cosa.",
     "coverOverride": "text propi",
+    "coverTextFromBook": "Ara: __text__ (el títol, el subtítol i l'autor de les metadades del primer capítol)",
     "coverZoneFront": "Coberta",
     "coverZoneBack": "Contracoberta",
     "coverZoneSpine": "Llom",

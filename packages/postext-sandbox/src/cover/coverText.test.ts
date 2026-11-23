@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { coverSlotTexts, renameCoverSlot, hasCoverSlot, setCoverSlotText } from './coverText.js';
+import { coverSlotTexts, renameCoverSlot, hasCoverSlot, setCoverSlotText, metadataSlotTexts } from './coverText.js';
 
 const MD = ':::frame{slot="back"}\nA blurb.\n\nSecond paragraph.\n:::\n\n:::frame{slot="flapFront"}\nAbout the author.\n:::\n';
 
@@ -66,5 +66,14 @@ describe('cover text by slot', () => {
     const next = renameCoverSlot(md, 'quote', 'praise');
     expect(coverSlotTexts(next).praise).toBe('Shared');
     expect(coverSlotTexts(next, ['jacket']).praise).toBe('Jacket');
+  });
+});
+
+describe('what the front and the spine print from the metadata (#1675)', () => {
+  it('gives each its frames, styles and all, without the page fence', () => {
+    const t = metadataSlotTexts({ title: 'Don Quijote', author: 'Cervantes' });
+    expect(t.spine).toBe(':::paragraphs{style="cover-spine"}\nDon Quijote · Cervantes\n:::');
+    expect(t.front).toBe(':::paragraphs{style="cover-title"}\nDon Quijote\n:::\n\n:::paragraphs{style="cover-author"}\nCervantes\n:::');
+    expect(metadataSlotTexts(undefined)).toEqual({});
   });
 });

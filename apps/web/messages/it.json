@@ -6979,6 +6979,7 @@
     "coverTexts": "Testi",
     "coverTextsIntro": "La copertina e il dorso prendono titolo, sottotitolo e autore dal libro. Attiva un campo solo per scriverci altro.",
     "coverOverride": "testo proprio",
+    "coverTextFromBook": "Ora: __text__ (il titolo, il sottotitolo e l'autore dei metadati del primo capitolo)",
     "coverZoneFront": "Prima di copertina",
     "coverZoneBack": "Quarta di copertina",
     "coverZoneSpine": "Dorso",

@@ -6979,6 +6979,7 @@
     "coverTexts": "Texte",
     "coverTextsIntro": "Vorderseite und Rücken übernehmen Titel, Untertitel und Autor aus dem Buch. Ein Feld nur einschalten, um dort etwas anderes zu schreiben.",
     "coverOverride": "eigener Text",
+    "coverTextFromBook": "Jetzt: __text__ (Titel, Untertitel und Autor aus den Metadaten des ersten Kapitels)",
     "coverZoneFront": "Vorderseite",
     "coverZoneBack": "Rückseite",
     "coverZoneSpine": "Buchrücken",

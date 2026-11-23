@@ -9,7 +9,8 @@
 // read and write the shared frames unless given the names of a sheet
 // (`case`, `endpaperFront`…), and then that sheet's own.
 
-import { coverFrames } from 'postext/production';
+import { coverFrames, coverSource } from 'postext/production';
+import type { DocumentMetadata } from 'postext';
 
 const CLOSE = /\n?[ \t]{0,3}:{3,}[ \t]*\n*$/;
 
@@ -101,4 +102,13 @@ export function renameCoverSlot(markdown: string | undefined, from: string, to: 
     at = f.end;
   }
   return out + md.slice(at);
+}
+
+/** The texts the front and the spine print while no frame replaces them:
+ *  the frames the cover writes from the book's metadata (its title,
+ *  subtitle and author in the cover's styles), without the page fence
+ *  round them (#1675). */
+export function metadataSlotTexts(metadata: DocumentMetadata | undefined): Record<string, string> {
+  const md = coverSource(undefined, ['front', 'spine'], metadata ?? {}).markdown;
+  return coverSlotTexts(md.replace(/^[^\n]*\n/, '').replace(/\n:{4,}\s*$/, ''));
 }

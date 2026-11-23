@@ -6979,6 +6979,7 @@
     "coverTexts": "Textos",
     "coverTextsIntro": "A capa e a lombada usam o título, o subtítulo e o autor do livro. Ative um campo só para escrever outra coisa ali.",
     "coverOverride": "texto próprio",
+    "coverTextFromBook": "Agora: __text__ (o título, o subtítulo e o autor dos metadados do primeiro capítulo)",
     "coverZoneFront": "Capa",
     "coverZoneBack": "Contracapa",
     "coverZoneSpine": "Lombada",

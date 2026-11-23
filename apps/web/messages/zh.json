@@ -6979,6 +6979,7 @@
     "coverTexts": "文字",
     "coverTextsIntro": "封面和书脊取自本书的书名、副标题和作者。只有想在那里写别的内容时才打开字段。",
     "coverOverride": "自定文字",
+    "coverTextFromBook": "当前：__text__（取自第一章元数据中的标题、副标题和作者）",
     "coverZoneFront": "封面",
     "coverZoneBack": "封底",
     "coverZoneSpine": "书脊",

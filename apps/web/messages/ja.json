@@ -6979,6 +6979,7 @@
     "coverTexts": "文字",
     "coverTextsIntro": "表紙と背には本の書名・副題・著者が入ります。別の文字を書くときだけ欄をオンにしてください。",
     "coverOverride": "独自の文字",
+    "coverTextFromBook": "現在：__text__（第1章のメタデータにあるタイトル、サブタイトル、著者）",
     "coverZoneFront": "表1",
     "coverZoneBack": "表4",
     "coverZoneSpine": "背",
