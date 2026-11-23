@@ -2542,6 +2542,7 @@ export const SECTION_SEARCH_KEYS: Record<SettingsSectionId, SectionSearchKeys> =
       'separatorNoBreakSpace',
       'separatorNone',
       'separatorSpace',
+      'settingsJumpTo',
       'shapeCornerBottomLeft',
       'shapeCornerBottomRight',
       'shapeCornerTopLeft',
