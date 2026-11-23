@@ -3,9 +3,9 @@
 export const metadata = {
   title: 'WebMCP: an agent at work in the Sandbox',
   sidebarTitle: 'WebMCP',
-  description: 'What an AI agent in the browser can do with the Sandbox through its 69 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
+  description: 'What an AI agent in the browser can do with the Sandbox through its 71 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
   lang: 'en',
-  lastUpdated: '2026-11-12',
+  lastUpdated: '2026-11-23',
   readingTime: '12 min',
   order: 54,
   plainSummary: "This page is for people who want an AI helper to work on a book in the Sandbox for them. While the Sandbox is open, it gives the helper a set of tools: to look at any page, change the design, edit the text, add pictures and tables, find problems and save files. You ask in your own words, for example \"make the text a little larger and check the book still fits in 40 pages\", and the helper uses the tools and shows you the pages. Everything stays in your browser. The page explains how to connect a helper, what it can do and how each tool is called.",
@@ -23,7 +23,7 @@ picture of page 12, sets `bodyText.fontSize` to 10.5 pt, sees that the chapter
 went from 18 to 19 pages, and puts it back. It does what you do by eye, and
 it does it with your book, in your browser.
 
-There are 69 tools whose names start with `sandbox_`, registered while the
+There are 71 tools whose names start with `sandbox_`, registered while the
 Sandbox is on screen, and 8 tools of the site, `site_*`, on every page of
 postext.dev. This page sorts them by what you would ask an agent to do, and
 gives the call for each one.
@@ -39,7 +39,7 @@ finds them there. Nothing has to be installed or set up on the Postext side.
 WebMCP is still a draft. Chrome offers it as an origin trial, and behind the
 flag `chrome://flags/#enable-webmcp-testing`. The tools follow the page: on
 the home page or in the docs the agent has the `site_*` tools; once the
-Sandbox is on screen, the 69 `sandbox_*` tools appear as well.
+Sandbox is on screen, the 71 `sandbox_*` tools appear as well.
 
 ### In any other browser: `window.postextWebMcp`
 
@@ -636,24 +636,42 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
 ### Print covers
 
 The print versions and the cover's design are settings: `sandbox_set_config`
-writes `production.versions` and `cover` (`cover.textBoxes`,
-`cover.elements`, `cover.finishes`…). Three tools read, write and export the
-rest, as the Cover panel does:
+writes `production.versions`, `production.collection` and `cover`
+(`cover.textBoxes`, `cover.elements`, `cover.finishes`, `cover.sheets`…). Five
+tools read, write and export the rest, as the Cover panel does:
 
 - `sandbox_cover_get` reads the cover of a version (`version`, the first by
   default) and one of its sheets (`sheet`: `cover`, `jacket`,
   `endpaperFront` or `endpaperBack`): the versions, the sheet's size and spine
   in mm with the pages they come from, each panel's rectangle, the slots the
-  cover's text goes in with the text each has, the design's items placed on
-  the sheet, and the checks.
+  cover's text goes in with the text each has (and `sheetText`, the text a
+  case, jacket or endpaper has for itself alone), the design the sheet is
+  drawn with (`design.uses`: `book` or the name of its own in `cover.sheets`;
+  `design.choices`: the designs of its own it may take), the design's items
+  placed on the sheet, the `collection`, and the checks.
 - `sandbox_cover_write_text` writes the Markdown of one slot, a panel or a text
   box by its name; `text: null` takes it away, and the front and the spine go
-  back to the title, subtitle and author of the metadata. It is one step of
-  the undo history.
+  back to the title, subtitle and author of the metadata. One text serves
+  every version and sheet; with `thisSheetOnly: true` it is written for a
+  case, a jacket or an endpaper alone and takes the shared text's place
+  there. It is one step of the undo history.
 - `sandbox_cover_export` writes the sheet as a PDF for the printer
   (`format: "pdf"`, with the preflight's findings) or one panel as a JPEG
   (`format: "jpeg"`, `zone`, `longSide`), downloaded or, with
   `deliver: "data"`, handed back base64-encoded.
+- `sandbox_cover_sheet_design` chooses the design a sheet of a hardcover is
+  drawn with, as "Design of this sheet" does: `design: "book"` (the book's
+  cover design), `"own"` (the case's or the jacket's, or this endpaper's
+  alone) or `"endpapers"` (one for both endpapers), started as a copy of the
+  book's. `patch` then sets fields of that design (`background`, `image`,
+  `elements`, `textBoxes`…; `null` removes one). One step of the undo history.
+- `sandbox_cover_set_collection` writes the collection the book belongs to:
+  `name`, `isbn`, `catalogue` (the titles in order, each `{ id, title,
+  resource? }`, replacing the whole list) and `volume` (the catalogue id that
+  is this book, `null` for none). A field left out stays as it is.
+  `::catalogue` in the cover's text sets the titles as a list, and a cover
+  element of kind `catalogue` lays out their pictures. One step of the undo
+  history.
 
 ```json
 { "slot": "back", "text": "A city that keeps its books underground.\n\nAnd the girl who reads them aloud." }
@@ -762,7 +780,7 @@ each one come with `postextWebMcp.listTools()`.
   `sandbox_delete_resource`, `sandbox_list_fonts`, `sandbox_save_font`.
 - **Comics**: `sandbox_inspect_comic`, `sandbox_edit_comic`.
 - **Composed pages**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
-- **Print covers**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`.
+- **Print covers**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`.
 - **Books and files**: `sandbox_list_books`, `sandbox_open_book`,
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
   `sandbox_export`.
