@@ -13,6 +13,8 @@ export { catalogueRange, withCatalogue, expandCatalogueText, CATALOGUE_STYLE, CA
 export type { CoverSourceIssue } from './coverSource.js';
 export { buildCover, coverZoneBox, coverSheetNames, coverDesignFor } from './buildCover.js';
 export type { BuildCoverInput, BuildCoverIssue, BuiltCover, CoverSheetKind, CoverPageBox } from './buildCover.js';
+export { resolveCoverTextBoxes, keptCoverTextBoxes, COVER_GRID_EDGES, COVER_BESIDE_EDGES } from './coverTextBoxes.js';
+export type { CoverTextBoxIssue, ResolvedCoverTextBoxes } from './coverTextBoxes.js';
 export { coverElementRect, placeCoverElement, outlinePathData } from './coverDesign.js';
 export { basicShape, roundedRectPath, pathData, coverPathCommands, flattenCoverPath, coverPathBounds, BASIC_SHAPES } from './shapes.js';
 export type { BasicShape } from './shapes.js';
