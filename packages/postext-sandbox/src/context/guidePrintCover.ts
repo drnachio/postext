@@ -2,8 +2,9 @@
 // and a cover sheet in the brand of its front and back pages. The night
 // ground, the cover picture across the head of the front, the three part
 // colours on the back, a gloss varnish over the picture; the title,
-// subtitle and author come from the edition's metadata, the back cover's
-// text from its cover Markdown (`guideCoverMarkdown`).
+// subtitle and author on the front come from the edition's metadata, the
+// back cover's text and the spine's line from its cover Markdown
+// (`guideCoverMarkdown`).
 
 import type { ParagraphStyleConfig } from 'postext';
 import type { CoverConfig, ProductionConfig } from 'postext/production';
@@ -28,6 +29,23 @@ const VERSION_NAMES: Record<GuideLang, [paperback: string, hardcover: string]> =
   'zh-Hans': ['平装', '精装'],
   ar: ['غلاف ورقي', 'غلاف مقوى'],
   ja: ['並製', '上製'],
+};
+
+/** The spine's line in each edition (#1686): the book's name and its
+ *  licence, in place of the title and author the metadata would give. The
+ *  Chinese and Japanese lines keep their edition's ways: no space between
+ *  Han and Latin, and the Japanese one parted by a full-width space. */
+const SPINE_LINES: Record<GuideLang, string> = {
+  en: 'Postext · Open Source MIT License',
+  es: 'Postext · Licencia MIT de código abierto',
+  ca: 'Postext · Llicència MIT de codi obert',
+  'pt-BR': 'Postext · Licença MIT de código aberto',
+  fr: 'Postext · Licence MIT open source',
+  de: 'Postext · Open-Source-Lizenz MIT',
+  it: 'Postext · Licenza MIT open source',
+  'zh-Hans': 'Postext · 开源MIT许可证',
+  ar: 'Postext · رخصة MIT مفتوحة المصدر',
+  ja: 'Postext　オープンソースMITライセンス',
 };
 
 /** The two print versions of the guide: perfect bound and in a flat-spined
@@ -101,18 +119,20 @@ export function guideCoverStyles(faces: { text: string; sans: string }, align: '
   ];
 }
 
-/** The back cover's text of an edition: the blurb and the licence line its
- *  own back page carries (the `blurb` and `licence` of its last heading),
- *  so the two never drift apart. */
-export function guideCoverMarkdown(markdown: string): string | undefined {
+/** The cover's text of an edition: its spine's line, and the blurb and
+ *  the licence line its own back page carries (the `blurb` and `licence`
+ *  of its last heading), so the two never drift apart. */
+export function guideCoverMarkdown(markdown: string, lang: GuideLang): string {
+  const styled = (style: string, text: string) => `:::paragraphs{style="${style}"}\n${text}\n:::\n`;
+  const frame = (slot: string, body: string) => `:::frame{slot="${slot}"}\n${body}:::\n`;
+  const spine = frame('spine', styled('cover-spine', SPINE_LINES[lang]));
   const last = markdown.lastIndexOf('\n# ');
-  if (last < 0) return undefined;
+  if (last < 0) return spine;
   const end = markdown.indexOf('\n', last + 1);
   const heading = markdown.slice(last + 1, end < 0 ? undefined : end);
   const attr = (name: string) => new RegExp(`\\b${name}="([^"]*)"`).exec(heading)?.[1];
   const blurb = attr('blurb');
-  if (!blurb) return undefined;
+  if (!blurb) return spine;
   const licence = attr('licence');
-  const styled = (style: string, text: string) => `:::paragraphs{style="${style}"}\n${text}\n:::\n`;
-  return `:::frame{slot="back"}\n${styled('cover-blurb', blurb)}${licence ? styled('cover-licence', licence) : ''}:::\n`;
+  return `${frame('back', `${styled('cover-blurb', blurb)}${licence ? styled('cover-licence', licence) : ''}`)}\n${spine}`;
 }
