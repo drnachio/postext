@@ -14,6 +14,8 @@ export const cb = (window.__cb ??= {
   // fileId was drawn from, the files handed to createBundle, the blob each
   // ImageBitmap was decoded from and the faces built from bytes.
   imageSources: new Map(), bundleFiles: new Map(), bitmapBlobs: new WeakMap(), faces: [],
+  // Every cover sheet built with postext/production (shim postext-production.js).
+  covers: [],
 });
 cb.importedAt ||= performance.now();
 const known = (cb.known ??= new WeakSet());
@@ -400,6 +402,27 @@ export async function renderToScorm(docs, options = {}) {
     entry.error = 'read back: ' + String(error?.message ?? error);
   }
   return bytes;
+}
+`;
+}
+
+/** postext/production: each cover sheet the pen builds is recorded in
+ *  `cb.covers` (version and cover Markdown), so the Sandbox bundle carries
+ *  the cover's text as `cover.md` beside the `production` and `cover` of
+ *  the configuration (#1671). */
+export function productionShim(url: string): string {
+  return `export * from '${url}';
+import * as real from '${url}';
+import { cb } from '/__shim/recorder.js';
+
+export function buildCover(input, ...rest) {
+  const built = real.buildCover(input, ...rest);
+  (cb.covers ??= []).push({
+    version: input?.version ?? null,
+    markdown: typeof input?.markdown === 'string' ? input.markdown : '',
+    built: !!built && typeof built === 'object' && 'config' in built,
+  });
+  return built;
 }
 `;
 }

@@ -1,0 +1,64 @@
+---
+title: "Una rústica con solapas, con el lomo sacado de las páginas"
+summary: "Una rústica de 120 × 190 mm con solapas de 60 mm: se componen las páginas y buildCover hace con ellas el pliego de cubierta, con el lomo que da su papel."
+plain: "Un libro de bolsillo con dos leyendas de Bécquer y el pliego de su cubierta: contracubierta, lomo, cubierta y las dos solapas en una pieza. El lomo mide lo que abultan las páginas, así que se calcula a partir del libro."
+description: "Una rústica con solapas en Postext: perfil de encuadernación, código de barras ISBN y lomo calculado con las páginas y el papel; la cubierta, en Markdown."
+question: "¿Cómo hago el pliego de cubierta de una rústica con solapas, con el lomo calculado a partir de las páginas?"
+aliases: ["pliego de cubierta", "solapas", "ancho de lomo", "código de barras ISBN", "contracubierta", "texto de contracubierta", "encuadernación fresada", "cover sheet", "flaps", "spine width"]
+pageNotes: { "38": "El pliego de cubierta extendido: a la izquierda la solapa trasera sobre esta edición, luego la contracubierta con el texto y un código de barras ISBN sobre fondo blanco, el lomo rotulado de abajo arriba, la cubierta con una capilla en ruinas pintada en un cerro bajo una sierra nevada y el título encima, y a la derecha la solapa delantera con una nota sobre el autor. Alrededor, las marcas de corte y de plegado." }
+---
+
+## Lo que vas a componer
+
+*El monte de las ánimas* y *Los ojos verdes*, de Bécquer, en una rústica de bolsillo de 120 × 190 mm con solapas de 60 mm, y el pliego en que se imprime su cubierta. Postext compone antes las 37 páginas: anteportada, portada, créditos, índice, una hoja de título para cada leyenda y el texto en Crimson Pro de 11/15,2. Después `buildCover` toma esas páginas y monta el pliego: solapa trasera, contracubierta con el texto de presentación y el código de barras, lomo, cubierta con una pintura de una capilla en ruinas al pie del Moncayo y solapa delantera. Título, subtítulo y autor salen de los metadatos del libro, y el texto de las solapas, de un Markdown aparte.
+
+## Elaboración
+
+### 1 · La encuadernación pone las solapas y el papel pone el lomo
+
+El código es [la respuesta corta](#la-respuesta-corta) de arriba. El perfil de encuadernación describe cómo trabaja el taller: fresado con PUR en cuadernillos de 16 páginas, solapas de 60 mm, 3 mm de sangrado y medio milímetro más de lomo para la cola. La versión lleva el ISBN y su complemento de cinco cifras; el ISBN es un número de muestra que no corresponde a ningún libro. El ancho del lomo no aparece escrito en ninguna parte. Las 37 páginas se redondean a tres cuadernillos, 48 páginas o 24 hojas, y cada hoja de papel de 100 g/m² con 2,4 de mano mide 240 µm: 24 × 0,24 + 0,5 da un lomo de 6,3 mm. Por omisión un lomo de menos de 6 mm no se rotula (`spineText.minSpine`), y por eso el libro va en un papel de mucha mano.
+
+### 2 · Primero, las páginas
+
+<Excerpt region="pages" />
+
+La tripa es un documento de Postext como cualquier otro, y cada página que tenga cuenta para el lomo. Los preliminares usan estilos de título cuyos diseños colocan el título, el filete y el pie editorial a alturas fijas de la página. Cada leyenda tiene su propia hoja de título (la que señala el índice) y vuelve a empezar en la impar siguiente, 40 mm más abajo. Si cambias el cuerpo de letra o los márgenes, cambia el número de páginas, y el lomo lo sigue en la siguiente composición.
+
+### 3 · Los estilos de la cubierta van con los del libro
+
+<Excerpt region="cover-type" />
+
+El pliego se compone con la configuración del libro, así que sus estilos de párrafo están en la misma lista que los de los créditos y el colofón. `cover-title`, `cover-subtitle`, `cover-author` y `cover-spine` son los nombres que `buildCover` da a los metadatos que coloca; `cover-blurb`, `cover-note`, `flap-head` y `flap-text` los nombra el Markdown de la cubierta. Sobre el fondo de noche el texto va en bandera, sin guiones, en el hueso y el oro de la paleta.
+
+### 4 · El pliego sale de las páginas compuestas
+
+<Excerpt region="sheet" />
+
+`buildCover` recibe las páginas, los metadatos y el Markdown de la cubierta, con un `:::frame` para la contracubierta y otro para cada solapa. Devuelve un documento que `buildDocumentWithFonts` compone como cualquier otro, además del código de barras en un archivo SVG. Las cifras del código piden OCR-B, que no está en ningún servidor de fuentes, así que el ejemplo las pone en Josefin Sans, una fuente que el PDF ya incrusta. El PDF lleva las 37 páginas y detrás el pliego a su tamaño, que es el archivo que espera una imprenta.
+
+## Variantes
+
+### Rotula el lomo de arriba abajo
+
+Los libros ingleses y norteamericanos leen el lomo de arriba abajo; la opción por omisión, de abajo arriba, es la costumbre española y europea.
+
+```diff
+   versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
+-    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
++    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
++    spineText: { direction: 'topToBottom' } }],
+```
+
+### Imprime en un papel más fino
+
+Con 80 g/m² y 2,2 de mano la hoja mide 176 µm, el lomo baja a 4,7 mm y pierde el rótulo, que necesita 6 mm.
+
+```diff
+-const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
++const folio = { paper: { type: 'bookWove', grammage: 80, bulk: 2.2, shade: '#f7f1e3' } };
+```
+
+## Errores frecuentes
+
+- En la lista de páginas capturadas el pliego va detrás de las del libro, así que su número es el de páginas del libro más uno. Si el libro gana una página, el número cambia.
+- Un código de barras cuyas cifras piden una fuente que el PDF no encuentra hace fallar la exportación. Carga su SVG con un `font-family` que el ejemplo ya tenga.

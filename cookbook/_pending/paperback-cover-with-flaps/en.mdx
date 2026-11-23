@@ -1,0 +1,64 @@
+---
+title: "A paperback cover with flaps, its spine from the pages"
+summary: "A 120 × 190 mm paperback with 60 mm flaps: the pages are laid out first, and buildCover makes the cover sheet from them, with a spine as thick as their paper."
+plain: "A small paperback of two Spanish legends, and the printer's sheet for its cover: back, spine, front and the two folded flaps, all in one piece. The spine is as wide as the pages are thick, so it is worked out from the book itself."
+description: "A paperback with flaps in Postext: a binding profile, an ISBN barcode and a spine worked out from the page count and the paper, with the cover text in Markdown."
+question: "How do I make the cover sheet of a paperback with flaps, with its spine worked out from the page count?"
+aliases: ["cover spread", "flaps", "spine width", "ISBN barcode", "back cover blurb", "perfect binding", "solapas", "lomo", "contracubierta", "cover sheet"]
+pageNotes: { "38": "The cover sheet laid flat: on the left the back flap about the translators, then the back cover with the blurb and an ISBN barcode on a white plate, the spine lettered from bottom to top, the front cover with a painted ruined chapel on a hill under a snowy ridge and the title above it, and on the right the front flap with a note on the author. Crop and fold marks run round it." }
+---
+
+## What you'll build
+
+Two of Bécquer's legends, *The Spirits' Mountain* and *The Emerald Eyes*, as a pocket paperback of 120 × 190 mm with 60 mm flaps, and the sheet its cover is printed on. Postext lays out the 37 pages first: half title, title page, rights, contents, a title leaf for each legend, then the text in Crimson Pro 11/15.2. `buildCover` then takes those pages and builds the sheet: back flap, back cover with the blurb and the barcode, spine, front cover with a painting of a ruined chapel under the Moncayo, and front flap. The title, subtitle and author come from the book's metadata, and the flaps' text from a Markdown file of its own.
+
+## Method
+
+### 1 · The binding gives the flaps, the paper gives the spine
+
+The code is [the short answer](#the-short-answer) above. The binding profile says how the printer works: PUR perfect binding in 16-page signatures, 60 mm flaps, 3 mm bleed and 0.5 mm added to the spine for the glue. The version names the ISBN and its five-digit add-on; the ISBN is a sample number, assigned to no book. No measure of the spine is written anywhere. The 37 pages round up to three signatures, 48 pages or 24 leaves, and each leaf of 100 g/m² paper at a bulk of 2.4 is 240 µm thick: 24 × 0.24 + 0.5 gives a spine of 6.3 mm. By default a spine under 6 mm carries no lettering (`spineText.minSpine`), which is why the book is on bulky paper.
+
+### 2 · The pages come first
+
+<Excerpt region="pages" />
+
+The book block is an ordinary Postext document, and every page it has counts towards the spine. The front matter uses heading styles whose designs place the title, the rule and the imprint at fixed heights on the page. Each legend opens with a title leaf of its own (the one the contents point to) and starts again on the next recto, 40 mm down. Change the type size or the margins and the page count moves, and the spine follows on the next build.
+
+### 3 · The cover's type lives with the book's
+
+<Excerpt region="cover-type" />
+
+The sheet is laid out with the book's configuration, so its paragraph styles sit in the same list as the rights and the colophon. `cover-title`, `cover-subtitle`, `cover-author` and `cover-spine` are the names `buildCover` gives the metadata it places, and `cover-blurb`, `cover-note`, `flap-head` and `flap-text` are named in the cover Markdown. The text on the night ground is set ragged, without hyphens, in the bone and gold of the palette.
+
+### 4 · The sheet is built from the laid-out pages
+
+<Excerpt region="sheet" />
+
+`buildCover` gets the pages, the metadata and the cover Markdown, a `:::frame` for the back and one for each flap. It returns a document that `buildDocumentWithFonts` lays out like any other, plus the barcode as an SVG file. The barcode's digits ask for OCR-B, which no font server has, so the pen sets them in Josefin Sans, a face the PDF already embeds. The PDF holds the 37 pages and then the sheet at its own size, which is the file a printer expects.
+
+## Variations
+
+### Letter the spine from top to bottom
+
+English and American books read their spines from the top down; the default, bottom to top, is the Spanish and continental custom.
+
+```diff
+   versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
+-    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
++    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
++    spineText: { direction: 'topToBottom' } }],
+```
+
+### Print on thinner paper
+
+At 80 g/m² and a bulk of 2.2 a leaf is 176 µm, the spine drops to 4.7 mm and its lettering goes, since it needs 6 mm.
+
+```diff
+-const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
++const folio = { paper: { type: 'bookWove', grammage: 80, bulk: 2.2, shade: '#f7f1e3' } };
+```
+
+## Pitfalls
+
+- The sheet comes after the book's pages in the captured list, so its page number is the book's page count plus one. Add a page to the book and the number changes.
+- A barcode whose digits name a font the PDF cannot find fails at export. Load its SVG with a `font-family` the pen already has.

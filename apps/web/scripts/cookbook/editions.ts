@@ -11,12 +11,12 @@
  *
  * Every edition of the book is read back and compared with the bundle the
  * pen wrote for it: chapters, configuration (defaults stripped), resources
- * (files compared by their bytes), start, title. An edition that does not
- * read back the same is left out of the book, with a note; a book of one
- * edition is the pen's bundle as it was. Editions whose bundles name the
- * same language (the English and Spanish pages of a novel set in Arabic
- * both write `ar`) cannot share a book: the first in `sample.locales`
- * order stays.
+ * (files compared by their bytes), start, cover Markdown (#1671), title.
+ * An edition that does not read back the same is left out of the book,
+ * with a note; a book of one edition is the pen's bundle as it was.
+ * Editions whose bundles name the same language (the English and Spanish
+ * pages of a novel set in Arabic both write `ar`) cannot share a book: the
+ * first in `sample.locales` order stays.
  *
  * Run by Node's type stripping: erasable TypeScript.
  */
@@ -48,6 +48,8 @@ interface Edition {
   config: PostextConfig;
   resources: Resource[];
   start?: unknown;
+  /** The print cover's Markdown (`cover.md`, #1671). */
+  coverMarkdown?: string;
   canvasScope?: "book";
   thumbnail?: { data: Uint8Array; mime: string };
   /** The bundle's files by path (= the fileIds above). */
@@ -83,6 +85,7 @@ async function readEdition(variant: SampleLocale, bytes: Buffer, locale?: string
     config: plain(read.config),
     resources: plain(read.resources),
     ...(read.start ? { start: plain(read.start) } : {}),
+    ...(read.coverMarkdown ? { coverMarkdown: read.coverMarkdown } : {}),
     ...(manifest.view?.canvasScope === "book" ? { canvasScope: "book" as const } : {}),
     ...(thumb ? { thumbnail: { data: thumb, mime: manifest.thumbnail!.endsWith(".png") ? "image/png" : "image/webp" } } : {}),
     files: zip.files,
@@ -139,6 +142,7 @@ function difference(edition: Edition, book: Edition): string | null {
   if (missing.length) return `font files differ (${missing[0]})`;
   if (!sameConfig(resourcesKey(edition.resources, edition.files), resourcesKey(book.resources, book.files))) return "the resources differ";
   if (!sameConfig(edition.start ?? null, book.start ?? null)) return "the start differs";
+  if ((edition.coverMarkdown ?? "") !== (book.coverMarkdown ?? "")) return "the cover Markdown differs";
   if (edition.name !== book.name || (edition.description ?? "") !== (book.description ?? "")) return "the title differs";
   if ((edition.canvasScope ?? null) !== (book.canvasScope ?? null)) return "the view differs";
   return null;
@@ -191,6 +195,7 @@ async function writeBook(editions: Edition[]): Promise<Buffer> {
       config: mine.config,
       ...(resources.length ? { resources } : {}),
       ...(!sameConfig(e.start ?? null, primary!.start ?? null) ? { start: (e.start ?? {}) as never } : {}),
+      ...(e.coverMarkdown && e.coverMarkdown !== primary!.coverMarkdown ? { coverMarkdown: e.coverMarkdown } : {}),
     }];
   }));
   const created = await createBundle({
@@ -204,6 +209,7 @@ async function writeBook(editions: Edition[]): Promise<Buffer> {
     resources: own[0]!.resources,
     files,
     ...(primary!.start ? { start: primary!.start as never } : {}),
+    ...(primary!.coverMarkdown ? { coverMarkdown: primary!.coverMarkdown } : {}),
     ...(primary!.canvasScope ? { canvasScope: primary!.canvasScope } : {}),
     ...(primary!.thumbnail ? { thumbnail: primary!.thumbnail } : {}),
     localized,

@@ -1,0 +1,64 @@
+---
+title: "Eine Klappenbroschur, der Rücken aus den Seiten berechnet"
+summary: "Eine Broschur von 120 × 190 mm mit 60-mm-Klappen: Erst werden die Seiten gesetzt, dann baut buildCover daraus den Umschlagbogen, mit dem Rücken des Papiers."
+plain: "Ein Taschenbuch mit zwei Legenden von Bécquer und der Bogen für seinen Umschlag: Rückseite, Rücken, Vorderseite und beide Klappen in einem Stück. Der Rücken ist so breit wie die Seiten dick, also wird er aus dem Buch berechnet."
+description: "Eine Klappenbroschur mit Postext: Bindungsprofil, ISBN-Strichcode und ein Rücken aus Seitenzahl und Papier berechnet, der Umschlagtext in Markdown."
+question: "Wie mache ich den Umschlagbogen einer Klappenbroschur, mit dem Rücken aus der Seitenzahl berechnet?"
+aliases: ["Umschlagbogen", "Klappen", "Rückenstärke", "ISBN-Strichcode", "Klappentext", "Klebebindung", "cover sheet", "flaps", "spine width"]
+pageNotes: { "38": "Der Umschlagbogen flach ausgebreitet: links die hintere Klappe über die Übersetzerinnen, dann die Rückseite mit dem Text und einem ISBN-Strichcode auf weißem Feld, der Rücken von unten nach oben beschriftet, die Vorderseite mit einer gemalten Kapellenruine auf einem Hügel unter einem verschneiten Kamm und dem Titel darüber, rechts die vordere Klappe mit einer Notiz zum Autor. Ringsum Schnitt- und Falzmarken." }
+---
+
+## Was Sie setzen
+
+Zwei Legenden von Bécquer, *The Spirits’ Mountain* und *The Emerald Eyes* (*El monte de las ánimas* und *Los ojos verdes*), als Taschenbuch von 120 × 190 mm mit 60 mm breiten Klappen, dazu den Bogen, auf den sein Umschlag gedruckt wird. Postext setzt zuerst die 37 Seiten: Schmutztitel, Titelseite, Impressum, Inhalt, ein Titelblatt für jede Legende, dann den Text in Crimson Pro 11/15,2. Danach nimmt `buildCover` diese Seiten und baut den Bogen: hintere Klappe, Rückseite mit Klappentext und Strichcode, Rücken, Vorderseite mit dem Gemälde einer Kapellenruine am Fuß des Moncayo, vordere Klappe. Titel, Untertitel und Autor kommen aus den Metadaten des Buchs, der Text der Klappen aus einer eigenen Markdown-Datei.
+
+## Zubereitung
+
+### 1 · Die Bindung gibt die Klappen, das Papier den Rücken
+
+Der Code steht oben in [der kurzen Antwort](#die-kurze-antwort). Das Bindungsprofil beschreibt, wie die Buchbinderei arbeitet: PUR-Klebebindung in Lagen zu 16 Seiten, 60 mm breite Klappen, 3 mm Anschnitt und ein halber Millimeter Zugabe am Rücken für den Leim. Die Ausgabe trägt die ISBN und ihren fünfstelligen Zusatz; die ISBN ist eine Beispielnummer, die keinem Buch gehört. Die Rückenstärke steht nirgends. Die 37 Seiten werden auf drei Lagen aufgerundet, 48 Seiten oder 24 Blatt, und jedes Blatt eines Papiers von 100 g/m² mit Volumen 2,4 ist 240 µm dick: 24 × 0,24 + 0,5 ergibt einen Rücken von 6,3 mm. Ein Rücken unter 6 mm bleibt standardmäßig unbeschriftet (`spineText.minSpine`), deshalb steht das Buch auf voluminösem Papier.
+
+### 2 · Zuerst die Seiten
+
+<Excerpt region="pages" />
+
+Der Buchblock ist ein gewöhnliches Postext-Dokument, und jede seiner Seiten zählt für den Rücken. Die Titelei arbeitet mit Überschriftenstilen, deren Gestaltung Titel, Linie und Verlagszeile in festen Höhen auf die Seite stellt. Jede Legende hat ihr eigenes Titelblatt (auf das das Inhaltsverzeichnis verweist) und beginnt auf der nächsten rechten Seite neu, 40 mm tiefer. Ändern Sie Schriftgrad oder Ränder, ändert sich die Seitenzahl, und der Rücken folgt beim nächsten Satz.
+
+### 3 · Die Stile des Umschlags stehen bei denen des Buchs
+
+<Excerpt region="cover-type" />
+
+Der Bogen wird mit der Konfiguration des Buchs gesetzt, seine Absatzstile stehen also in derselben Liste wie die des Impressums und des Kolophons. `cover-title`, `cover-subtitle`, `cover-author` und `cover-spine` sind die Namen, die `buildCover` den Metadaten gibt, die es platziert; `cover-blurb`, `cover-note`, `flap-head` und `flap-text` nennt das Markdown des Umschlags. Auf dem Nachtgrund steht der Text im Flattersatz, ohne Trennungen, im Knochenweiß und Gold der Palette.
+
+### 4 · Der Bogen entsteht aus den gesetzten Seiten
+
+<Excerpt region="sheet" />
+
+`buildCover` bekommt die Seiten, die Metadaten und das Markdown des Umschlags, mit einem `:::frame` für die Rückseite und je einem für die Klappen. Es liefert ein Dokument, das `buildDocumentWithFonts` wie jedes andere setzt, dazu den Strichcode als SVG-Datei. Die Ziffern des Codes verlangen OCR-B, die kein Schriftserver anbietet; das Beispiel setzt sie deshalb in Josefin Sans, einer Schrift, die das PDF ohnehin einbettet. Das PDF enthält die 37 Seiten und danach den Bogen in seinem eigenen Format, die Datei, die eine Druckerei erwartet.
+
+## Varianten
+
+### Den Rücken von oben nach unten beschriften
+
+Englische und amerikanische Bücher lesen den Rücken von oben nach unten; die Voreinstellung, von unten nach oben, folgt dem kontinentalen Brauch.
+
+```diff
+   versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
+-    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
++    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
++    spineText: { direction: 'topToBottom' } }],
+```
+
+### Auf dünneres Papier drucken
+
+Bei 80 g/m² und Volumen 2,2 ist ein Blatt 176 µm dick, der Rücken schrumpft auf 4,7 mm und verliert seine Beschriftung, die 6 mm braucht.
+
+```diff
+-const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
++const folio = { paper: { type: 'bookWove', grammage: 80, bulk: 2.2, shade: '#f7f1e3' } };
+```
+
+## Häufige Fehler
+
+- In der Liste der erfassten Seiten folgt der Bogen auf die Seiten des Buchs; seine Nummer ist die Seitenzahl des Buchs plus eins. Bekommt das Buch eine Seite mehr, ändert sich die Nummer.
+- Ein Strichcode, dessen Ziffern eine Schrift verlangen, die das PDF nicht findet, lässt den Export scheitern. Laden Sie sein SVG mit einer `font-family`, die das Beispiel schon hat.

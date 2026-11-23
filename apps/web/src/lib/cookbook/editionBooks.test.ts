@@ -11,9 +11,10 @@ import type { SampleLocale } from "./types.ts";
 const pt = (value: number) => ({ value, unit: "pt" as const });
 const EPOCH = new Date(1980, 0, 1);
 
-async function edition(locale: string, markdown: string, config: PostextConfig, caption: string): Promise<Buffer> {
+async function edition(locale: string, markdown: string, config: PostextConfig, caption: string, coverMarkdown?: string): Promise<Buffer> {
   const created = await createBundle({
     id: "recipe-a", name: `Book ${locale}`, locale, chapters: [{ markdown }], config,
+    ...(coverMarkdown ? { coverMarkdown } : {}),
     resources: [{ id: "fig", typeId: "figure", kind: "svg", caption, svg: { fileId: "fig.svg", width: 10, height: 10 } } as never],
     files: { "fig.svg": '<svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"/>' },
     mtime: EPOCH,
@@ -49,6 +50,17 @@ describe("editionBooks", () => {
     expect(books.get("en")!.equals(en)).toBe(true);
     expect(books.get("es")!.equals(es)).toBe(true);
     expect(notes.get("en")?.[0]).toMatch(/es left out/);
+  });
+
+  it("carries each edition's cover Markdown (#1671)", async () => {
+    const cover = { background: { hex: "#16242a", model: "hex" } } as never;
+    const en = await edition("en", "# One", { locale: "en-us", cover } as PostextConfig, "A", ':::frame{slot="back"}\nBlurb.\n:::');
+    const es = await edition("es", "# Uno", { locale: "es", cover } as PostextConfig, "B", ':::frame{slot="back"}\nReseña.\n:::');
+    const { books, notes } = await editionBooks(new Map([["en", en], ["es", es]]), ["en", "es"]);
+    expect(notes.get("en")).toEqual(["book in several languages: en, es"]);
+    expect((await openBundle(books.get("en")!)).coverMarkdown).toContain("Blurb.");
+    expect((await openBundle(books.get("en")!, { locale: "es" })).coverMarkdown).toContain("Reseña.");
+    expect((await openBundle(books.get("es")!)).coverMarkdown).toContain("Reseña.");
   });
 
   it("gives the same bytes when run again on the books it wrote", async () => {

@@ -1,0 +1,64 @@
+---
+title: "Una rústica amb solapes, amb el llom tret de les pàgines"
+summary: "Una rústica de 120 × 190 mm amb solapes de 60 mm: es componen les pàgines i buildCover en fa el plec de coberta, amb el llom que dona el seu paper."
+plain: "Un llibre de butxaca amb dues llegendes de Bécquer i el plec de la seva coberta: contracoberta, llom, coberta i les dues solapes en una peça. El llom fa el gruix de les pàgines, així que es calcula a partir del llibre."
+description: "Una rústica amb solapes a Postext: perfil d'enquadernació, codi de barres ISBN i llom calculat amb les pàgines i el paper; la coberta, en Markdown."
+question: "Com faig el plec de coberta d'una rústica amb solapes, amb el llom calculat a partir de les pàgines?"
+aliases: ["plec de coberta", "solapes", "amplada del llom", "codi de barres ISBN", "contracoberta", "enquadernació fresada", "cover sheet", "flaps", "spine width"]
+pageNotes: { "38": "El plec de coberta estès: a l'esquerra la solapa del darrere sobre les traductores, després la contracoberta amb el text i un codi de barres ISBN sobre fons blanc, el llom retolat de baix a dalt, la coberta amb una capella en ruïnes pintada en un turó sota una serra nevada i el títol al damunt, i a la dreta la solapa del davant amb una nota sobre l'autor. Al voltant, les marques de tall i de plegat." }
+---
+
+## Què compondràs
+
+Dues llegendes de Bécquer, *The Spirits' Mountain* i *The Emerald Eyes* (*El monte de las ánimas* i *Los ojos verdes*), en una rústica de butxaca de 120 × 190 mm amb solapes de 60 mm, i el plec on s'imprimeix la seva coberta. Postext compon abans les 37 pàgines: avantportada, portada, crèdits, índex, un full de títol per a cada llegenda i el text en Crimson Pro d'11/15,2. Després `buildCover` pren aquestes pàgines i munta el plec: solapa del darrere, contracoberta amb el text de presentació i el codi de barres, llom, coberta amb una pintura d'una capella en ruïnes al peu del Moncayo i solapa del davant. El títol, el subtítol i l'autor surten de les metadades del llibre, i el text de les solapes, d'un Markdown a part.
+
+## Elaboració
+
+### 1 · L'enquadernació posa les solapes i el paper posa el llom
+
+El codi és [la resposta curta](#la-resposta-curta) de més amunt. El perfil d'enquadernació descriu com treballa el taller: fresat amb PUR en quaderns de 16 pàgines, solapes de 60 mm, 3 mm de sang i mig mil·límetre més de llom per a la cola. La versió porta l'ISBN i el seu complement de cinc xifres; l'ISBN és un número de mostra que no correspon a cap llibre. L'amplada del llom no és escrita enlloc. Les 37 pàgines s'arrodoneixen a tres quaderns, 48 pàgines o 24 fulls, i cada full de paper de 100 g/m² amb una mà de 2,4 fa 240 µm: 24 × 0,24 + 0,5 dona un llom de 6,3 mm. Per defecte un llom de menys de 6 mm no es retola (`spineText.minSpine`), i per això el llibre va en un paper de molta mà.
+
+### 2 · Primer, les pàgines
+
+<Excerpt region="pages" />
+
+El bloc del llibre és un document de Postext com qualsevol altre, i cada pàgina que tingui compta per al llom. Els preliminars fan servir estils de títol amb dissenys que col·loquen el títol, el filet i el peu editorial a altures fixes de la pàgina. Cada llegenda té el seu full de títol (el que assenyala l'índex) i torna a començar a la senar següent, 40 mm més avall. Si canvies el cos de lletra o els marges, canvia el nombre de pàgines, i el llom el segueix a la composició següent.
+
+### 3 · Els estils de la coberta van amb els del llibre
+
+<Excerpt region="cover-type" />
+
+El plec es compon amb la configuració del llibre, de manera que els seus estils de paràgraf són a la mateixa llista que els dels crèdits i el colofó. `cover-title`, `cover-subtitle`, `cover-author` i `cover-spine` són els noms que `buildCover` dona a les metadades que col·loca; `cover-blurb`, `cover-note`, `flap-head` i `flap-text` els anomena el Markdown de la coberta. Sobre el fons de nit el text va en bandera, sense guionets, en l'os i l'or de la paleta.
+
+### 4 · El plec surt de les pàgines compostes
+
+<Excerpt region="sheet" />
+
+`buildCover` rep les pàgines, les metadades i el Markdown de la coberta, amb un `:::frame` per a la contracoberta i un altre per a cada solapa. Torna un document que `buildDocumentWithFonts` compon com qualsevol altre, a més del codi de barres en un fitxer SVG. Les xifres del codi demanen OCR-B, que no és a cap servidor de fonts, així que l'exemple les posa en Josefin Sans, una font que el PDF ja incrusta. El PDF porta les 37 pàgines i al darrere el plec a la seva mida, que és el fitxer que espera una impremta.
+
+## Variants
+
+### Retola el llom de dalt a baix
+
+Els llibres anglesos i nord-americans llegeixen el llom de dalt a baix; l'opció per defecte, de baix a dalt, és el costum català i europeu.
+
+```diff
+   versions: [{ id: 'paperback', name: t({ en: 'Paperback', es: 'Rústica' }), binding: 'pur-flaps',
+-    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000' }],
++    flaps: true, isbn: '978-84-0000-196-4', isbnAddOn: '90000',
++    spineText: { direction: 'topToBottom' } }],
+```
+
+### Imprimeix en un paper més prim
+
+Amb 80 g/m² i una mà de 2,2 el full fa 176 µm, el llom baixa a 4,7 mm i perd el rètol, que necessita 6 mm.
+
+```diff
+-const folio = { paper: { type: 'bookWove', grammage: 100, bulk: 2.4, shade: '#f7f1e3' } };
++const folio = { paper: { type: 'bookWove', grammage: 80, bulk: 2.2, shade: '#f7f1e3' } };
+```
+
+## Errors freqüents
+
+- A la llista de pàgines capturades el plec va darrere de les del llibre, de manera que el seu número és el de pàgines del llibre més u. Si el llibre guanya una pàgina, el número canvia.
+- Un codi de barres amb xifres que demanen una font que el PDF no troba fa fallar l'exportació. Carrega'n l'SVG amb un `font-family` que l'exemple ja tingui.

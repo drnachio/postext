@@ -198,3 +198,13 @@ export function bundleGroup(picked, name = '', { keep = 0, explicit = false, key
   });
   return { builds, left, chain: { chapters, resources, files }, notes, warns };
 }
+
+/** The cover Markdown the bundle carries as `cover.md` (#1671): of the
+ *  cover sheets the pen built (`cb.covers`, shim postext-production.js),
+ *  the last one built from a non-blank Markdown, when the configuration
+ *  the bundle holds has a `cover` design to lay it out with. */
+export function coverMarkdownOf(covers, config) {
+  if (!config || typeof config.cover !== 'object' || config.cover === null) return null;
+  const made = (covers ?? []).filter((c) => c?.built !== false && typeof c?.markdown === 'string' && c.markdown.trim());
+  return made.length ? made[made.length - 1].markdown : null;
+}

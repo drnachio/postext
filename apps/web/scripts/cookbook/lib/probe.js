@@ -17,7 +17,7 @@ export { COMPOSED_CONTENT_KINDS, COMPOSED_FENCE, composedRoundTrip, composedFact
 export { facts } from './probe/facts.js';
 export { renderPages, PAGE_DIFFERENCE, pageDifference, pagesDiffer, comparePages, taintedPages, kitState } from './probe/render.js';
 export { composeCard } from './probe/card.js';
-export { configKeyOf, bundleGroup } from './probe/bundle.js';
+export { configKeyOf, bundleGroup, coverMarkdownOf } from './probe/bundle.js';
 export { layoutHash, linesHash, warningsOf, extraWarnings } from './probe/hashes.js';
 export { readBundleBack, namedLanguage, languageBack, startOf, startLossNotes, bundleLocale, bundleLanguage } from './probe/readBack.js';
 export { sandboxBundle } from './probe/sandboxBundle.js';

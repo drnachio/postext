@@ -22,7 +22,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { REPO_DIR } from "../../src/lib/cookbook/paths.ts";
-import { RECORDER, engineShim, workerShim, pdfShim, epubShim, epubWorkerShim, scormShim } from "./shim/sources.ts";
+import { RECORDER, engineShim, workerShim, pdfShim, epubShim, epubWorkerShim, scormShim, productionShim } from "./shim/sources.ts";
 
 export interface EngineSpec {
   /** Pinned postext version, e.g. "1.4.1". */
@@ -293,7 +293,7 @@ export function shimModules(engine: EngineSpec, { pdfDate = null, force = forced
       "/__shim/postext.js": engineShim("postext", local("postext/index.js")),
       "/__shim/postext-bundle.js": engineShim("postext-bundle", local("postext/index.js")),
       "/__shim/postext-worker.js": workerShim(local("postext/worker/client.js")),
-      "/__shim/postext-production.js": `export * from '${local("postext/production/index.js")}';\n`,
+      "/__shim/postext-production.js": productionShim(local("postext/production/index.js")),
       "/__shim/postext-pdf.js": pdfShim(local("postext-pdf/index.js"), pdfDate),
       "/__shim/postext-pdf-bundle.js": pdfShim(local("postext-pdf/index.js"), pdfDate),
       "/__shim/postext-citeproc.js": `export * from '${local("postext-citeproc/index.js")}';\n`,
@@ -309,7 +309,7 @@ export function shimModules(engine: EngineSpec, { pdfDate = null, force = forced
     "/__shim/postext.js": engineShim("postext", `https://esm.sh/postext@${V}`),
     "/__shim/postext-bundle.js": engineShim("postext-bundle", `https://esm.sh/postext@${V}?bundle`),
     "/__shim/postext-worker.js": workerShim(`https://esm.sh/postext@${V}/worker`),
-    "/__shim/postext-production.js": `export * from 'https://esm.sh/postext@${V}/production';\n`,
+    "/__shim/postext-production.js": productionShim(`https://esm.sh/postext@${V}/production`),
     "/__shim/postext-pdf.js": pdfShim(`https://esm.sh/postext-pdf@${P}?deps=postext@${V}`, pdfDate),
     // pdf-lib in one module; postext stays outside it, shared with the pen (#1498).
     "/__shim/postext-pdf-bundle.js": pdfShim(`https://esm.sh/postext-pdf@${P}?deps=postext@${V}&bundle`, pdfDate),
