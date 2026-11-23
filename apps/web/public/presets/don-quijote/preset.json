@@ -1710,6 +1710,188 @@
      "value": 2,
      "unit": "pt"
     }
+   },
+   {
+    "id": "cover-title",
+    "name": "Cubierta: título",
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontFamily": "Playfair Display",
+    "fontWeight": 400,
+    "fontSize": {
+     "value": 21,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 23.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   },
+   {
+    "id": "cover-author",
+    "name": "Cubierta: autor",
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontFamily": "Alegreya SC",
+    "fontSize": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 15,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "marginTop": {
+     "value": 9,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-spine",
+    "name": "Cubierta: lomo",
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontFamily": "Playfair Display",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    }
+   },
+   {
+    "id": "cover-quote",
+    "name": "Cubierta: cita",
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontFamily": "Playfair Display",
+    "italic": true,
+    "fontSize": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1a17",
+     "model": "hex",
+     "paletteId": "ink"
+    },
+    "marginBottom": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "indent": {
+     "value": 18,
+     "unit": "mm"
+    },
+    "endIndent": {
+     "value": 18,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-blurb",
+    "name": "Cubierta: texto",
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontFamily": "Alegreya",
+    "fontSize": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14.8,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6b625a",
+     "model": "hex",
+     "paletteId": "muted"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    },
+    "indent": {
+     "value": 18,
+     "unit": "mm"
+    },
+    "endIndent": {
+     "value": 18,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-imprint",
+    "name": "Cubierta: sello",
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontFamily": "Alegreya SC",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#7f2a26",
+     "model": "hex",
+     "paletteId": "accent"
+    },
+    "letterSpacing": {
+     "value": 1,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 16,
+     "unit": "pt"
+    }
    }
   ],
   "calloutStyles": [
@@ -2442,6 +2624,81 @@
    "print": "inline",
    "urlDisplay": "short"
   },
+  "production": {
+   "versions": [
+    {
+     "id": "hardcover",
+     "binding": "case-flat",
+     "caseMaterial": "printed"
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#f5f0e6",
+    "model": "hex"
+   },
+   "verticalAlign": {
+    "front": "bottom",
+    "back": "bottom"
+   },
+   "elements": [
+    {
+     "id": "plate",
+     "kind": "image",
+     "zone": "front",
+     "x": 14.5,
+     "y": 26,
+     "width": 122,
+     "height": 150.2,
+     "resourceId": "x-enchantment"
+    },
+    {
+     "id": "vignette",
+     "kind": "image",
+     "zone": "back",
+     "x": 33.5,
+     "y": 40,
+     "width": 84,
+     "height": 63.2,
+     "resourceId": "x-back-vignette"
+    },
+    {
+     "id": "band-head",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": 11,
+     "width": 0,
+     "height": 1.2,
+     "to": {
+      "zone": "jointFront",
+      "x": 0
+     },
+     "color": {
+      "hex": "#7f2a26",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "band-foot",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": 228.8,
+     "width": 0,
+     "height": 1.2,
+     "to": {
+      "zone": "jointFront",
+      "x": 0
+     },
+     "color": {
+      "hex": "#7f2a26",
+      "model": "hex"
+     }
+    }
+   ]
+  },
   "folio": {
    "paper": {
     "type": "bookWove",
@@ -2450,9 +2707,7 @@
     "textureStrength": 0.6
    },
    "binding": {
-    "type": "hardcover",
-    "cover": "pages",
-    "spineImage": "x-spine"
+    "cover": "pages"
    },
    "surface": {
     "type": "leather"
@@ -2473,6 +2728,9 @@
   },
   "crossRefs": {
    "breakLabels": false
+  },
+  "htmlViewer": {
+   "optimalLineBreaking": false
   }
  },
  "localized": {
@@ -2539,6 +2797,17 @@
        }
       ]
      }
+    },
+    "production": {
+     "versions": [
+      {
+       "name": "Cartoné",
+       "spineText": {
+        "direction": "bottomToTop"
+       },
+       "id": "hardcover"
+      }
+     ]
     },
     "locale": "es"
    },
@@ -2704,12 +2973,6 @@
      "caption": "«Murió a manos del rigor de una esquiva hermosa ingrata, con quien su imperio dilata la tiranía de su amor.»",
      "note": "Gustave Doré, 1863; grabado por H. Pisan. Dominio público, Wikimedia Commons.",
      "altText": "«Murió a manos del rigor de una esquiva hermosa ingrata, con quien su imperio dilata la tiranía de su amor.»"
-    },
-    {
-     "id": "x-spine",
-     "file": "resources/x-spine-es.jpg",
-     "width": 216,
-     "height": 3290
     }
    ]
   },
@@ -2776,6 +3039,17 @@
        }
       ]
      }
+    },
+    "production": {
+     "versions": [
+      {
+       "name": "Hardcover",
+       "spineText": {
+        "direction": "topToBottom"
+       },
+       "id": "hardcover"
+      }
+     ]
     },
     "locale": "en-us"
    },
@@ -2941,14 +3215,9 @@
      "caption": "“In death a victim to disdain. Ungrateful, cruel, coy, and fair, was she that drove him to despair.”",
      "note": "Gustave Doré, 1863; engraved by H. Pisan. Public domain, Wikimedia Commons.",
      "altText": "“In death a victim to disdain. Ungrateful, cruel, coy, and fair, was she that drove him to despair.”"
-    },
-    {
-     "id": "x-spine",
-     "file": "resources/x-spine-en.jpg",
-     "width": 216,
-     "height": 3290
     }
-   ]
+   ],
+   "coverMarkdown": "cover/en.md"
   }
  },
  "resources": [
@@ -3621,22 +3890,6 @@
    },
    "caption": "",
    "altText": "Gustave Doré"
-  },
-  {
-   "id": "x-spine",
-   "typeId": "ornament",
-   "kind": "bitmap",
-   "file": "resources/x-spine-es.jpg",
-   "width": 216,
-   "height": 3290,
-   "placement": {
-    "position": "here",
-    "span": "column",
-    "width": 0.2,
-    "align": "center"
-   },
-   "caption": "",
-   "altText": ""
   }
  ],
  "fonts": [
@@ -3725,5 +3978,6 @@
     }
    ]
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }
