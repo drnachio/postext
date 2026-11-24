@@ -253,7 +253,7 @@ export interface BundleImageSize {
 
 /** Where a bitmap's resolution was read: a PNG `pHYs` chunk, a JPEG JFIF
  *  header, or EXIF (JPEG or WebP). */
-export type BitmapResolutionSource = 'pHYs' | 'jfif' | 'exif';
+export type BitmapResolutionSource = 'pHYs' | 'jfif' | 'exif' | 'tiff' | 'psd';
 
 /** The resolution a bitmap's file states, in pixels per inch. */
 export interface BitmapFileResolution {

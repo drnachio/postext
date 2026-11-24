@@ -37,6 +37,44 @@ describe('bitmapInfo', () => {
     expect(bitmapInfo(fixture('exif-240.webp'))).toEqual({ width: 4, height: 3, resolution: { x: 240, y: 240, source: 'exif' } });
   });
 
+  // #1690: the print originals, written by ImageMagick.
+  it('reads a TIFF in either byte order, its resolution in inches or centimetres', () => {
+    expect(bitmapInfo(fixture('tiff-300-le.tif'))).toEqual({ width: 4, height: 3, resolution: { x: 300, y: 300, source: 'tiff' } });
+    // 118.11 px/cm, big-endian.
+    expect(bitmapInfo(fixture('tiff-cm-be.tif'))).toEqual({ width: 4, height: 3, resolution: { x: 300, y: 300, source: 'tiff' } });
+  });
+
+  it('reads a TIFF without a resolution, or with unit none, as pixels alone', () => {
+    // II*\0, IFD at 8: ImageWidth 600 (SHORT), ImageLength 400 (LONG), ResolutionUnit 1.
+    const tiff = new Uint8Array(8 + 2 + 3 * 12 + 4);
+    const v = new DataView(tiff.buffer);
+    tiff.set([0x49, 0x49, 42, 0]);
+    v.setUint32(4, 8, true);
+    v.setUint16(8, 3, true);
+    const entry = (k: number, tag: number, type: number, value: number) => {
+      const at = 10 + k * 12;
+      v.setUint16(at, tag, true);
+      v.setUint16(at + 2, type, true);
+      v.setUint32(at + 4, 1, true);
+      if (type === 3) v.setUint16(at + 8, value, true);
+      else v.setUint32(at + 8, value, true);
+    };
+    entry(0, 0x0100, 3, 600);
+    entry(1, 0x0101, 4, 400);
+    entry(2, 0x0128, 3, 1);
+    expect(bitmapInfo(tiff)).toEqual({ width: 600, height: 400 });
+    // Cut before the directory: not read.
+    expect(bitmapInfo(tiff.subarray(0, 9))).toBeUndefined();
+  });
+
+  it('reads a Photoshop document, its resolution always in pixels per inch', () => {
+    expect(bitmapInfo(fixture('psd-300.psd'))).toEqual({ width: 4, height: 3, resolution: { x: 300, y: 300, source: 'psd' } });
+    // Shown in px/cm, stored in ppi.
+    expect(bitmapInfo(fixture('psd-cm.psd'))).toEqual({ width: 4, height: 3, resolution: { x: 300, y: 300, source: 'psd' } });
+    // The header alone: the size, no resolution.
+    expect(bitmapInfo(fixture('psd-300.psd').subarray(0, 26))).toEqual({ width: 4, height: 3 });
+  });
+
   it('a GIF has none', () => {
     expect(bitmapInfo(fixture('plain.gif'))).toEqual({ width: 4, height: 3 });
   });

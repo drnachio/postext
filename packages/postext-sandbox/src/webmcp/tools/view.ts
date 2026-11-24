@@ -3,14 +3,14 @@
 
 import { applyHtmlViewerOverrides, resolveDebugConfig, resolveLayoutConfig } from 'postext';
 import type { PostextConfig } from 'postext';
-import { requestSettingsGroup, requestSettingsSwitches, settingsChangedOnly } from '../../context/settingsNavigation.js';
+import { requestSettingsGroup, requestSettingsSection, requestSettingsSwitches, settingsChangedOnly } from '../../context/settingsNavigation.js';
 import { printPreviewOn, setPrintPreview } from '../../print/printPreviewToggle.js';
 import { dieLinesOn, finishesView, setDieLines, setFinishesView, type FinishesView } from '../../viewport/canvas/specialInksView.js';
 import { EDIT_MODES, editModeNow, selectedFrameNow, setEditMode, type EditMode } from '../../editing/editMode.js';
 import { breadcrumb, breadcrumbText, selectedElement } from '../../selection/pageSelection.js';
 import { pageSelectionNow } from '../../selection/selectionStore.js';
 import type { SandboxLabels } from '../../types/labels.js';
-import { SETTINGS_GROUPS, isSettingsGroupId } from '../../sidebar/sections/registry.js';
+import { SETTINGS_GROUPS, SETTINGS_SECTIONS, isSettingsGroupId } from '../../sidebar/sections/registry.js';
 import { loadSettingsHelpMode, saveSettingsGroup, saveSettingsHelpMode } from '../../storage/persistence.js';
 import { VIEWPORT_TABS, readViewHash, viewHashFragment } from '../../storage/viewHash.js';
 import type { PanelId, ViewportTab } from '../../types/index.js';
@@ -147,7 +147,7 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
   const setView: WebMcpTool = {
     name: 'sandbox_set_view',
     title: 'Sandbox: change how the book is shown',
-    description: 'Change what the reader sees of the Sandbox, any number of settings at once: the viewer tab (canvas, pdf, folio, html, epub, scorm), the Content or Design mode, the side panel and the resource open in it, the Design panel\'s group, explanations and changed-only filter, whether a viewer shows the chapter or the whole book, the EPUB rendition, the content, version and chapters and sections of the SCORM package, the Canvas magnification, fit and facing pages, the type size and columns of the HTML and EPUB readers, the Folio pointer mode, view and magnifying glass, the print preview, the fit marks drawn over composed pages, pinned toolbars, large touch targets, and the guides drawn on the pages (baseline grid, character grid, loose-line highlight, pages in negative). Answers with the view as it stands afterwards, the status of the viewer on screen included (its page, what it is writing, an EPUB\'s contents and warnings, the videos of its pages). sandbox_go_to_page turns the pages; sandbox_run_viewer presses a viewer\'s buttons (regenerate, print, download, check a PDF for print, play a video).',
+    description: 'Change what the reader sees of the Sandbox, any number of settings at once: the viewer tab (canvas, pdf, folio, html, epub, scorm), the Content or Design mode, the side panel and the resource open in it, the Design panel\'s group, section, explanations and changed-only filter, whether a viewer shows the chapter or the whole book, the EPUB rendition, the content, version and chapters and sections of the SCORM package, the Canvas magnification, fit and facing pages, the type size and columns of the HTML and EPUB readers, the Folio pointer mode, view and magnifying glass, the print preview, the fit marks drawn over composed pages, pinned toolbars, large touch targets, and the guides drawn on the pages (baseline grid, character grid, loose-line highlight, pages in negative). Answers with the view as it stands afterwards, the status of the viewer on screen included (its page, what it is writing, an EPUB\'s contents and warnings, the videos of its pages). sandbox_go_to_page turns the pages; sandbox_run_viewer presses a viewer\'s buttons (regenerate, print, download, check a PDF for print, play a video).',
     inputSchema: {
       type: 'object',
       properties: {
@@ -156,6 +156,7 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
         panel: { type: 'string', enum: [...PANELS, 'none'], description: 'The side panel to open (projects = Books, markdown = Text, config = Design, warnings = Checks), or none to close it.' },
         sidebarWidth: { type: 'number', minimum: 5, maximum: 80, description: 'Width of the side panel, as a percentage of the window.' },
         settingsGroup: { type: 'string', enum: SETTINGS_GROUPS.map((g) => g.id), description: 'Open the Design panel on this group of settings.' },
+        settingsSection: { type: 'string', enum: SETTINGS_SECTIONS.map((e) => e.id), description: 'Open the Design panel on this section: its group opens with the section\'s tab shown. sandbox_find_setting names the section a setting is in.' },
         settingsHelp: { type: 'boolean', description: 'Design panel: show the explanation under each setting. Kept for the next time the panel opens.' },
         settingsChangedOnly: { type: 'boolean', description: 'Design panel: list only the settings the book changed. Turning it on opens the panel; the filter goes when the panel closes.' },
         resource: { type: ['string', 'null'], description: 'Open the Resources panel on the resource with this id; null closes the resource that is open and goes back to the list.' },
@@ -210,6 +211,11 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
         throw new ToolError(`The magnifying glass is held in the magnify pointer mode: leave interaction out, or set it to magnify, not ${args.interaction}.`);
       }
       if (args.settingsGroup !== undefined && !isSettingsGroupId(args.settingsGroup)) throw new ToolError('Unknown settings group.');
+      const section = args.settingsSection === undefined ? undefined : SETTINGS_SECTIONS.find((e) => e.id === args.settingsSection);
+      if (args.settingsSection !== undefined && !section) throw new ToolError('Unknown settings section.');
+      if (section && args.settingsGroup !== undefined && section.group !== args.settingsGroup) {
+        throw new ToolError(`The section ${section.id} is in the group ${section.group}, not ${args.settingsGroup as string}: leave settingsGroup out, the section opens its group.`);
+      }
       if (typeof args.resource === 'string' && !s.resources.some((r) => r.id === args.resource)) {
         throw new ToolError(`No resource with id ${JSON.stringify(args.resource)}. The ids: ${s.resources.map((r) => r.id).join(', ') || 'none'}.`);
       }
@@ -230,7 +236,12 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
       if (args.scormVersion !== undefined) s = await dispatchAndWait(host, { type: 'SET_SCORM_VERSION', payload: args.scormVersion as '1.2' | '2004' });
       if (args.sidebarWidth !== undefined) s = await dispatchAndWait(host, { type: 'SET_SIDEBAR_PERCENT', payload: args.sidebarWidth as number });
 
-      if (args.settingsGroup !== undefined) {
+      if (section) {
+        // An open panel shows the section's tab now; a closed one takes the
+        // request, which waits for it, when it opens.
+        if (!requestSettingsSection({ group: section.group, section: section.id })) saveSettingsGroup(section.group);
+        if (s.activePanel !== 'config') s = await dispatchAndWait(host, { type: 'SET_PANEL', payload: 'config' });
+      } else if (args.settingsGroup !== undefined) {
         // An open panel takes the request; a closed one opens on the group
         // stored for it.
         if (!requestSettingsGroup(args.settingsGroup)) saveSettingsGroup(args.settingsGroup);
