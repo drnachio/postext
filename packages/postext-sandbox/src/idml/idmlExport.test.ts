@@ -35,12 +35,30 @@ describe('the Sandbox IDML export (#1491)', () => {
 
   it('asks for every picture the book names: resources, print masters and the design', () => {
     const resources = [
-      { id: 'a', kind: 'bitmap', bitmap: { fileId: 'f-bitmap' } },
+      { id: 'a', kind: 'bitmap', bitmap: { fileId: 'f-bitmap', printFileId: 'f-original' } },
       { id: 'b', kind: 'svg', svg: { fileId: 'f-svg', pdfFileId: 'f-master' } },
       { id: 'c', kind: 'video', video: { poster: { fileId: 'f-poster' } } },
     ] as unknown as Resource[];
     const config = { header: { slots: [{ elements: [{ type: 'image', fileId: 'f-logo' }, { type: 'image', fileId: 'data:image/png;base64,AA==' }] }] } } as unknown as PostextConfig;
-    expect(idmlFileIds(resources, config).sort()).toEqual(['f-bitmap', 'f-logo', 'f-master', 'f-poster', 'f-svg']);
+    expect(idmlFileIds(resources, config).sort()).toEqual(['f-bitmap', 'f-logo', 'f-master', 'f-original', 'f-poster', 'f-svg']);
+  });
+
+  // #1702: a picture imported from a TIFF or Photoshop file goes into the
+  // package as that original, as the PDF prints it.
+  it('links a picture\'s print original in place of its preview', async () => {
+    const PSD = new Uint8Array(30);
+    PSD.set([0x38, 0x42, 0x50, 0x53, 0, 1]);
+    new DataView(PSD.buffer).setUint32(14, 1);
+    new DataView(PSD.buffer).setUint32(18, 1);
+    blobs.set('f-shot', PNG);
+    blobs.set('f-shot-original', PSD);
+    const resources = [
+      { id: 'shot', typeId: 'figure', kind: 'bitmap', createdAt: 0, updatedAt: 0, bitmap: { fileId: 'f-shot', format: 'png', width: 1, height: 1, printFileId: 'f-shot-original', printFormat: 'psd' } },
+    ] as unknown as Resource[];
+    const config: PostextConfig = {};
+    const docs = [buildDocument({ markdown: '# Shot\n\n::resource{id="shot"}\n\nText.', resources }, config)];
+    const file = await buildIdmlExport({ docs, resources, config, title: 'Shots', choices: { images: 'link' } });
+    expect(file.links).toEqual(['Links/f-shot-original.psd']);
   });
 
   it('reads the bytes of a data URL', () => {

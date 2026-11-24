@@ -22,17 +22,20 @@ export function idmlFileName(bookTitle: string): string {
   return `${name || 'document'}.idml`;
 }
 
-/** Every stored file id the book names: its resources' pictures (bitmaps,
- *  video posters, SVG sources and their PDF print masters) and the pictures
- *  of its design (any `fileId` or `pdfFileId` in the configuration). */
+/** Every stored file id the book names: its resources' pictures (bitmaps
+ *  and their TIFF or Photoshop originals, video posters, SVG sources and
+ *  their PDF print masters) and the pictures of its design (any `fileId`
+ *  or `pdfFileId` in the configuration). */
 export function idmlFileIds(resources: readonly Resource[], config: PostextConfig): string[] {
   const ids = new Set<string>();
   const add = (id: unknown) => {
     if (typeof id === 'string' && id && !id.startsWith('data:')) ids.add(id);
   };
   for (const r of resources) {
-    if (r.kind === 'bitmap') add(r.bitmap?.fileId);
-    else if (r.kind === 'svg') {
+    if (r.kind === 'bitmap') {
+      add(r.bitmap?.fileId);
+      add(r.bitmap?.printFileId);
+    } else if (r.kind === 'svg') {
       add(r.svg?.fileId);
       add(r.svg?.pdfFileId);
     } else if (r.kind === 'video') add(r.video?.poster?.fileId);
@@ -175,6 +178,10 @@ export async function buildIdmlExport(input: IdmlExportInput): Promise<IdmlExpor
     docs: input.docs,
     resourceBytes: (id) => bytes.get(id) ?? (id.startsWith('data:') ? dataUrlBytes(id) : undefined),
     images: choices.images,
+    // A picture imported from a TIFF or Photoshop file goes in as that
+    // original, the file the PDF prints (#1702).
+    originals: true,
+    resources: input.resources,
     lineBreaks: choices.lineBreaks,
     ...(choices.spreads !== 'auto' ? { spreads: choices.spreads } : {}),
     // A face is named as its file names it, which is how InDesign finds it.

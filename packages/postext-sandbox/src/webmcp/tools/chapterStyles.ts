@@ -8,7 +8,7 @@ import type { SandboxState } from '../../context/SandboxContext.js';
 import { setChapterStyle } from '../../book/frontmatter.js';
 import { newChapterStyle } from '../../editions/chapterStyleEdit.js';
 import { chapterText, editChapter } from '../chapterEdits.js';
-import { chapterOf, dispatchAndWait, type SandboxToolHost } from '../host.js';
+import { chapterOf, designScopeAnswer, writeDesignAndWait, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { CHAPTER_PARAM, WAIT_PARAM, layoutAnswer } from './book.js';
 
@@ -52,26 +52,28 @@ export function chapterStyleTools(host: SandboxToolHost): WebMcpTool[] {
         if (!st) throw new ToolError(`No chapter style ${JSON.stringify(id)}. The book's: ${list.map((x) => x.id).join(', ') || 'none'}.`);
         return st;
       };
-      const write = (next: ChapterStyleConfig[]) => dispatchAndWait(host, { type: 'UPDATE_CONFIG', payload: { chapterStyles: next.length > 0 ? next : undefined }, history: { merge: false } });
+      // The list of styles is the design's: written where the Design
+      // panel's scope says (#1700).
+      const write = (next: ChapterStyleConfig[]) => writeDesignAndWait(host, { type: 'UPDATE_CONFIG', payload: { chapterStyles: next.length > 0 ? next : undefined }, history: { merge: false } });
       if (action === 'create') {
         const name = (args.name as string | undefined)?.trim();
         if (!name) throw new ToolError('create needs a name.');
         const made = newChapterStyle(list, name);
         await write([...list, made]);
-        return { created: made.id, name, note: `Change its settings with sandbox_set_config and chapterStyle: "${made.id}"; give it to a chapter with sandbox_set_chapter_style.` };
+        return { ...designScopeAnswer(host), created: made.id, name, note: `Change its settings with sandbox_set_config and chapterStyle: "${made.id}"; give it to a chapter with sandbox_set_chapter_style.` };
       }
       if (action === 'rename') {
         const st = find();
         const name = (args.name as string | undefined)?.trim();
         if (!name) throw new ToolError('rename needs a name.');
         await write(list.map((x) => (x.id === st.id ? { ...x, name } : x)));
-        return { style: st.id, name };
+        return { ...designScopeAnswer(host), style: st.id, name };
       }
       if (action === 'remove') {
         const st = find();
         const naming = chapterStyles(host, s).filter((c) => c.style === st.id).map((c) => c.chapter);
         await write(list.filter((x) => x.id !== st.id));
-        return { removed: st.id, ...(naming.length > 0 ? { chaptersThatNamedIt: naming, note: 'These chapters are set in the book\'s settings now; their chapterStyle: or :::part{style} still names the style (a chapterStyleUnknown warning) until it is changed.' } : {}) };
+        return { ...designScopeAnswer(host), removed: st.id, ...(naming.length > 0 ? { chaptersThatNamedIt: naming, note: 'These chapters are set in the book\'s settings now; their chapterStyle: or :::part{style} still names the style (a chapterStyleUnknown warning) until it is changed.' } : {}) };
       }
       if (action !== 'list') throw new ToolError(`Unknown action ${JSON.stringify(action)}.`);
       const chapters = chapterStyles(host, s);

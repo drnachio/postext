@@ -346,6 +346,25 @@ describe('postext cli', () => {
     expect(stdout.stderr).toContain('--images link');
   }, 60_000);
 
+  // #1702: a picture imported from a TIFF goes into the package as that
+  // original, as the PDF prints it, not as its preview.
+  it('links a picture\'s TIFF original in an IDML package', () => {
+    const dir = book();
+    const fixtures = join(POSTEXT, 'src', '__tests__', 'bundle', 'fixtures');
+    mkdirSync(join(dir, 'res'));
+    writeFileSync(join(dir, 'res', 'pic.jpg'), readFileSync(join(fixtures, 'jfif-300.jpg')));
+    writeFileSync(join(dir, 'res', 'pic-print.tif'), readFileSync(join(fixtures, 'tiff-300-le.tif')));
+    writeFileSync(join(dir, 'res', 'resources.json'), JSON.stringify([{ id: 'pic', typeId: 'figure', kind: 'bitmap', file: 'pic.jpg', printFile: 'pic-print.tif' }]));
+    writeFileSync(join(dir, 'ch', '03.md'), '# Three\n\n::resource{id="pic"}\n');
+    const r = run(['idml', 'ch', '--resources', 'res', '--images', 'link', '-o', 'b.idml', '--offline', '-q'], dir);
+    expect(r.code).toBe(0);
+    // One file, the TIFF (the book names it after the resource).
+    const links = readdirSync(join(dir, 'Links'));
+    expect(links).toHaveLength(1);
+    expect(links[0]).toEndWith('.tif');
+    expect(readFileSync(join(dir, 'Links', links[0]!)).equals(readFileSync(join(fixtures, 'tiff-300-le.tif')))).toBe(true);
+  }, 60_000);
+
   // #1500: the lines kept as Postext broke them or left to InDesign, and
   // the font files beside the package.
   it('takes --lines and --fonts for an IDML package', () => {

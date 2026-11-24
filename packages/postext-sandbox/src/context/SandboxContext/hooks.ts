@@ -18,6 +18,7 @@ import type { ProjectActions } from '../projectActions.js';
 import type { SandboxHistory } from '../../history/sandboxHistory.js';
 import type { CoverTarget } from '../../covers/autoCover.js';
 import { StateViewContext, ScopedDispatchContext } from '../configScope.js';
+import { designDispatch } from '../../editions/designWrite.js';
 import { type PresetProvider, type PresetApplyParts, type PresetSummary, isDocumentUntouched, GUIDE_SAMPLE_DOCUMENTS } from '../../presets/index.js';
 import type { SandboxState, SandboxAction } from './state.js';
 
@@ -117,6 +118,15 @@ export function useSandboxStore(): SandboxStore {
 export function useSandboxDispatch(): Dispatch<SandboxAction> {
   const store = useStore();
   return useContext(ScopedDispatchContext) ?? store.dispatch;
+}
+
+/** The dispatch of a change to the design made outside the Design panel
+ *  (a frame dragged on the page, a check's fix): in a book in several
+ *  languages it writes where the panel's scope says (#1700). Inside the
+ *  panel, the panel's own. Stable. */
+export function useDesignDispatch(): Dispatch<SandboxAction> {
+  const store = useStore();
+  return useContext(ScopedDispatchContext) ?? designDispatch(store);
 }
 
 /** Subscribe to a slice of state; component re-renders only when the selected
