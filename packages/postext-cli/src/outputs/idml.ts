@@ -42,6 +42,10 @@ export async function writeIdml(book: Book, layout: Layout, fonts: FontSet, choi
       docs: layout.docs,
       resourceBytes: (id) => book.files.get(id),
       images: choices.images,
+      // A picture imported from a TIFF or Photoshop file goes in as that
+      // original, the file the PDF prints (#1702).
+      originals: true,
+      resources: book.resources,
       lineBreaks: choices.lineBreaks,
       text: choices.text,
       ...(choices.spreads ? { spreads: choices.spreads } : {}),
