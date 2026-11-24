@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { onSettingsSwitchesRequest, reportSettingsChangedOnly, type SettingsPanelSwitches } from '../../context/settingsNavigation.js';
+import { onSettingsSectionRequest, onSettingsSwitchesRequest, pendingSettingsGroup, reportSettingsChangedOnly, takeSettingsSection, type SettingsPanelSwitches, type SettingsSectionRequest } from '../../context/settingsNavigation.js';
 import type { ViewportTab } from '../../types/index.js';
 import {
   latestControls,
@@ -128,6 +128,24 @@ describe('sandbox_set_view', () => {
     await call('sandbox_set_view', { settingsChangedOnly: false });
     expect(taken[2]).toEqual({ changedOnly: false });
     expect((await call('sandbox_set_view', { settingsChangedOnly: true, panel: 'fonts' })).error).toMatch(/filter of the Design panel/);
+  });
+
+  it("opens the Design panel on a section's tab", async () => {
+    const { call, get } = harness();
+    // Closed panel: the request waits for it and the panel opens.
+    const set = await call('sandbox_set_view', { settingsSection: 'pageTemplates' });
+    expect(get().activePanel).toBe('config');
+    expect(set.view.panel).toBe('config');
+    expect(pendingSettingsGroup()).toBe('page');
+    expect(takeSettingsSection('page')).toBe('pageTemplates');
+    // Open panel: it takes the request at once.
+    const asked: SettingsSectionRequest[] = [];
+    cleanups.push(onSettingsSectionRequest((req) => asked.push(req)));
+    await call('sandbox_set_view', { settingsSection: 'calloutStyles', settingsGroup: 'callouts' });
+    expect(asked).toEqual([{ group: 'callouts', section: 'calloutStyles' }]);
+    takeSettingsSection('callouts');
+    expect((await call('sandbox_set_view', { settingsSection: 'calloutStyles', settingsGroup: 'page' })).error).toMatch(/is in the group callouts/);
+    expect((await call('sandbox_set_view', { settingsSection: 'nowhere' })).error).toBeTruthy();
   });
 
   it('switches between the Content and Design modes (#864)', async () => {

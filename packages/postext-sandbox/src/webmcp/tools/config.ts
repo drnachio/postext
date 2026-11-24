@@ -407,7 +407,7 @@ export function configTools(host: SandboxToolHost): WebMcpTool[] {
       const sections = planSettingsSearch(index, tokens, false, s.config).flatMap((group) => group.sections.map((id) => {
         const entry = SETTINGS_SECTIONS.find((e) => e.id === id)!;
         const groupEntry = SETTINGS_GROUPS.find((g) => g.id === group.id)!;
-        return { section: s.labels[entry.labelKey] as string, group: s.labels[groupEntry.labelKey] as string, settingsGroup: group.id, configKeys: entry.configKeys };
+        return { section: s.labels[entry.labelKey] as string, group: s.labels[groupEntry.labelKey] as string, settingsGroup: group.id, settingsSection: entry.id, configKeys: entry.configKeys };
       })).slice(0, 12);
       return {
         paths,

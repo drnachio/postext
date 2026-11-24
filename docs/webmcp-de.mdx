@@ -243,7 +243,7 @@ ihren Pfad ändern. Ein Agent kennt den Pfad anfangs selten, also sucht er ihn:
     { "path": "bodyText.avoidOrphans", "effective": true },
     { "path": "bodyText.avoidOrphansInLists", "effective": true }
   ],
-  "sections": [{ "section": "Body text", "group": "Typography", "settingsGroup": "text", "configKeys": ["bodyText"] }]
+  "sections": [{ "section": "Body text", "group": "Typography", "settingsGroup": "text", "settingsSection": "bodyText", "configKeys": ["bodyText"] }]
 }
 ```
 
@@ -565,7 +565,7 @@ Was der Agent ändert, sehen Sie. Um Sie auf etwas hinzuweisen:
 `html`, `epub`, `scorm`), den Modus Inhalt oder Gestaltung (`mode`), das seitliche
 Bedienfeld, Kapitel oder ganzes Buch, den Zoom,
 die Schriftgröße für den Leser, die Druckvorschau, die Stanzlinien (`dieLines`) und die Ansicht der Spezialfarben (`finishes`: `flat`, `sheen` oder `map`) im Canvas, die Gruppe des Bedienfelds
-Gestaltung sowie im Tab SCORM den Inhalt (`scormLayout`), die Version
+Gestaltung oder einen ihrer Abschnitte (`settingsSection`) sowie im Tab SCORM den Inhalt (`scormLayout`), die Version
 (`scormVersion`) und die Kapitel und Abschnitte, die das Paket aufnimmt
 (`scormPick`, IDs aus den `contents` des Tabs). `sandbox_go_to_page` blättert über `step`, `page`, `position`, eine
 Textpassage `text`, einen `anchor` oder einen Eintrag im Inhaltsverzeichnis
