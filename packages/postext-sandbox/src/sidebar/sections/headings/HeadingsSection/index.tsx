@@ -19,6 +19,7 @@ import { flowSideLabels, useRightToLeftFlow } from '../../../settings/flowSides.
 import { FigureStyleField } from '../../../settings/FigureStyleField.js';
 import { GridSnapFields } from '../../../settings/GridSnapFields.js';
 import { createHeadingsWriters } from './writers.js';
+import { HeadingLadder } from '../../../editors/HeadingLadder.js';
 
 const LINE_HEIGHT_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
 const MARGIN_UNITS: DimensionUnit[] = ['em', 'pt', 'px'];
@@ -115,6 +116,7 @@ export const HeadingsSection = memo(function HeadingsSection() {
       resetLabel={labels.reset}
       resetConfirmMessage={labels.resetSectionConfirm}
     >
+      <HeadingLadder levels={headings.levels} />
       <FontPicker
         label={labels.headingsFont}
         value={headings.fontFamily}

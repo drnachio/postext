@@ -11,10 +11,12 @@ import { BookOpen, Plus, Trash2 } from 'lucide-react';
 import type { ChapterStyleConfig } from 'postext';
 import { useSandboxDispatch, useSandboxLabels, useSandboxStore } from '../../context/SandboxContext.js';
 import { scopedView } from '../../context/configScope.js';
-import { Button, cn } from '../../ui/index.js';
+import { Button, Select, cn } from '../../ui/index.js';
 import { newChapterStyle } from '../../editions/chapterStyleEdit.js';
 
 const NONE: readonly ChapterStyleConfig[] = [];
+/** The select's value for "the book, no chapter style": not a style id (ids are slugs). */
+const BOOK = '::book';
 
 export function ChapterStyleBar() {
   const labels = useSandboxLabels();
@@ -43,19 +45,19 @@ export function ChapterStyleBar() {
       style={style ? { borderTop: '3px solid var(--edition, var(--brand))' } : undefined}
     >
       <div className="flex items-center gap-1.5">
-        <label className="shrink-0 text-[0.68rem] text-(--slate)" htmlFor="pt-chapter-style">{labels.chapterStyleBarLabel}</label>
-        <select
+        <span id="pt-chapter-style-label" className="shrink-0 text-[0.68rem] text-(--slate)">{labels.chapterStyleBarLabel}</span>
+        <Select
           id="pt-chapter-style"
-          value={style ? style.id : ''}
-          onChange={(e) => edit(e.target.value || null)}
-          className="min-w-0 flex-1 rounded border bg-transparent px-1.5 py-0.5 text-xs"
-          style={{ borderColor: 'var(--rule)', color: 'var(--foreground)' }}
-        >
-          <option value="">{labels.chapterStyleBook}</option>
-          {styles.map((s) => (
-            <option key={s.id} value={s.id}>{s.name ?? s.id}</option>
-          ))}
-        </select>
+          ariaLabelledBy="pt-chapter-style-label"
+          value={style ? style.id : BOOK}
+          onValueChange={(v) => edit(v === BOOK ? null : v)}
+          options={[
+            { value: BOOK, label: labels.chapterStyleBook },
+            ...styles.map((s) => ({ value: s.id, label: s.name ?? s.id })),
+          ]}
+          muted={!style}
+          className="min-w-0 flex-1"
+        />
         <Button size="sm" variant="ghost" onClick={create} title={labels.chapterStyleNew} aria-label={labels.chapterStyleNew}>
           <Plus size={12} aria-hidden="true" />
         </Button>

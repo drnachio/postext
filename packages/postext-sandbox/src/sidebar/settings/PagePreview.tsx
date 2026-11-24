@@ -172,7 +172,7 @@ export function PagePreview({ page, layout, lineHeightPt, inkHex, height = 120, 
   );
 }
 
-interface Col { x: number; w: number; side?: boolean }
+export interface Col { x: number; w: number; side?: boolean }
 
 /** `n` equal columns across `length`, `g` apart. */
 function equalColumns(n: number, length: number, g: number): Col[] {
@@ -180,8 +180,10 @@ function equalColumns(n: number, length: number, g: number): Col[] {
   return Array.from({ length: n }, (_, i) => ({ x: i * (cw + g), w: cw }));
 }
 
-function columnsOf(layout: ResolvedLayoutConfig, tw: number, spineLeft: boolean): Col[] {
-  const g = toPt(layout.gutterWidth);
+/** The columns across a type area `tw` points wide (`x` from its left
+ *  edge), `g` points apart: the layout's gutter unless another is given
+ *  (the page editor asks what a gutter being dragged would give). */
+export function columnsOf(layout: ResolvedLayoutConfig, tw: number, spineLeft: boolean, g: number = toPt(layout.gutterWidth)): Col[] {
   if (layout.layoutType === 'double') return equalColumns(2, tw, g);
   if (layout.layoutType === 'multiple') return equalColumns(columnCountUsed(layout.columnCount), tw, g);
   if (layout.layoutType === 'oneAndHalf') {

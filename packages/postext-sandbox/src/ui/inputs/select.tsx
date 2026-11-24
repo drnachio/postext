@@ -31,6 +31,9 @@ export interface SelectProps<T extends string> {
   disabled?: boolean;
   className?: string;
   size?: 'md' | 'sm';
+  /** `bare`: no frame of its own, for a select set inside another
+   *  control's frame (the unit of a length field). */
+  variant?: 'outline' | 'bare';
 }
 
 /** Dropdown built on Base UI's Select (the primitive shadcn's `base-nova`
@@ -48,6 +51,7 @@ export function Select<T extends string>({
   disabled,
   className,
   size = 'md',
+  variant = 'outline',
 }: SelectProps<T>) {
   const portalContainer = usePortalContainer();
   const items = options.map((o) => ({ value: o.value, label: o.label }));
@@ -66,10 +70,11 @@ export function Select<T extends string>({
         aria-describedby={ariaDescribedBy}
         aria-label={ariaLabelledBy ? undefined : ariaLabel}
         className={cn(
-          'inline-flex min-w-0 cursor-pointer items-center justify-between gap-1.5 rounded-md border bg-(--surface) text-start transition-colors select-none',
-          'border-(--pt-control-border) hover:border-(--slate)',
-          'focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand)',
-          'data-popup-open:border-(--brand) disabled:cursor-default disabled:opacity-50',
+          'inline-flex min-w-0 cursor-pointer items-center justify-between text-start transition-colors select-none',
+          variant === 'bare'
+            ? 'gap-0.5 border-0 bg-transparent hover:bg-(--surface-2,var(--background)) focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)'
+            : 'gap-1.5 rounded-md border bg-(--surface) border-(--pt-control-border) hover:border-(--slate) focus-visible:outline-2 focus-visible:outline-offset-0 outline-(--brand) data-popup-open:border-(--brand)',
+          'disabled:cursor-default disabled:opacity-50',
           size === 'sm' ? 'h-6 pe-1 ps-1.5 pt-large:h-11 pt-large:pe-1.5 pt-large:ps-2 text-[0.66rem]' : 'h-7 pe-1.5 ps-2 pt-large:h-11 pt-large:pe-2 pt-large:ps-2.5 text-xs',
           muted ? 'text-(--slate)' : 'text-(--foreground)',
           className,

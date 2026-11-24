@@ -31,6 +31,12 @@ const TARGETS = [
  *    compact sizes.
  *    min-width/height do nothing to inline elements, so a link inside a
  *    sentence keeps its line.
+ *  --pt-field-w is the one width of a field row's control (number, length,
+ *  select, colour, font), so the control column lines up on both edges.
+ *  .pt-row-actions holds a row's help and reset buttons: over the end of
+ *  the label, shown with the pointer or the focus, so they take no room
+ *  from the label; in the flow, always shown, on touch screens and with
+ *  large targets on.
  *  - 1.4.11: field and button outlines in --pt-control-border, at least
  *    3:1 against the panels in both themes (--rule is a hairline, for
  *    dividers only).
@@ -44,12 +50,23 @@ const TARGETS = [
  *    every field is set at 16px, the size below which iOS zooms in on
  *    focus, and a double tap does not zoom (touch-action: manipulation). */
 const A11Y_CSS = `
-${SCOPE} { --pt-control-border: color-mix(in srgb, var(--slate) 78%, var(--background)); }
+${SCOPE} { --pt-control-border: color-mix(in srgb, var(--slate) 78%, var(--background)); --pt-field-w: 8.25rem; --pt-row-hover: color-mix(in srgb, var(--surface) 60%, var(--background)); }
 ${LARGE} :where(${TARGETS}) { min-width: 44px; min-height: 44px; }
 ${SCOPE} :where(:focus-visible) { outline: 2px solid var(--brand); outline-offset: 2px; }
 ${SCOPE} :is(p, li, dd, blockquote) { line-height: 1.5 !important; }
 ${SCOPE} :is(input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=color]), textarea, select):not([aria-invalid=true]) { border-color: var(--pt-control-border) !important; }
 .pt-caps { font-variant-caps: all-small-caps; }
+.pt-row-actions {
+  position: absolute; inset-block: 0; inset-inline-end: 0; display: flex; align-items: center; gap: 2px;
+  padding-inline-start: 1.25rem; opacity: 0; transition: opacity 120ms ease;
+  background: linear-gradient(to right, transparent, var(--pt-row-hover) 1rem);
+}
+[dir=rtl] .pt-row-actions { background: linear-gradient(to left, transparent, var(--pt-row-hover) 1rem); }
+[data-field-row]:hover > * > * > .pt-row-actions, [data-field-row]:focus-within > * > * > .pt-row-actions { opacity: 1; }
+${LARGE} .pt-row-actions { position: static; opacity: 1; background: none; padding-inline-start: 0; }
+@media (hover: none) {
+  .pt-row-actions { position: static; opacity: 1; background: none; padding-inline-start: 0; }
+}
 [data-postext-sandbox] { touch-action: manipulation; }
 @media (prefers-reduced-motion: reduce) {
   [data-postext-sandbox] *, [data-postext-popup] * { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }

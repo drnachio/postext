@@ -15,21 +15,9 @@ import {
   NestedGroup,
 } from '../../../controls/index.js';
 import { HighlightZone } from '../../settings/previewHighlight.js';
+import { PageFormatField } from '../../editors/PageFormatField.js';
 import { arabicNumberFormatOptions, eastAsianNumberFormatOptions } from '../../settings/eastAsianOptions.js';
 import { gridMarginsText, useCjkGrid } from '../writing/cjkGridReadout.js';
-
-const PAGE_SIZE_OPTIONS = [
-  { value: '11x17', label: '11 \u00d7 17 cm' },
-  { value: '12x19', label: '12 \u00d7 19 cm' },
-  { value: '17x24', label: '17 \u00d7 24 cm' },
-  { value: '21x28', label: '21 \u00d7 28 cm' },
-  // Newspaper formats: named, their trim after the name.
-  { value: 'broadsheet', label: '375 \u00d7 597 mm' },
-  { value: 'berliner', label: '315 \u00d7 470 mm' },
-  { value: 'tabloid', label: '280 \u00d7 430 mm' },
-  { value: 'compact', label: '297 \u00d7 420 mm' },
-  { value: 'custom', label: 'Custom' },
-];
 
 const D = DEFAULT_PAGE_CONFIG;
 
@@ -106,11 +94,11 @@ export const PageSection = memo(function PageSection() {
   };
 
 
-  const handlePresetChange = (preset: string) => {
+  const handlePresetChange = (preset: PageSizePreset) => {
     if (preset === 'custom') {
       updatePage({ sizePreset: 'custom' });
     } else {
-      const key = preset as Exclude<PageSizePreset, 'custom'>;
+      const key = preset;
       const size = PAGE_SIZE_PRESETS[key];
       updatePage({
         sizePreset: key,
@@ -161,24 +149,6 @@ export const PageSection = memo(function PageSection() {
     dispatch({ type: 'UPDATE_CONFIG', payload: { page: Object.keys(next).length > 0 ? next : undefined } });
   };
 
-  const PAGE_SIZE_DESCRIPTIONS: Record<string, string> = {
-    '11x17': labels.pageSize11x17,
-    '12x19': labels.pageSize12x19,
-    '17x24': labels.pageSize17x24,
-    '21x28': labels.pageSize21x28,
-    broadsheet: labels.pageSizeBroadsheetDescription,
-    berliner: labels.pageSizeBerlinerDescription,
-    tabloid: labels.pageSizeTabloidDescription,
-    compact: labels.pageSizeCompactDescription,
-    custom: labels.pageSizeCustomDescription,
-  };
-  const PAGE_SIZE_NAMES: Record<string, string> = {
-    broadsheet: labels.pageSizeBroadsheet,
-    berliner: labels.pageSizeBerliner,
-    tabloid: labels.pageSizeTabloid,
-    compact: labels.pageSizeCompact,
-  };
-
   return (
     <CollapsibleSection
       title={labels.page}
@@ -189,16 +159,9 @@ export const PageSection = memo(function PageSection() {
       resetConfirmMessage={labels.resetSectionConfirm}
     >
       <FieldGroup title={labels.pageGroupSize}>
-        <SelectInput
-          label={labels.pageSize}
+        <PageFormatField
           value={page.sizePreset}
-          options={PAGE_SIZE_OPTIONS.map((o) => ({
-            ...o,
-            label: o.value === 'custom' ? labels.custom : PAGE_SIZE_NAMES[o.value] ? `${PAGE_SIZE_NAMES[o.value]} (${o.label})` : o.label,
-            description: PAGE_SIZE_DESCRIPTIONS[o.value],
-          }))}
           onChange={handlePresetChange}
-          tooltip={labels.pageSizeTooltip}
           isDefault={isPresetDefault}
           onReset={sizeReset}
         />
@@ -240,7 +203,7 @@ export const PageSection = memo(function PageSection() {
         />
       </FieldGroup>
 
-      <FieldGroup title={labels.pageGroupMargins} description={labels.pageGroupMarginsDescription}>
+      <FieldGroup title={labels.pageGroupMargins}>
         <ToggleSwitch
           label={labels.pageMarginsMirror}
           checked={marginsMirror}

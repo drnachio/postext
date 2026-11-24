@@ -10,7 +10,8 @@ import { JustificationSubsection, KashidaFields, RaggedBreakingSubsection } from
 import { BlockquoteSubsection } from './BlockquoteSubsection.js';
 import { VerseSubsection } from './VerseSubsection.js';
 import { RaggedHyphenationSubsection } from './HyphenationFields.js';
-import { TypeSample } from '../../../settings/TypeSample.js';
+import { TypeSample, bodySampleText } from '../../../settings/TypeSample.js';
+import { TypeMetrics } from '../../../editors/TypeMetrics.js';
 import { AlignPicture } from '../../../settings/pictures.js';
 import { LineControlSubsection } from './LineControlSubsection.js';
 import { isArabicScriptLanguage } from '../../../../context/arabicDefaults.js';
@@ -125,6 +126,7 @@ export const BodyTextSection = memo(function BodyTextSection() {
       resetConfirmMessage={labels.resetSectionConfirm}
     >
       <TypeSample body={bodyText} lang={effectiveDocumentLocale} />
+      <TypeMetrics body={bodyText} lang={effectiveDocumentLocale} sample={bodySampleText(effectiveDocumentLocale, labels.bodyTypeSample)} />
       <FieldGroup title={labels.bodyGroupTypeface}>
         <FontPicker
           label={labels.bodyFont}

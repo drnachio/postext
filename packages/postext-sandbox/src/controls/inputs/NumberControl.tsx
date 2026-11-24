@@ -15,13 +15,17 @@ interface NumberControlProps {
   /** Accessible name when the control is not inside a field row. */
   ariaLabel?: string;
   widthCh?: number;
+  /** Take the container's width (a field row's control column). */
+  fill?: boolean;
+  /** What the number counts (%, ‰), set inside the frame. */
+  suffix?: string;
 }
 
 /** A NumberField wired to the enclosing field row (label + help ids) that
  *  commits upstream after a short quiet window while typing or holding a
  *  stepper, and at once when the edit settles — so a burst of keystrokes
  *  triggers one layout, not one per key. */
-export function NumberControl({ value, onChange, min, max, step = 1, muted, ariaLabel, widthCh }: NumberControlProps) {
+export function NumberControl({ value, onChange, min, max, step = 1, muted, ariaLabel, widthCh, fill, suffix }: NumberControlProps) {
   const labels = useSandboxLabels();
   const ids = useFieldIds();
   const [local, stage, flush] = useDebouncedCommit(value, onChange);
@@ -39,6 +43,8 @@ export function NumberControl({ value, onChange, min, max, step = 1, muted, aria
       step={step}
       muted={muted}
       widthCh={widthCh}
+      fill={fill}
+      suffix={suffix}
       decrementLabel={labels.decreaseValue}
       incrementLabel={labels.increaseValue}
     />

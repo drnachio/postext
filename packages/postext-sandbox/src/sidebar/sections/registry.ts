@@ -127,6 +127,30 @@ export const SETTINGS_GROUPS: readonly SettingsGroup[] = [
   { id: 'advanced', labelKey: 'settingsGroupAdvanced', descriptionKey: 'settingsGroupAdvancedDescription' },
 ];
 
+export type SettingsClusterId = 'book' | 'text' | 'elements' | 'structure' | 'output';
+
+export interface SettingsCluster {
+  id: SettingsClusterId;
+  labelKey: keyof SandboxLabels;
+  groups: readonly SettingsGroupId[];
+}
+
+/** The groups by stage of the work, as the overview and the group switcher
+ *  list them: what the book is (its page, its writing system, its colours),
+ *  the text, the elements set in it, what repeats or divides the book, and
+ *  what leaves the Sandbox. Every group is in exactly one cluster. */
+export const SETTINGS_CLUSTERS: readonly SettingsCluster[] = [
+  { id: 'book', labelKey: 'settingsClusterBook', groups: ['page', 'writing', 'colors'] },
+  { id: 'text', labelKey: 'settingsClusterText', groups: ['text', 'composition', 'headings', 'lists'] },
+  { id: 'elements', labelKey: 'settingsClusterElements', groups: ['figures', 'callouts', 'exercises', 'comics'] },
+  { id: 'structure', labelKey: 'settingsClusterStructure', groups: ['running', 'parts', 'cover'] },
+  { id: 'output', labelKey: 'settingsClusterOutput', groups: ['output', 'folio', 'advanced'] },
+];
+
+export function settingsGroup(id: SettingsGroupId): SettingsGroup {
+  return SETTINGS_GROUPS.find((g) => g.id === id)!;
+}
+
 export const SETTINGS_SECTIONS: readonly SettingsSectionEntry[] = [
   { id: 'page', group: 'page', labelKey: 'page', configKeys: ['page'] },
   { id: 'layout', group: 'page', labelKey: 'layout', configKeys: ['layout'] },

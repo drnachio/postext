@@ -3,9 +3,11 @@
 import { useCallback, useRef } from 'react';
 import type { Dimension, DimensionUnit } from 'postext';
 import { useSandboxLabels } from '../../context/SandboxContext.js';
-import { Select } from '../../ui/inputs/select.js';
+import { LengthField } from '../../ui/inputs/length-field.js';
 import { FieldRow } from '../FieldRow.js';
-import { NumberControl } from './NumberControl.js';
+import { useFieldIds } from '../fieldContext.js';
+import { evalLength, plainNumber } from './lengthExpression.js';
+import { useDebouncedCommit } from './useDebouncedCommit.js';
 import { convertDimension } from './units.js';
 
 interface DimensionInputProps {
@@ -45,15 +47,20 @@ interface DimensionControlProps {
   standalone?: boolean;
 }
 
-/** Number + unit pair. Switching the unit converts the value so the length
- *  on the page stays the same. */
+/** A length: value and unit in one frame. Switching the unit converts the
+ *  value so the length on the page stays the same; a value typed with a
+ *  unit of its own, or as arithmetic, is converted to the field's unit
+ *  (`lengthExpression.ts`). Edits reach the book after a short quiet
+ *  window, and at once when they settle. */
 export function DimensionControl({ label, value, onChange, min = 0, max, step = 0.1, units = DEFAULT_UNITS, muted, standalone }: DimensionControlProps) {
   const labels = useSandboxLabels();
+  const ids = useFieldIds();
   const unitRef = useRef(value.unit);
   unitRef.current = value.unit;
   const commitNumber = useCallback((v: number) => {
     onChange({ value: v, unit: unitRef.current });
   }, [onChange]);
+  const [local, stage, flush] = useDebouncedCommit(value.value, commitNumber);
 
   const unitOptions = (units.includes(value.unit) ? units : [...units, value.unit]).map((u) => ({
     value: u,
@@ -62,24 +69,27 @@ export function DimensionControl({ label, value, onChange, min = 0, max, step = 
   }));
 
   return (
-    <span className="inline-flex items-center gap-1">
-      <NumberControl
-        value={value.value}
-        onChange={commitNumber}
+    <span className={standalone ? 'inline-flex w-(--pt-field-w)' : 'flex w-full @[260px]:w-(--pt-field-w)'}>
+      <LengthField
+        id={standalone ? undefined : ids?.controlId}
+        ariaLabelledBy={standalone ? undefined : ids?.labelId}
+        ariaDescribedBy={standalone ? undefined : ids?.descriptionId}
+        ariaLabel={label}
+        value={local}
+        unit={value.unit}
+        units={unitOptions}
+        onValueChange={stage}
+        onValueCommitted={(v) => { stage(v); flush(); }}
+        onUnitChange={(unit) => { flush(); onChange({ value: convertDimension(local, value.unit, unit), unit }); }}
+        parse={(text) => evalLength(text, value.unit)}
+        parsePlain={plainNumber}
         min={min}
         max={max}
         step={step}
         muted={muted}
-        ariaLabel={standalone ? label : undefined}
-      />
-      <Select
-        size="sm"
-        value={value.unit}
-        onValueChange={(unit) => onChange({ value: convertDimension(value.value, value.unit, unit), unit })}
-        options={unitOptions}
-        ariaLabel={labels.dimensionUnit.replace('__label__', label)}
-        muted={muted}
-        className="w-[3.25rem]"
+        unitLabel={labels.dimensionUnit.replace('__label__', label)}
+        decrementLabel={labels.decreaseValue}
+        incrementLabel={labels.increaseValue}
       />
     </span>
   );

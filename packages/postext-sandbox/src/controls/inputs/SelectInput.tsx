@@ -80,7 +80,7 @@ function SelectControl({ label, value, options, onChange, muted, variant, fill }
       onValueChange={onChange}
       options={options}
       muted={muted}
-      className={fill ? 'w-full' : 'w-32'}
+      className={fill ? 'w-full' : 'w-(--pt-field-w)'}
     />
   );
 }
