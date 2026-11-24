@@ -2167,11 +2167,11 @@
      }
     ],
     "cover": {
-     "background": {
-      "hex": "#fbf3dc",
-      "model": "hex"
-     },
      "zones": {
+      "jointFront": {
+       "hex": "#b4402a",
+       "model": "hex"
+      },
       "spine": {
        "hex": "#b4402a",
        "model": "hex"
@@ -2179,63 +2179,12 @@
       "jointBack": {
        "hex": "#b4402a",
        "model": "hex"
-      },
-      "jointFront": {
-       "hex": "#b4402a",
-       "model": "hex"
       }
      },
-     "elements": [
-      {
-       "id": "art",
-       "kind": "image",
-       "zone": "front",
-       "x": -18,
-       "y": -18,
-       "width": 224.0,
-       "height": 161.3,
-       "resourceId": "e08-cover",
-       "fit": "cover",
-       "bleed": "own"
-      },
-      {
-       "id": "art-rule",
-       "kind": "box",
-       "zone": "front",
-       "x": 0,
-       "y": 143.3,
-       "width": 206.0,
-       "height": 1.6,
-       "color": {
-        "hex": "#b4402a",
-        "model": "hex"
-       }
-      },
-      {
-       "id": "party-frame",
-       "kind": "box",
-       "zone": "back",
-       "x": 15.5,
-       "y": 26.5,
-       "width": 175.0,
-       "height": 107.6,
-       "color": {
-        "hex": "#151a20",
-        "model": "hex"
-       }
-      },
-      {
-       "id": "party",
-       "kind": "image",
-       "zone": "back",
-       "x": 17.0,
-       "y": 28,
-       "width": 172.0,
-       "height": 104.6,
-       "resourceId": "e08p06-3",
-       "fit": "cover"
-      }
-     ],
+     "background": {
+      "hex": "#fbf3dc",
+      "model": "hex"
+     },
      "textBoxes": [
       {
        "name": "masthead",
@@ -2296,6 +2245,57 @@
         "x": 0,
         "y": -8
        }
+      }
+     ],
+     "elements": [
+      {
+       "id": "art",
+       "kind": "image",
+       "zone": "front",
+       "x": -18,
+       "y": -18,
+       "width": 224.0,
+       "height": 161.3,
+       "resourceId": "e08-cover",
+       "fit": "cover",
+       "bleed": "own"
+      },
+      {
+       "id": "art-rule",
+       "kind": "box",
+       "zone": "front",
+       "x": 0,
+       "y": 143.3,
+       "width": 206.0,
+       "height": 1.6,
+       "color": {
+        "hex": "#b4402a",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "party-frame",
+       "kind": "box",
+       "zone": "back",
+       "x": 15.5,
+       "y": 26.5,
+       "width": 175.0,
+       "height": 107.6,
+       "color": {
+        "hex": "#151a20",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "party",
+       "kind": "image",
+       "zone": "back",
+       "x": 17.0,
+       "y": 28,
+       "width": 172.0,
+       "height": 104.6,
+       "resourceId": "e08p06-3",
+       "fit": "cover"
       }
      ]
     }
@@ -2828,11 +2828,11 @@
      }
     ],
     "cover": {
-     "background": {
-      "hex": "#fbf3dc",
-      "model": "hex"
-     },
      "zones": {
+      "jointFront": {
+       "hex": "#b4402a",
+       "model": "hex"
+      },
       "spine": {
        "hex": "#b4402a",
        "model": "hex"
@@ -2840,63 +2840,12 @@
       "jointBack": {
        "hex": "#b4402a",
        "model": "hex"
-      },
-      "jointFront": {
-       "hex": "#b4402a",
-       "model": "hex"
       }
      },
-     "elements": [
-      {
-       "id": "art",
-       "kind": "image",
-       "zone": "front",
-       "x": -18,
-       "y": -18,
-       "width": 224.0,
-       "height": 161.3,
-       "resourceId": "e08-cover",
-       "fit": "cover",
-       "bleed": "own"
-      },
-      {
-       "id": "art-rule",
-       "kind": "box",
-       "zone": "front",
-       "x": 0,
-       "y": 143.3,
-       "width": 206.0,
-       "height": 1.6,
-       "color": {
-        "hex": "#b4402a",
-        "model": "hex"
-       }
-      },
-      {
-       "id": "party-frame",
-       "kind": "box",
-       "zone": "back",
-       "x": 15.5,
-       "y": 26.5,
-       "width": 175.0,
-       "height": 107.6,
-       "color": {
-        "hex": "#151a20",
-        "model": "hex"
-       }
-      },
-      {
-       "id": "party",
-       "kind": "image",
-       "zone": "back",
-       "x": 17.0,
-       "y": 28,
-       "width": 172.0,
-       "height": 104.6,
-       "resourceId": "e08p06-3",
-       "fit": "cover"
-      }
-     ],
+     "background": {
+      "hex": "#fbf3dc",
+      "model": "hex"
+     },
      "textBoxes": [
       {
        "name": "masthead",
@@ -2957,6 +2906,57 @@
         "x": 0,
         "y": -8
        }
+      }
+     ],
+     "elements": [
+      {
+       "id": "art",
+       "kind": "image",
+       "zone": "front",
+       "x": -18,
+       "y": -18,
+       "width": 224.0,
+       "height": 161.3,
+       "resourceId": "e08-cover",
+       "fit": "cover",
+       "bleed": "own"
+      },
+      {
+       "id": "art-rule",
+       "kind": "box",
+       "zone": "front",
+       "x": 0,
+       "y": 143.3,
+       "width": 206.0,
+       "height": 1.6,
+       "color": {
+        "hex": "#b4402a",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "party-frame",
+       "kind": "box",
+       "zone": "back",
+       "x": 15.5,
+       "y": 26.5,
+       "width": 175.0,
+       "height": 107.6,
+       "color": {
+        "hex": "#151a20",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "party",
+       "kind": "image",
+       "zone": "back",
+       "x": 17.0,
+       "y": 28,
+       "width": 172.0,
+       "height": 104.6,
+       "resourceId": "e08p06-3",
+       "fit": "cover"
       }
      ]
     }

@@ -36,9 +36,10 @@ from print_covers_books import BOOKS  # noqa: E402
 def whole_override(base: dict, new: dict) -> dict:
     """A language's `cover` that replaces the shared one whole under the
     layered configuration (configVersion 21+), where lists of entries with
-    an `id` (or `name`) merge entry by entry: the shared entries the
-    language does not keep are removed, and the shared keys it leaves out
-    are put back to their default."""
+    an `id` merge entry by entry: the shared entries the language does not
+    keep are removed, and the shared keys it leaves out are put back to
+    their default. The text boxes, keyed by `name`, are a list replaced
+    whole."""
     out: dict = {}
     for key in set(base) | set(new):
         if key not in new:
@@ -46,10 +47,9 @@ def whole_override(base: dict, new: dict) -> dict:
             continue
         value = new[key]
         old = base.get(key)
-        if isinstance(value, list) and isinstance(old, list):
-            field = "name" if key == "textBoxes" else "id"
-            keep = {e[field] for e in value}
-            out[key] = [{field: e[field], "$remove": True} for e in old if e[field] not in keep] + value
+        if isinstance(value, list) and isinstance(old, list) and key != "textBoxes":
+            keep = {e["id"] for e in value}
+            out[key] = [{"id": e["id"], "$remove": True} for e in old if e["id"] not in keep] + value
         elif isinstance(value, dict) and isinstance(old, dict) and key in ("verticalAlign", "zones", "sheets"):
             out[key] = whole_override(old, value)
         else:

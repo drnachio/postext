@@ -10799,8 +10799,12 @@
     },
     "cover": {
      "verticalAlign": {
-      "flapFront": "top",
-      "flapBack": "top"
+      "flapBack": "top",
+      "flapFront": "top"
+     },
+     "background": {
+      "hex": "#34405a",
+      "model": "hex"
      },
      "textBoxes": [
       {
@@ -10980,11 +10984,7 @@
         "width": 0.1
        }
       }
-     ],
-     "background": {
-      "hex": "#34405a",
-      "model": "hex"
-     }
+     ]
     }
    },
    "resources": [
@@ -14591,18 +14591,14 @@
     },
     "cover": {
      "verticalAlign": {
-      "flapFront": "top",
-      "flapBack": "top"
+      "flapBack": "top",
+      "flapFront": "top"
+     },
+     "background": {
+      "hex": "#34405a",
+      "model": "hex"
      },
      "textBoxes": [
-      {
-       "name": "slip-title",
-       "$remove": true
-      },
-      {
-       "name": "slip-note",
-       "$remove": true
-      },
       {
        "name": "blurb",
        "rect": {
@@ -14765,11 +14761,7 @@
         "width": 0.1
        }
       }
-     ],
-     "background": {
-      "hex": "#34405a",
-      "model": "hex"
-     }
+     ]
     }
    },
    "resources": [
