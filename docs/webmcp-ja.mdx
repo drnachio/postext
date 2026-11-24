@@ -248,6 +248,8 @@ await browser.close();
 
 共通設定への書き込みは、そのフィールドを自分で設定していないすべての版に反映されます。`keptBy`は自分で設定している言語を示し、それらの言語は自分の値を保ちます。そちらも変えるには、各言語を開き（`language`を渡した`sandbox_open_book`）、`scope: "edition"`でそのパスを書き込みます。共通設定と同じ値を書くと、その版独自の値ではなくなります。言語が1つの本では、設定はすべてその本自身のものなので、`scope: "all"`は受け付けられません。
 
+デザインを変えるほかのツールは`scope`を受け取らず、デザインパネルで選ばれている範囲に書き込みます。該当するのは、`action: "pointer"`を渡した`sandbox_edit_labels`、`guides`を渡した`sandbox_set_view`、`sandbox_rename_design_item`、`sandbox_remove_design_item`、`sandbox_chapter_styles`、`sandbox_frames_to_grid`、`sandbox_extract_module`、`sandbox_create_module`、`sandbox_insert_module`、`sandbox_rename_module`、`sandbox_merge_styles`、`sandbox_language_defaults`、`sandbox_print_profile`、`sandbox_save_layout_as_template`、`sandbox_apply_proposal`です。パネルがすべての言語になっているときは、変更は共通設定に入り、画面に出ている版も、独自の値を持っていた箇所を含めてその変更を受け取ります。版の言語はその版のもののままです。複数の言語で書かれた本では、これらのツールの応答に`scope`が入ります。
+
 章ごとに見た目が異なる本には[章スタイル](/ja/docs/configuration-styles#章スタイル)があります。`sandbox_chapter_styles`は、各スタイルが変える設定とそのスタイルで組まれる章を一覧にし、各章のスタイルがどこから来るか（フロントマターなら`chapter`、章の先頭の`:::part`行なら`part`、所属する部なら`partBefore`）を返します。スタイルの作成、名前の変更、削除もできます。`sandbox_get_config`と`sandbox_set_config`は`chapterStyle`を受け取り、デザインパネルでスタイルを選んでいるときと同じように、そのスタイルの設定を読み書きします。本全体で共有するパス（`page.width`、`locale`、フォント、印刷）は本に書き込まれ、`notes`にその旨が出ます。`sandbox_set_chapter_style`は章の`chapterStyle:`行を書いて章にスタイルを与え、`style: null`でその行を取り除きます。部のすべての章を1つのスタイルで組むには、`sandbox_edit_text`で部の`:::part`行に`style="…"`を書きます。
 
 フォントも設定です。`sandbox_list_fonts`に`search: "Garamond"`を渡すと公開カタログからファミリーを探し、その名前を`fontFamily`の設定に書き込むとフォントが読み込まれます。

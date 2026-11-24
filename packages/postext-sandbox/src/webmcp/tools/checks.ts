@@ -19,7 +19,7 @@ import type { FrameProposal } from '../../warnings/frameOverlapText.js';
 import type { Warning } from '../../warnings/types.js';
 import { applyViewerEdit } from '../../editor/viewerEdits.js';
 import { chapterText, stateReaches } from '../chapterEdits.js';
-import { chapterOf, dispatchAndWait, layOutChapter, type SandboxToolHost } from '../host.js';
+import { chapterOf, designScopeAnswer, dispatchAndWait, layOutChapter, writeDesignAndWait, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { preparePainting } from '../pageImage.js';
 import { screenPosition } from './view.js';
@@ -280,7 +280,9 @@ export function checkTools(host: SandboxToolHost): WebMcpTool[] {
         return { changed: false, fix: { kind: proposal.kind, words }, chapter: index + 1, selected: { offset: plan.from, toOffset: plan.to }, cutCharacters: plan.chars };
       }
       if (plan.kind === 'config') {
-        await dispatchAndWait(host, { type: 'UPDATE_CONFIG', payload: plan.patch, history: { merge: false } });
+        // A fix that changes the design goes where the Design panel's
+        // scope says (#1700).
+        await writeDesignAndWait(host, { type: 'UPDATE_CONFIG', payload: plan.patch, history: { merge: false } });
       } else {
         const before = chapterText(store.getSnapshot(), plan.chapterId);
         applyViewerEdit((a) => store.dispatch(a), plan.chapterId, plan.changes, plan.baseLength);
@@ -292,6 +294,7 @@ export function checkTools(host: SandboxToolHost): WebMcpTool[] {
         && (w.payload.kind !== 'frameCovered' || (warning.payload.kind === 'frameCovered' && w.payload.coveredBy === warning.payload.coveredBy)));
       return {
         changed: true,
+        ...(plan.kind === 'config' ? designScopeAnswer(host) : {}),
         check: warning.payload.kind,
         fix: { kind: proposal.kind, words },
         chapter: index + 1,

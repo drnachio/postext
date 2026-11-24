@@ -17,7 +17,7 @@ import type { PanelId, ViewportTab } from '../../types/index.js';
 import { folioSupported } from '../../viewport/folio/folioSupport.js';
 import { FIT_MARKS_MODES, fitMarksViewOf, setFitMarksChoice, type FitMarksMode } from '../../viewport/composed/fitMarksView.js';
 import { viewerControls, type ViewerContentsEntry, type ViewerControls, type ViewerSettings } from '../../viewport/viewerControls.js';
-import { SETTLE_TIMEOUT_MS, chapterOf, dispatchAndWait, layOutChapter, pageIndexOf, whenSettled, type SandboxToolHost } from '../host.js';
+import { SETTLE_TIMEOUT_MS, chapterOf, dispatchAndWait, layOutChapter, pageIndexOf, whenSettled, writeDesignAndWait, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { findAnchor } from '../pagePoint.js';
 import { pagesOfOffset } from '../pageText.js';
@@ -344,7 +344,9 @@ export function viewTools(host: SandboxToolHost): WebMcpTool[] {
           debugChanged = true;
         }
         if (debugChanged) patch.debug = debug;
-        await dispatchAndWait(host, { type: 'UPDATE_CONFIG', payload: patch, history: { merge: false } });
+        // The guides are the Design panel's switches: written where its
+        // scope says, so the panel shows them as the page does (#1700).
+        await writeDesignAndWait(host, { type: 'UPDATE_CONFIG', payload: patch, history: { merge: false } });
       }
 
       // The viewers take their settings on their next render.

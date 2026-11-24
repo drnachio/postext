@@ -12,6 +12,7 @@ import { withHyphenationLocale } from '../controls/language/hyphenation.js';
 import type { LayoutService } from '../worker/LayoutService.js';
 import { ToolError } from './modelContext.js';
 import { planContent } from '../book/jumps.js';
+import { designDispatch, designScope } from '../editions/designWrite.js';
 
 export interface SandboxToolHost {
   store: SandboxStore;
@@ -32,7 +33,7 @@ export const SETTLE_TIMEOUT_MS = 60_000;
 /** Dispatch, then wait for the state to carry the change: the store's
  *  state is the last one rendered, a moment behind a dispatch. Resolves
  *  after `quietMs` when the action changed nothing. */
-export async function dispatchAndWait(host: SandboxToolHost, actions: SandboxAction | readonly SandboxAction[], quietMs = 120): Promise<SandboxState> {
+export async function dispatchAndWait(host: SandboxToolHost, actions: SandboxAction | readonly SandboxAction[], quietMs = 120, dispatch: (action: SandboxAction) => void = host.store.dispatch): Promise<SandboxState> {
   const before = host.store.getSnapshot();
   await new Promise<void>((resolve) => {
     let done = false;
@@ -47,9 +48,29 @@ export async function dispatchAndWait(host: SandboxToolHost, actions: SandboxAct
       if (host.store.getSnapshot() !== before) finish();
     });
     const timer = setTimeout(finish, quietMs);
-    for (const action of Array.isArray(actions) ? actions : [actions as SandboxAction]) host.store.dispatch(action);
+    for (const action of Array.isArray(actions) ? actions : [actions as SandboxAction]) dispatch(action);
   });
   return host.store.getSnapshot();
+}
+
+/** The dispatch of a tool that changes the design the way the Design
+ *  panel does: in a book in several languages the change is written where
+ *  the panel's scope says, not into the edition on screen alone (#1700). */
+export function designWriter(host: SandboxToolHost): (action: SandboxAction) => void {
+  return designDispatch(host.store);
+}
+
+/** {@link dispatchAndWait} through {@link designWriter}. */
+export function writeDesignAndWait(host: SandboxToolHost, actions: SandboxAction | readonly SandboxAction[]): Promise<SandboxState> {
+  return dispatchAndWait(host, actions, undefined, designWriter(host));
+}
+
+/** What a tool that changed the design says of where the change went, in
+ *  a book in several languages: all (the settings every edition reads) or
+ *  edition (the one on screen). Nothing for a book in one language. */
+export function designScopeAnswer(host: SandboxToolHost): { scope?: 'all' | 'edition' } {
+  const scope = designScope(host.store.getSnapshot());
+  return scope ? { scope } : {};
 }
 
 /** Whether nothing is on its way: the stored book loaded, no other book

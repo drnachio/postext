@@ -170,7 +170,10 @@ export function createFramePaint(deps: FramePaintDeps) {
 
   const writeTemplates = (templates: PostextConfig['pageTemplates']): void => {
     // A drop is one step of the history (#899), never joined to the next.
-    refs.dispatchRef.current({ type: 'UPDATE_CONFIG', payload: { pageTemplates: templates && templates.length > 0 ? templates : undefined }, history: { merge: false } });
+    // The template is the design's: in a book in several languages the
+    // drop is written where the Design panel's scope says (#1700).
+    const write = templateEditorHost()?.writeDesign ?? refs.dispatchRef.current;
+    write({ type: 'UPDATE_CONFIG', payload: { pageTemplates: templates && templates.length > 0 ? templates : undefined }, history: { merge: false } });
   };
   return {
     paint, selectFrame, fenceOfPage, writeTemplates

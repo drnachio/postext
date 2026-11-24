@@ -345,13 +345,6 @@ async function river(browser, locale) {
   for (const [n, a] of [[1, 'dam'], [2, 'mill'], [3, 'harbour']]) {
     await tool(page, 'sandbox_edit_labels', { action: 'pointer', template: 'map-notes', from: `note-${n}`, toFrame: 'map', anchor: a });
   }
-  // The pointer tool writes the edition on screen, and the Design panel is on
-  // the settings of every language, where it would list no pointer: the
-  // template is written there with its pointers and the edition's own copy
-  // is taken back.
-  const pointed = (await tool(page, 'sandbox_get_config', { path: 'pageTemplates' })).effective.find((x) => x.id === 'map-notes');
-  for (let i = 0; i < 3; i++) await tool(page, 'sandbox_undo', {});
-  await putTemplates(page, [pointed]);
 
   // §10: the photo cards.
   await putTemplates(page, [PHOTOS]);

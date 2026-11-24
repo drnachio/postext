@@ -131,6 +131,10 @@ export function useTemplateEditor(): TemplateEditorState {
 export interface TemplateEditorHost {
   getState: () => SandboxState;
   dispatch: Dispatch<SandboxAction>;
+  /** The dispatch of a change to the design made on the page: in a book
+   *  in several languages it writes where the Design panel's scope says
+   *  (#1700). Without one, `dispatch`. */
+  writeDesign?: Dispatch<SandboxAction>;
 }
 
 let host: TemplateEditorHost | null = null;

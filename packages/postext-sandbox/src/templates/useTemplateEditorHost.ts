@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useSandboxDispatch, useSandboxStateGetter } from '../context/SandboxContext.js';
+import { useDesignDispatch, useSandboxDispatch, useSandboxStateGetter } from '../context/SandboxContext.js';
 import { setTemplateEditorHost } from './editorStore.js';
 
 /** Lends the page-template editor of the canvas (#863) the book's state
@@ -7,8 +7,9 @@ import { setTemplateEditorHost } from './editorStore.js';
 export function useTemplateEditorHost(): void {
   const getState = useSandboxStateGetter();
   const dispatch = useSandboxDispatch();
+  const writeDesign = useDesignDispatch();
   useEffect(() => {
-    setTemplateEditorHost({ getState, dispatch });
+    setTemplateEditorHost({ getState, dispatch, writeDesign });
     return () => setTemplateEditorHost(null);
-  }, [getState, dispatch]);
+  }, [getState, dispatch, writeDesign]);
 }

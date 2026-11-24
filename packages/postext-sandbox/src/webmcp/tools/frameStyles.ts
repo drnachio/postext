@@ -4,7 +4,7 @@ import { stylesAfterMerging, type CompareOptions } from '../../frameStyles/style
 import { placesToKeep, planMerges, type MergeGroup } from '../../frameStyles/styleMerge.js';
 import { applyStyleRewrite } from '../../frameStyles/applyRewrite.js';
 import type { UsageChapter } from '../../frameStyles/styleUsage.js';
-import type { SandboxToolHost } from '../host.js';
+import { designScopeAnswer, designWriter, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { layoutAnswer } from './book.js';
 
@@ -103,8 +103,9 @@ export function frameStyleTools(host: SandboxToolHost): WebMcpTool[] {
       const before = { calloutStyles: s.config.calloutStyles, pageTemplates: s.config.pageTemplates };
       const places = args.lookOnly === true && args.keepPlaces !== false ? placesToKeep(groups, lib, bookCompareOptions(s.config)) : undefined;
       const plan = planMerges({ ...before, exerciseStyles: s.config.exerciseStyles, exercises: s.config.exercises }, lib.styles, chapters, groups, places);
-      const record = applyStyleRewrite(store.dispatch, before, plan, '', s.activeChapterId);
+      const record = applyStyleRewrite(designWriter(host), before, plan, '', s.activeChapterId);
       return {
+        ...designScopeAnswer(host),
         merged: plan.from,
         ...(plan.stays.length > 0 ? { keptForTheirPlace: plan.stays } : {}),
         styles: plan.calloutStyles.length,

@@ -13,7 +13,7 @@
  */
 
 import { MoveRight, Wand2 } from 'lucide-react';
-import { useSandbox } from '../context/SandboxContext.js';
+import { useDesignDispatch, useSandbox } from '../context/SandboxContext.js';
 import { Button, ConfirmPopover, announce } from '../ui/index.js';
 import { fill } from '../print/fillTokens.js';
 import type { SandboxLabels } from '../types/index.js';
@@ -72,7 +72,10 @@ export interface ProposalActionsProps {
 }
 
 export function ProposalActions({ warning, onScreen, openEdition, editionName }: ProposalActionsProps) {
-  const { state, dispatch } = useSandbox();
+  const { state } = useSandbox();
+  // A fix changes the book's form: written where the Design panel's scope
+  // says (#1700).
+  const dispatch = useDesignDispatch();
   const { labels } = state;
   const p = warning.payload;
   // The layout's fixes and, for an overlap check, `overlap: 'allow'`.

@@ -6,7 +6,7 @@ import { laidTemplatePage } from '../../templates/pagePieces.js';
 import { templateFences } from '../../templates/templateUsage.js';
 import { slugify } from '../../templates/templateEdits.js';
 import type { SandboxToolHost } from '../host.js';
-import { chapterOf, layOutChapter } from '../host.js';
+import { chapterOf, designScopeAnswer, designWriter, layOutChapter } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { layoutAnswer } from './book.js';
 
@@ -45,6 +45,9 @@ function chapterFor(host: SandboxToolHost, templateId: string, ref: unknown) {
  *  «Turn into a grid» / «Extract a module». */
 export function moduleTools(host: SandboxToolHost): WebMcpTool[] {
   const { store } = host;
+  // The modules are the design's: written where the Design panel's scope
+  // says (#1700).
+  const design = designWriter(host);
 
   const list: WebMcpTool = {
     name: 'sandbox_modules',
@@ -88,8 +91,8 @@ export function moduleTools(host: SandboxToolHost): WebMcpTool[] {
       if (typeof args.name !== 'string' || args.name.trim() === '') throw new ToolError('Give the module a name.');
       const s = store.getSnapshot();
       const out = createModule(s.config.pageTemplates ?? [], args.name.trim());
-      applyTemplateRewrite(store.dispatch, { templates: out.templates, chapters: [] }, s.activeChapterId);
-      return { id: out.id, undoSteps: 1 };
+      applyTemplateRewrite(design, { templates: out.templates, chapters: [] }, s.activeChapterId);
+      return { ...designScopeAnswer(host), id: out.id, undoSteps: 1 };
     },
   };
 
@@ -105,8 +108,8 @@ export function moduleTools(host: SandboxToolHost): WebMcpTool[] {
       if (!moduleTemplates(templates).some((t) => t.id === from)) throw new ToolError(`No module template ${JSON.stringify(from)}. Read them with sandbox_modules.`);
       const plan = planRenameModule(templates, bookChapters(s), from, String(args.to ?? ''));
       if (!plan) throw new ToolError('The new id is empty, the same, or taken by another template.');
-      const record = applyTemplateRewrite(store.dispatch, plan, s.activeChapterId);
-      return { renamed: from, to: slugify(String(args.to)), blocksRewritten: plan.chapters.reduce((n, c) => n + c.changes.length, 0), undoSteps: record.steps, ...(await layoutAnswer(host, args.wait, signal)) };
+      const record = applyTemplateRewrite(design, plan, s.activeChapterId);
+      return { ...designScopeAnswer(host), renamed: from, to: slugify(String(args.to)), blocksRewritten: plan.chapters.reduce((n, c) => n + c.changes.length, 0), undoSteps: record.steps, ...(await layoutAnswer(host, args.wait, signal)) };
     },
   };
 
@@ -133,8 +136,8 @@ export function moduleTools(host: SandboxToolHost): WebMcpTool[] {
             ? `Chapter ${index + 1} has ${templateFences(text.markdown).length} composed page(s); page ${fence + 1} is not one of them.`
             : 'The page names no template that can take modules (none, or a module).');
       }
-      const record = applyTemplateRewrite(store.dispatch, plan, s.activeChapterId);
-      return { chapter: index + 1, chapterTitle: chapter.title, page: fence + 1, pageTemplate: plan.pageTemplate, group: plan.group, groupAdded: plan.added, undoSteps: record.steps, ...(await layoutAnswer(host, args.wait, signal)) };
+      const record = applyTemplateRewrite(design, plan, s.activeChapterId);
+      return { ...designScopeAnswer(host), chapter: index + 1, chapterTitle: chapter.title, page: fence + 1, pageTemplate: plan.pageTemplate, group: plan.group, groupAdded: plan.added, undoSteps: record.steps, ...(await layoutAnswer(host, args.wait, signal)) };
     },
   };
 
@@ -157,8 +160,9 @@ export function moduleTools(host: SandboxToolHost): WebMcpTool[] {
       if (!laid) throw new ToolError(`No page of chapter "${ch.title}" is set with template ${JSON.stringify(templateId)} on one page (spreads are not read).`);
       const plan = planFramesToGrid({ templates: state.config.pageTemplates ?? [], templateId, frames, laid, chapters: bookChapters(state) });
       if (!plan.ok) throw new ToolError(REFUSALS[plan.reason], plan.frames ? { frames: plan.frames } : undefined);
-      const record = applyTemplateRewrite(store.dispatch, plan, state.activeChapterId);
+      const record = applyTemplateRewrite(design, plan, state.activeChapterId);
       return {
+        ...designScopeAnswer(host),
         group: plan.group,
         main: plan.main,
         members: plan.members,
@@ -194,8 +198,9 @@ export function moduleTools(host: SandboxToolHost): WebMcpTool[] {
       if (!laid) throw new ToolError(`No page of chapter "${ch.title}" is set with template ${JSON.stringify(templateId)} on one page (spreads are not read).`);
       const plan = planExtractModule({ templates: state.config.pageTemplates ?? [], templateId, frames, name: String(args.name ?? ''), laid, chapters: bookChapters(state) });
       if (!plan.ok) throw new ToolError(REFUSALS[plan.reason], plan.frames ? { frames: plan.frames } : undefined);
-      const record = applyTemplateRewrite(store.dispatch, plan, state.activeChapterId);
+      const record = applyTemplateRewrite(design, plan, state.activeChapterId);
       return {
+        ...designScopeAnswer(host),
         module: plan.module,
         group: plan.group,
         frames: plan.frames,

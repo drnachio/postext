@@ -3,7 +3,7 @@ import { setLabelLeader, iconDirective, type IconSpec, type LabelLeaderChoice } 
 import { labelsInChapters, type MarkdownLabel } from '../../panels/resources/marks/figureLabels.js';
 import { pointersOf, removePointer, setPointer } from '../../templates/pointerEdits.js';
 import { chapterText, editChapter } from '../chapterEdits.js';
-import type { SandboxToolHost } from '../host.js';
+import { designScopeAnswer, designWriter, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { layoutAnswer } from './book.js';
 
@@ -134,8 +134,10 @@ export function labelTools(host: SandboxToolHost): WebMcpTool[] {
           next = out.templates;
           pointer = out.id;
         }
-        store.dispatch({ type: 'UPDATE_CONFIG', payload: { pageTemplates: next.length > 0 ? next : undefined }, history: { merge: false } });
-        return { ...(pointer ? { pointer } : {}), pointers: pointersOf(next, templateId).map((p) => ({ id: p.id, from: p.from, toFrame: p.toFrame, anchor: p.anchor })), ...(await layoutAnswer(host, args.wait, signal)) };
+        // The template is the design's: written where the Design panel's
+        // scope says, so the panel lists the pointer the page draws (#1700).
+        designWriter(host)({ type: 'UPDATE_CONFIG', payload: { pageTemplates: next.length > 0 ? next : undefined }, history: { merge: false } });
+        return { ...designScopeAnswer(host), ...(pointer ? { pointer } : {}), pointers: pointersOf(next, templateId).map((p) => ({ id: p.id, from: p.from, toFrame: p.toFrame, anchor: p.anchor })), ...(await layoutAnswer(host, args.wait, signal)) };
       }
       throw new ToolError('action is leader, icon or pointer.');
     },

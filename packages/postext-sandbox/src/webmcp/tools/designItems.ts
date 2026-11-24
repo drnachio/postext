@@ -33,7 +33,7 @@ import { planRenameModule } from '../../templates/moduleEdits.js';
 import { frameFamily, namesInUse, renameFrame, renameTemplate, slugify, templateAt, templateFromLayout } from '../../templates/templateEdits.js';
 import { renameSlotChanges, renameTemplateChanges } from '../../templates/templateUsage.js';
 import { FILE_PARAM, readFileInput, type FileInput } from '../fileInput.js';
-import { chapterOf, dispatchAndWait, layOutChapter, pageIndexOf, type SandboxToolHost } from '../host.js';
+import { chapterOf, designScopeAnswer, designWriter, dispatchAndWait, layOutChapter, pageIndexOf, type SandboxToolHost } from '../host.js';
 import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { CHAPTER_PARAM, WAIT_PARAM, layoutAnswer } from './book.js';
 
@@ -85,7 +85,10 @@ async function fontSubsets(): Promise<((family: string) => readonly string[] | u
 
 export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
   const { store } = host;
-  const write = (payload: Partial<PostextConfig>) => store.dispatch({ type: 'UPDATE_CONFIG', payload, history: { merge: false } });
+  // What these tools change is the design: written where the Design
+  // panel's scope says (#1700).
+  const design = designWriter(host);
+  const write = (payload: Partial<PostextConfig>) => design({ type: 'UPDATE_CONFIG', payload, history: { merge: false } });
 
   const rename: WebMcpTool = {
     name: 'sandbox_rename_design_item',
@@ -129,11 +132,11 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
         if (own.role === 'module') {
           const plan = planRenameModule(templates, chapters, from, to);
           if (!plan) throw new ToolError('The new id is empty, the same, or taken by another template.');
-          const record = applyTemplateRewrite(store.dispatch, plan, s.activeChapterId);
+          const record = applyTemplateRewrite(design, plan, s.activeChapterId);
           answer = { renamed: from, to, module: true, blocksRewritten: plan.chapters.reduce((n, c) => n + c.changes.length, 0), undoSteps: record.steps };
         } else {
           const rewrites = chapters.map((c) => ({ chapterId: c.id, changes: renameTemplateChanges(c.markdown, from, to), baseLength: c.markdown.length }));
-          const record = applyTemplateRewrite(store.dispatch, { templates: renameTemplate(templates, from, to), chapters: rewrites }, s.activeChapterId);
+          const record = applyTemplateRewrite(design, { templates: renameTemplate(templates, from, to), chapters: rewrites }, s.activeChapterId);
           answer = { renamed: from, to, pagesRewritten: rewrites.reduce((n, c) => n + c.changes.length, 0), undoSteps: record.steps };
         }
       } else if (list === 'templateFrames') {
@@ -149,7 +152,7 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
         // A frame's slot names on the pages follow it (#979); a group has none.
         const family = new Set(isGroup ? [] : frameFamily(templates, templateId, from));
         const rewrites = isGroup ? [] : chapters.map((c) => ({ chapterId: c.id, changes: renameSlotChanges(c.markdown, family, from, to), baseLength: c.markdown.length }));
-        const record = applyTemplateRewrite(store.dispatch, { templates: renameFrame(templates, templateId, from, to), chapters: rewrites }, s.activeChapterId);
+        const record = applyTemplateRewrite(design, { templates: renameFrame(templates, templateId, from, to), chapters: rewrites }, s.activeChapterId);
         const editions = !isGroup && s.activeProjectId !== null && store.projectActions
           ? await store.projectActions.renameFrameInEditions(s.activeProjectId, templateId, from, to)
           : 0;
@@ -182,15 +185,15 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
         taken(styles.map((i) => i.id), to);
         if (list === 'calloutStyles') {
           const plan = planRename({ calloutStyles: config.calloutStyles, pageTemplates: config.pageTemplates, exerciseStyles: config.exerciseStyles, exercises: config.exercises }, styles as NonNullable<PostextConfig['calloutStyles']>, chapters, from, to);
-          const record = applyStyleRewrite(store.dispatch, { calloutStyles: config.calloutStyles, pageTemplates: config.pageTemplates }, plan, `${from} → ${to}`, s.activeChapterId);
+          const record = applyStyleRewrite(design, { calloutStyles: config.calloutStyles, pageTemplates: config.pageTemplates }, plan, `${from} → ${to}`, s.activeChapterId);
           answer = { renamed: from, to, fencesRewritten: plan.fenceCount, framesRewritten: plan.frames.length, ...('exerciseStyles' in plan || 'exercises' in plan ? { exerciseBoxesRewritten: true } : {}), undoSteps: record.steps };
         } else if (list === 'exerciseStyles') {
           // Every `:::exercise{style}` fence that names it (#1244).
           const plan = planExerciseStyleRename(styles as NonNullable<PostextConfig['exerciseStyles']>, chapters, from, to);
-          const steps = applyExerciseStyleRename(store.dispatch, plan, s.activeChapterId);
+          const steps = applyExerciseStyleRename(design, plan, s.activeChapterId);
           answer = { renamed: from, to, fencesRewritten: plan.fenceCount, undoSteps: steps };
         } else if (list === 'labelStyles') {
-          const done = applyLabelStyleRename(store.dispatch, config.labelStyles ?? [], from, to, { chapters, resources: s.resources, activeChapterId: s.activeChapterId });
+          const done = applyLabelStyleRename(design, config.labelStyles ?? [], from, to, { chapters, resources: s.resources, activeChapterId: s.activeChapterId });
           answer = { renamed: from, to, anchorsRewritten: done.anchors, labelLinesRewritten: done.lines, undoSteps: done.chapters + done.resources + 1 };
         } else {
           const renamed = styles.map((i) => (i.id === from ? { ...i, id: to } : i));
@@ -198,7 +201,7 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
           let uses = 0;
           if (list === 'frameLooks') {
             const rewrites = chapters.map((c) => ({ chapterId: c.id, changes: renameLookChanges(c.markdown, from, to), baseLength: c.markdown.length }));
-            steps += applyTemplateRewrite(store.dispatch, { chapters: rewrites }, s.activeChapterId).steps;
+            steps += applyTemplateRewrite(design, { chapters: rewrites }, s.activeChapterId).steps;
             uses = rewrites.reduce((n, c) => n + c.changes.length, 0);
           }
           write({ [list]: renamed } as Partial<PostextConfig>);
@@ -216,7 +219,7 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
           answer = { renamed: from, to, ...(list === 'frameLooks' ? { piecesRewritten: uses } : list === 'tableStyles' || list === 'scoreStyles' ? { resourcesRewritten: uses } : {}), undoSteps: steps };
         }
       }
-      return { ...answer, ...(await layoutAnswer(host, args.wait, signal)) };
+      return { ...designScopeAnswer(host), ...answer, ...(await layoutAnswer(host, args.wait, signal)) };
     },
   };
 
@@ -247,7 +250,7 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
         if (!palette.some((e) => e.id === id)) throw noItem(list, id, palette.map((e) => e.id));
         const unlinked = unlinkPaletteRefs(config, id);
         const next = palette.filter((e) => e.id !== id);
-        store.dispatch({ type: 'SET_CONFIG', payload: { ...unlinked, colorPalette: next.length > 0 ? next : undefined }, history: { merge: false } });
+        design({ type: 'SET_CONFIG', payload: { ...unlinked, colorPalette: next.length > 0 ? next : undefined }, history: { merge: false } });
       } else if (list.startsWith('comics.')) {
         const raw = config.comics;
         const key = list === 'comics.cast' ? 'cast' : list === 'comics.panelStyles' ? 'panelStyles' : 'balloonStyles';
@@ -271,7 +274,7 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
         if (children.length > 0) answer = { ...answer, childrenTookItsLook: children };
         write({ [list]: next.length > 0 || list === 'calloutStyles' || list === 'chipStyles' || list === 'markStyles' ? next : undefined } as Partial<PostextConfig>);
       }
-      return { ...answer, undoSteps: 1, ...(await layoutAnswer(host, args.wait, signal)) };
+      return { ...designScopeAnswer(host), ...answer, undoSteps: 1, ...(await layoutAnswer(host, args.wait, signal)) };
     },
   };
 
@@ -316,8 +319,8 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
       const rows = result.changes.map((c) => ({ id: c.id, from: c.from, to: c.to, required: c.required, customised: c.customised, applies: c.applied }));
       if (!args.apply) return { ...(result.locale ? { locale: result.locale } : {}), rows, note: 'Nothing was changed: apply: true writes the rows marked applies.' };
       const count = result.changes.filter((c) => c.applied).length;
-      if (count > 0) store.dispatch({ type: 'SET_CONFIG', payload: result.config, history: { merge: false } });
-      return { applied: rows.filter((r) => r.applies).map((r) => r.id), undoSteps: count > 0 ? 1 : 0, ...(await layoutAnswer(host, args.wait, signal)) };
+      if (count > 0) design({ type: 'SET_CONFIG', payload: result.config, history: { merge: false } });
+      return { ...designScopeAnswer(host), applied: rows.filter((r) => r.applies).map((r) => r.id), undoSteps: count > 0 ? 1 : 0, ...(await layoutAnswer(host, args.wait, signal)) };
     },
   };
 
@@ -342,7 +345,7 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
         delete next.customProfile;
         if (next.outputProfile === 'custom') delete next.outputProfile;
         write({ print: Object.keys(next).length > 0 ? next : undefined });
-        return { removed: true, undoSteps: 1, ...(await layoutAnswer(host, args.wait, signal)) };
+        return { ...designScopeAnswer(host), removed: true, undoSteps: 1, ...(await layoutAnswer(host, args.wait, signal)) };
       }
       if (!args.file) throw new ToolError('Give the profile file (file), or remove: true.');
       const { bytes, name: fileName } = await bytesOf(args.file as FileInput, signal);
@@ -358,7 +361,7 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
       const fileId = await putBlob(bytes, 'application/vnd.iccprofile');
       const name = typeof args.name === 'string' && args.name.trim() ? args.name.trim() : profile.description || fileName.replace(/\.(icc|icm)$/i, '') || 'Custom profile';
       write({ print: { ...raw, outputProfile: 'custom', customProfile: { ...raw.customProfile, name, fileId } } });
-      return { profile: { name, fileId, colorSpace: profile.colorSpace }, undoSteps: 1, ...(await layoutAnswer(host, args.wait, signal)) };
+      return { ...designScopeAnswer(host), profile: { name, fileId, colorSpace: profile.colorSpace }, undoSteps: 1, ...(await layoutAnswer(host, args.wait, signal)) };
     },
   };
 
@@ -395,8 +398,8 @@ export function designItemTools(host: SandboxToolHost): WebMcpTool[] {
         ? args.name.trim()
         : state.labels.pageTemplatesLayoutName.replace('__name__', resolved.name || resolved.id);
       const out = templateFromLayout(state.config.pageTemplates ?? [], resolved, rects, area, doc.config.page.dpi, name);
-      const record = applyTemplateRewrite(store.dispatch, { templates: out.templates, chapters: [] }, state.activeChapterId);
-      return { template: out.id, name, from: composed.template, page: index + 1, undoSteps: record.steps };
+      const record = applyTemplateRewrite(design, { templates: out.templates, chapters: [] }, state.activeChapterId);
+      return { ...designScopeAnswer(host), template: out.id, name, from: composed.template, page: index + 1, undoSteps: record.steps };
     },
   };
 
