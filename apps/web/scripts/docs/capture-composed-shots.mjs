@@ -3,7 +3,10 @@
  * Composed-page books §8–11, Moving a book to composed pages (grids and
  * modules) and Sandbox: composed pages (connectors, leaders, grids,
  * modules, overlaps, glyph tabs), one set per interface language, into
- * public/docs-shots/<locale>/.
+ * public/docs-shots/<locale>/. It also takes the Design-mode picture of the
+ * Sandbox page (`sandbox-modes`) and the template picture of Composed-page
+ * books §2 (`template`): with them, one run retakes every picture that shows
+ * the Design panel (#1699).
  *
  *   node scripts/docs/capture-composed-shots.mjs --base http://localhost:3112 [--locales en,es] [--shots tree,grid]
  *
@@ -27,7 +30,7 @@ import puppeteer from 'puppeteer-core';
 const args = Object.fromEntries(process.argv.slice(2).reduce((acc, a, i, all) => (a.startsWith('--') ? [...acc, [a.slice(2), all[i + 1]]] : acc), []));
 const BASE = new URL(args.base ?? 'http://localhost:3112');
 const LOCALES = (args.locales ?? 'en,es,ca,fr,de,it,pt,zh,ja,ar').split(',');
-const SHOTS = new Set((args.shots ?? 'tree,modules,map-notes,leader,grid,overlap,glyph-tab,reshape').split(','));
+const SHOTS = new Set((args.shots ?? 'sandbox-modes,template,tree,modules,map-notes,leader,grid,overlap,glyph-tab,reshape').split(','));
 const CHROME = process.env.COOKBOOK_CHROME ?? '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 const WEB = fileURLToPath(new URL('../../', import.meta.url));
 const OUT = join(WEB, 'public/docs-shots');
@@ -323,6 +326,7 @@ async function river(browser, locale) {
   await putTemplates(page, [REVIEW, tree]);
   const r1 = await append(page, t.review);
   const reviewPage = r1.book.pages;
+  if (SHOTS.has('template')) await templateShot(page, locale, L, reviewPage);
   const fences = ((await page.evaluate(() => window.__d4.raw())).match(/^::::page\{/gm) ?? []).length;
   await tool(page, 'sandbox_insert_module', { module: 'tree', page: fences });
   let text = await page.evaluate(() => window.__d4.raw());
@@ -341,6 +345,13 @@ async function river(browser, locale) {
   for (const [n, a] of [[1, 'dam'], [2, 'mill'], [3, 'harbour']]) {
     await tool(page, 'sandbox_edit_labels', { action: 'pointer', template: 'map-notes', from: `note-${n}`, toFrame: 'map', anchor: a });
   }
+  // The pointer tool writes the edition on screen, and the Design panel is on
+  // the settings of every language, where it would list no pointer: the
+  // template is written there with its pointers and the edition's own copy
+  // is taken back.
+  const pointed = (await tool(page, 'sandbox_get_config', { path: 'pageTemplates' })).effective.find((x) => x.id === 'map-notes');
+  for (let i = 0; i < 3; i++) await tool(page, 'sandbox_undo', {});
+  await putTemplates(page, [pointed]);
 
   // §10: the photo cards.
   await putTemplates(page, [PHOTOS]);
@@ -348,14 +359,16 @@ async function river(browser, locale) {
   const photosPageNo = r3.book.pages;
   await sleep(1500);
 
-  const design = async (pageNo, settingsGroup = 'page') => {
-    await tool(page, 'sandbox_set_view', { mode: 'design', panel: 'config', settingsGroup, fit: 'height', sidebarWidth: 36 });
+  // The Design panel shows one section of a group at a time: each picture
+  // opens the tab of the section it is about.
+  const design = async (pageNo, settingsSection = 'pageTemplates') => {
+    await tool(page, 'sandbox_set_view', { mode: 'design', panel: 'config', settingsSection, fit: 'height', sidebarWidth: 36 });
     await tool(page, 'sandbox_go_to_page', { page: pageNo });
     await sleep(1200);
   };
 
   if (SHOTS.has('tree')) {
-    await design(reviewPage);
+    await design(reviewPage, 'modules');
     await click(page, L.modulesEditLabel.replace('__name__', tree.name), { wait: 1200 });
     await click(page, `${L.headerFooterElementConnector} #1`, { top: true, wait: 1000 });
     await scrollTo(page, `${L.headerFooterElementConnector} #1`, { pad: 4 });
@@ -364,10 +377,9 @@ async function river(browser, locale) {
   if (SHOTS.has('modules')) {
     await tool(page, 'sandbox_set_view', { mode: 'content', panel: 'markdown' });
     await tool(page, 'sandbox_select_text', { text: t.tree[1] });
-    await design(reviewPage);
+    await design(reviewPage, 'modules');
     await page.evaluate((t) => window.__d4.find(t)?.click(), L.modulesClose);
     await sleep(600);
-    await scrollTo(page, L.modulesSection, { tags: 'h2,h3,h4,span,div', last: true, pad: 60 });
     await shoot(page, locale, 'modules');
   }
   if (SHOTS.has('map-notes')) {
@@ -417,12 +429,41 @@ async function river(browser, locale) {
   }
   if (SHOTS.has('glyph-tab')) {
     await tool(page, 'sandbox_set_config', { changes: [{ path: 'calloutStyles[id=actividad].label.icon', value: { kind: 'glyph', glyph: '✎', placement: 'inside' } }] });
-    await design(reviewPage, 'callouts');
+    await design(reviewPage, 'calloutStyles');
     await click(page, 'actividad', { top: true, wait: 900 });
     await click(page, L.calloutStyleLabelGroup, { top: true, wait: 900 }).catch(() => {});
     await scrollTo(page, L.calloutStyleLabelIconKind, { pad: 160 });
     await shoot(page, locale, 'glyph-tab');
   }
+  await context.close();
+}
+
+/** Composed-page books §2: the Review template open in the Design panel, its
+ *  frames outlined on the page. Taken before the tree goes onto that page. */
+async function templateShot(page, locale, L, reviewPage) {
+  await tool(page, 'sandbox_set_view', { mode: 'design', panel: 'config', settingsSection: 'pageTemplates', fit: 'height', sidebarWidth: 36 });
+  await tool(page, 'sandbox_go_to_page', { page: reviewPage });
+  await sleep(1200);
+  await click(page, REVIEW.id, { panel: true, top: true, wait: 900 });
+  await scrollTo(page, L.pageTemplatesGroupFramesDescription, { pad: 30 });
+  await shoot(page, locale, 'template');
+  await tool(page, 'sandbox_set_view', { mode: 'content', panel: 'none' });
+}
+
+/** Sandbox §Content and Design: the Design panel's overview beside the map
+ *  spread in Design mode, in a book nothing was done to. */
+async function modes(browser, locale) {
+  if (!SHOTS.has('sandbox-modes')) return;
+  const L = labelsOf(locale);
+  const { context, page } = await openPage(browser, locale, `#recipe=children-textbook-pages&lang=${editionOf(locale)}`);
+  await ready(page);
+  await rejectCookies(page, L);
+  await tool(page, 'sandbox_set_view', { mode: 'design', panel: 'config', viewer: 'canvas', pages: 'spread', fit: 'width', sidebarWidth: 36 });
+  // The pages are fitted again once the sidebar has its width.
+  await sleep(1500);
+  await tool(page, 'sandbox_go_to_page', { page: 6 });
+  await sleep(2500);
+  await shoot(page, locale, 'sandbox-modes');
   await context.close();
 }
 
@@ -435,7 +476,7 @@ async function places(browser, locale) {
   const origin = new URL(page.url()).origin;
   await tool(page, 'sandbox_import_book', { file: { url: `${origin}/docs-examples/river-places-before.postext` } });
   await ready(page);
-  await tool(page, 'sandbox_set_view', { mode: 'design', panel: 'config', settingsGroup: 'page', viewer: 'canvas', fit: 'height', sidebarWidth: 36 });
+  await tool(page, 'sandbox_set_view', { mode: 'design', panel: 'config', settingsSection: 'pageTemplates', viewer: 'canvas', fit: 'height', sidebarWidth: 36 });
   await sleep(1500);
   await scrollTo(page, L.pageTemplatesReshape, { pad: 6 });
   const names = [1, 2, 3, 4, 5, 6].flatMap((n) => [`photo${n}`, `caption${n}`]);
@@ -457,6 +498,7 @@ const browser = await puppeteer.launch({ executablePath: CHROME, headless: true,
 try {
   for (const locale of LOCALES) {
     console.log(locale);
+    await modes(browser, locale);
     await river(browser, locale);
     await places(browser, locale);
   }
