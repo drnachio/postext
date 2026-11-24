@@ -8,7 +8,11 @@ interface PanelBodyProps extends ComponentProps<'div'> {
   padded?: boolean;
 }
 
-/** The scrolling area below a `PanelHeader`. */
+/**
+ * The scrolling area below a `PanelHeader`. Positioned, so absolutely placed
+ * descendants (`sr-only` texts above all) scroll with it instead of stretching
+ * the box around the panel (#1706).
+ */
 export const PanelBody = forwardRef<HTMLDivElement, PanelBodyProps>(function PanelBody(
   { padded, className, ...rest },
   ref,
@@ -16,7 +20,7 @@ export const PanelBody = forwardRef<HTMLDivElement, PanelBodyProps>(function Pan
   return (
     <div
       ref={ref}
-      className={cn('min-h-0 flex-1 overflow-y-auto overflow-x-hidden', padded && 'px-3 py-3', className)}
+      className={cn('relative min-h-0 flex-1 overflow-y-auto overflow-x-hidden', padded && 'px-3 py-3', className)}
       {...rest}
     />
   );
