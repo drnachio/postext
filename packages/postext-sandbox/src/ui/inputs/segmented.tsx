@@ -11,6 +11,8 @@ export interface SegmentedOption<T extends string> {
   title?: string;
   /** Not selectable (shown dimmed; the tooltip says why). */
   disabled?: boolean;
+  /** Classes of this option alone (one that must never be cut: `shrink-0`). */
+  className?: string;
 }
 
 interface SegmentedControlProps<T extends string> {
@@ -23,8 +25,10 @@ interface SegmentedControlProps<T extends string> {
   ariaDescribedBy?: string;
   /** `sm` for a discreet control in a toolbar band. */
   size?: 'md' | 'sm';
-  /** Stretch to the container's width, options sharing it evenly. */
-  fill?: boolean;
+  /** Stretch to the container's width, options sharing it evenly; with
+   *  `content`, each by what its label needs, so that a short option gives
+   *  its room to a long one before either is cut. */
+  fill?: boolean | 'content';
   className?: string;
 }
 
@@ -79,14 +83,15 @@ export function SegmentedControl<T extends string>({ value, onValueChange, optio
             onClick={() => { if (!selected && !o.disabled) onValueChange(o.value); }}
             className={cn(
               'inline-flex pt-large:min-w-11 cursor-pointer items-center justify-center gap-1 whitespace-nowrap transition-colors',
-              fill && 'min-w-0 flex-1',
-              size === 'sm' ? 'px-2 pt-large:px-2.5 text-[0.66rem]' : 'px-3 text-xs',
+              fill === 'content' ? 'min-w-0 flex-auto' : fill && 'min-w-0 flex-1',
+              size === 'sm' ? 'px-2 pt-large:px-2.5 text-[0.66rem]' : fill === 'content' ? 'px-2.5 text-xs' : 'px-3 text-xs',
               'focus-visible:outline-2 focus-visible:-outline-offset-2 outline-(--brand)',
               selected
                 ? 'bg-(--brand-soft,var(--surface)) font-medium text-(--foreground)'
                 : o.disabled
                   ? 'cursor-default bg-transparent text-(--slate) opacity-50'
                   : 'bg-transparent text-(--slate) hover:bg-(--surface) hover:text-(--foreground)',
+              o.className,
             )}
             style={i > 0 ? { borderInlineStart: '1px solid var(--pt-control-border)' } : undefined}
           >

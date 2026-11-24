@@ -302,6 +302,8 @@ async function openPage(browser, locale, hash) {
   const origin = `${BASE.protocol}//${locale}-d4.localhost:${BASE.port}`;
   await page.goto(`${origin}/${locale}/sandbox${hash}`, { waitUntil: 'domcontentloaded', timeout: 180000 });
   for (let i = 0; i < 240 && !(await page.evaluate(() => !!window.postextWebMcp)); i++) await sleep(500);
+  // The dev server's own badge ("Compiling…") is no part of the Sandbox.
+  await page.addStyleTag({ content: 'nextjs-portal { display: none !important; }' });
   await page.evaluate(pageHelpers);
   return { context, page };
 }

@@ -36,8 +36,7 @@ import { DesignsPage } from './designs/DesignsPage.js';
 import { DesignImportButton } from './designs/DesignImportButton.js';
 import { OpenSettingsGroupContext, onSettingsGroupRequest, onSettingsSectionRequest, onSettingsSwitchesRequest, pendingSettingsGroup, reportSettingsChangedOnly, takeSettingsFocus, takeSettingsSection, type SettingsFocus } from '../context/settingsNavigation.js';
 import { ConfigScopeProvider } from './layers/ConfigScopeProvider.js';
-import { ChapterStyleBar } from './layers/ChapterStyleBar.js';
-import { ConfigScopeBar } from './layers/ConfigScopeBar.js';
+import { DesignScopeBar } from './layers/DesignScopeBar.js';
 import { SettingsOverview } from './shell/SettingsOverview.js';
 import { GroupBar } from './shell/GroupBar.js';
 import { SectionTabs } from './shell/SectionTabs.js';
@@ -261,8 +260,7 @@ function ConfigPanelBody() {
         }
       />
 
-      <ConfigScopeBar />
-      <ChapterStyleBar />
+      <DesignScopeBar help={helpMode} />
 
       <div className="@container flex shrink-0 items-center gap-2 border-b border-(--rule) px-3 py-2">
         <SearchInput value={query} onChange={setQuery} inputRef={searchRef} />

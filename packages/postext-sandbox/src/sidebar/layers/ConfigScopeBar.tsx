@@ -1,9 +1,10 @@
 'use client';
 
-// The scope switch at the top of the Design panel of a book in several
-// languages (#1209): whether a change reaches every edition or only the
-// one on screen, said in words under it, with the fields the edition sets
-// of its own and the notice of a general change some editions do not
+// The scope of the Design panel of a book in several languages (#1209), in
+// the parts the panel's scope bar lays out (./DesignScopeBar.tsx): the
+// switch (whether a change reaches every edition or only the one on
+// screen), what it means in words, and under them the fields the edition
+// sets of its own and the notice of a general change some editions do not
 // follow.
 
 import { useId, useState } from 'react';
@@ -31,18 +32,76 @@ function groupPaths(paths: readonly string[]): { key: string; paths: string[]; p
   return [...groups.values()];
 }
 
-export function ConfigScopeBar() {
+/** Every language, or the edition on screen alone. `hintId` is the
+ *  element that says what the choice means ({@link ConfigScopeHint}). */
+export function ConfigScopeSwitch({ hintId, className }: { hintId: string; className?: string }) {
   const labels = useSandboxLabels();
   const storeDispatch = useSandboxDispatch();
   const layers = useSandboxSelector((s) => s.configLayers);
+  const uiLocale = useSandboxSelector((s) => s.locale);
+  const { layer } = useConfigScope();
+  if (!layers || !layer) return null;
+  const language = layer.languageName(layer.locale);
+  const edition = labels.configScopeEdition.replace('__language__', language);
+  // Beside "All languages" the edition's option reads as its language
+  // alone, set as a name on its own ("Español"); its full wording ("Solo
+  // español") stays its tooltip and its name for assistive technology.
+  const [initial = '', ...rest] = [...language];
+  const short = initial.toLocaleUpperCase(uiLocale) + rest.join('');
+  // A long language name is cut at the option's edge, never the icon, and
+  // never "All languages".
+  const option = (Icon: typeof Globe, text: string) => (
+    <span className="inline-flex min-w-0 items-center gap-1"><Icon size={11} aria-hidden="true" className="shrink-0" /><span className="truncate">{text}</span></span>
+  );
+  return (
+    <SegmentedControl<ConfigScope>
+      fill="content"
+      value={layers.scope}
+      onValueChange={(scope) => storeDispatch({ type: 'SET_CONFIG_SCOPE', payload: scope })}
+      ariaLabel={labels.configScopeLabel}
+      ariaDescribedBy={hintId}
+      options={[
+        { value: 'all', label: option(Globe, labels.configScopeAll), title: labels.configScopeAll, className: 'shrink-0' },
+        { value: 'edition', label: option(Languages, short), title: edition },
+      ]}
+      {...(className ? { className } : {})}
+    />
+  );
+}
+
+/** What the scope chosen means, in words: on the panel while its help is
+ *  on, as its other explanations are; always what describes the switch
+ *  to assistive technology. */
+export function ConfigScopeHint({ id, shown }: { id: string; shown: boolean }) {
+  const labels = useSandboxLabels();
+  const layers = useSandboxSelector((s) => s.configLayers);
+  const { layer } = useConfigScope();
+  if (!layers || !layer) return null;
+  const name = layer.languageName(layer.locale);
+  return (
+    <p id={id} className={shown ? 'text-[0.68rem] leading-[1.4] text-(--slate) [text-wrap:pretty]' : 'sr-only'}>
+      {layers.scope === 'edition'
+        ? labels.configScopeEditionHint.replace('__language__', name)
+        : layer.locales.length > 4
+          ? labels.configScopeAllHintMany.replace('__count__', String(layer.locales.length))
+          : labels.configScopeAllHint.replace('__languages__', layer.locales.map(layer.languageName).join(', '))}
+    </p>
+  );
+}
+
+/** Under the switch: the fields the edition on screen sets of its own
+ *  (with the panel on that edition), or the notice of a change for every
+ *  language that some editions do not follow. Nothing when there is
+ *  neither. */
+export function ConfigScopeNotes() {
+  const labels = useSandboxLabels();
+  const layers = useSandboxSelector((s) => s.configLayers);
   const { shadowed, dismissShadowed, layer } = useConfigScope();
   const [listOpen, setListOpen] = useState(false);
-  const hintId = useId();
   const listId = useId();
   if (!layers || !layer) return null;
 
   const name = layer.languageName(layer.locale);
-  const all = layer.locales.map(layer.languageName).join(', ');
   const ownPaths = overridePaths(layer.overrides[layer.locale] ?? {});
   const sectionOf = (key: string) => {
     const entry = SETTINGS_SECTIONS.find((e) => (e.configKeys as readonly string[]).includes(key));
@@ -51,29 +110,7 @@ export function ConfigScopeBar() {
   const edition = layers.scope === 'edition';
 
   return (
-    <div
-      className="flex shrink-0 flex-col gap-1.5 border-b border-(--rule) px-3 py-2"
-      style={{ borderTop: `3px solid ${edition ? 'var(--edition, var(--brand))' : 'var(--brand)'}` }}
-    >
-      <SegmentedControl<ConfigScope>
-        fill
-        value={layers.scope}
-        onValueChange={(scope) => storeDispatch({ type: 'SET_CONFIG_SCOPE', payload: scope })}
-        ariaLabel={labels.configScopeLabel}
-        ariaDescribedBy={hintId}
-        options={[
-          { value: 'all', label: <span className="inline-flex items-center gap-1"><Globe size={11} aria-hidden="true" />{labels.configScopeAll}</span>, title: labels.configScopeAll },
-          { value: 'edition', label: <span className="inline-flex items-center gap-1"><Languages size={11} aria-hidden="true" />{labels.configScopeEdition.replace('__language__', name)}</span>, title: labels.configScopeEdition.replace('__language__', name) },
-        ]}
-      />
-      <p id={hintId} className="text-[0.68rem] leading-[1.4] text-(--slate) [text-wrap:pretty]">
-        {edition
-          ? labels.configScopeEditionHint.replace('__language__', name)
-          : layer.locales.length > 4
-            ? labels.configScopeAllHintMany.replace('__count__', String(layer.locales.length))
-            : labels.configScopeAllHint.replace('__languages__', all)}
-      </p>
-
+    <>
       {edition && ownPaths.length > 0 && (
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between gap-2">
@@ -135,6 +172,6 @@ export function ConfigScopeBar() {
           </span>
         </div>
       )}
-    </div>
+    </>
   );
 }
