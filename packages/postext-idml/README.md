@@ -29,7 +29,8 @@ const { bytes: idml, links, fonts } = idmlDocument({
 
 - `docs`: the laid-out chapters, in book order.
 - `resourceBytes(fileId)`: the bytes of a picture.
-- `images`: `'embed'` (default) keeps the pictures inside the file; `'link'` links them to `Links/<name>` and returns them in `links`.
+- `images`: `'embed'` (default) keeps the pictures inside the file; `'link'` links them to `Links/<name>` and returns them in `links`. A picture is placed at the size its file states (pixels over its resolution, 72 ppi when it states none): PNG, JPEG, WebP, GIF, TIFF and Photoshop are read; for another format an `image.unsized` warning says InDesign may place it at another scale than its frame's.
+- `originals` with `resources`: places each bitmap's print original, the TIFF or Photoshop file it was imported from (`Resource.bitmap.printFileId`, asked of `resourceBytes` by that id), in place of its screen preview, as `postext-pdf` prints it. Default `false`; a picture whose original has no bytes keeps its preview.
 - `lineBreaks`: `'keep'` (default) ends every line where Postext ended it, on the baseline Postext set it on, so InDesign shows the pages as the PDF does; `'reflow'` leaves the paragraphs to InDesign's composer, for a book that will be set again there.
 - `spreads`: `'facing'` puts the pages two to a spread about the spine, `'single'` one page to a spread. The default is `'facing'` for a book with mirrored margins and `'single'` for any other.
 - `fontFile(family, weight, italic)`: the font file of a face (TrueType or OpenType bytes). With it a face is named as its file names it, which is how InDesign finds it, and the files come back in `fonts` as `Document fonts/<file>`.

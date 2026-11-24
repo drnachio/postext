@@ -6,11 +6,27 @@ import type { DisplayItem } from 'postext';
 import { bitmapInfo, svgSize } from 'postext/writer';
 import { boxGeometry } from './geometry.js';
 import { attr, num } from './parts.js';
-import type { Writer } from './writer.js';
+import type { IdmlOptions, Writer } from './writer.js';
+
+/** The print original of each bitmap that has one, by the picture's own
+ *  file id, read once per export from `resources`. */
+const originalsOf = new WeakMap<IdmlOptions, Map<string, string>>();
+
+function printOriginal(opts: IdmlOptions, fileId: string): string | undefined {
+  if (!opts.originals || !opts.resources) return undefined;
+  let map = originalsOf.get(opts);
+  if (!map) {
+    map = new Map();
+    for (const r of opts.resources) if (r.kind === 'bitmap' && r.bitmap?.fileId && r.bitmap.printFileId) map.set(r.bitmap.fileId, r.bitmap.printFileId);
+    originalsOf.set(opts, map);
+  }
+  const id = map.get(fileId);
+  return id && opts.resourceBytes?.(id) ? id : undefined;
+}
 
 export function imageXml(w: Writer, item: Extract<DisplayItem, { kind: 'image' }>, pageIndex: number): string {
   const usePdf = item.imageKind === 'svg' && item.pdfFileId && w.opts.resourceBytes?.(item.pdfFileId);
-  const fileId = usePdf ? item.pdfFileId! : item.fileId;
+  const fileId = usePdf ? item.pdfFileId! : item.imageKind === 'svg' ? item.fileId : printOriginal(w.opts, item.fileId) ?? item.fileId;
   const bytes = w.opts.resourceBytes?.(fileId);
   const g = boxGeometry(w, item.rect, item.rotate);
   const frameOpen = `<Rectangle${attr('Self', w.next())} ContentType="GraphicType" ItemLayer="ulayer"${attr('ItemTransform', g.transform)} AppliedObjectStyle="ObjectStyle/$ID/[None]" FillColor="Swatch/None" StrokeColor="Swatch/None" StrokeWeight="0"${attr('Name', item.alt || (fileId.startsWith('data:') ? undefined : fileId))}>${g.geometry}`;
@@ -37,11 +53,21 @@ export function imageXml(w: Writer, item: Extract<DisplayItem, { kind: 'image' }
     ph = size ? (size.height * 72) / 96 : g.height;
     w.warn('image.svg', `Page ${pageIndex + 1}: ${fileId.slice(0, 80)} is an SVG; InDesign 2020 and later place SVG, older versions do not`);
   } else {
+    // InDesign reads a bitmap at its pixels over the resolution its file
+    // states, 72 ppi when it states none.
     const info = bitmapInfo(bytes);
-    const ppiX = info?.resolution?.x ?? 72;
-    const ppiY = info?.resolution?.y ?? 72;
-    pw = ((info?.width ?? 1) * 72) / ppiX;
-    ph = ((info?.height ?? 1) * 72) / ppiY;
+    if (info) {
+      pw = (info.width * 72) / (info.resolution?.x ?? 72);
+      ph = (info.height * 72) / (info.resolution?.y ?? 72);
+    } else {
+      // A format whose size is not read (BMP, EPS…): the transform is
+      // worked out for a picture as large as its frame, which InDesign
+      // will scale by the picture's own size.
+      const crop = item.crop ?? { width: 1, height: 1 };
+      pw = g.width / crop.width;
+      ph = g.height / crop.height;
+      w.warn('image.unsized', `Page ${pageIndex + 1}: the size of picture ${fileId.slice(0, 80)} could not be read from its file; InDesign may place it at another scale than its frame's`);
+    }
   }
   const crop = item.crop ?? { x: 0, y: 0, width: 1, height: 1 };
   const sx = g.width / (crop.width * pw);

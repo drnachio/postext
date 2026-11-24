@@ -2,7 +2,7 @@
 // export: what every part of the writer (shapes, pictures, stories,
 // spreads) reads and adds to as the pages are written.
 
-import type { DisplayItem, DisplayRun } from 'postext';
+import type { DisplayItem, DisplayRun, Resource } from 'postext';
 import type { VDTPage } from 'postext';
 import type { VDTDocument } from 'postext/writer';
 import type { BlockStyle } from 'postext/writer';
@@ -23,6 +23,15 @@ export interface IdmlOptions {
   /** `embed` (default): pictures inside the IDML; `link`: linked to
    *  `Links/<name>`, returned in `links` for the caller to write beside it. */
   images?: 'embed' | 'link';
+  /** Place each bitmap's print original, the TIFF or Photoshop file it
+   *  was imported from (`Resource.bitmap.printFileId` in `resources`,
+   *  asked of `resourceBytes` by that id), in place of its screen preview,
+   *  as `postext-pdf` prints it (#1690). A picture whose original has no
+   *  bytes keeps its preview. Default `false`. */
+  originals?: boolean;
+  /** The book's resources: where `originals` finds each picture's
+   *  original. */
+  resources?: readonly Resource[];
   title?: string;
   /** InDesign's style name of a face (`Regular`, `Bold Italic`…); the
    *  default derives it from weight and slant. */

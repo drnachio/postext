@@ -63,10 +63,9 @@ function readPsd(bytes: Uint8Array): DecodedRaster {
     if (data + size > resourcesEnd) throw new RasterDecodeError('truncated Photoshop image resource');
     if (id === 1039) icc = bytes.slice(data, data + size);
     if (id === 1005 && size >= 16) {
-      // Fixed 16.16 pixels per unit; unit 1 = per inch, 2 = per cm.
-      const res = view.getUint32(data) / 65536;
-      const unit = view.getUint16(data + 4);
-      resolution = unit === 2 ? res * 2.54 : res;
+      // Fixed 16.16, always pixels per inch: the unit after it (1 inch,
+      // 2 cm) is only how Photoshop shows the value (#1690).
+      resolution = view.getUint32(data) / 65536;
     }
     at = data + size + (size & 1);
   }

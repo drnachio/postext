@@ -98,10 +98,12 @@ function roundPpi(v: number): number {
   return Math.round(v * 100) / 100;
 }
 
-/** The resolution of an EXIF block (a TIFF header and IFD0, `t` its first
- *  byte): `XResolution` / `YResolution` in `ResolutionUnit` (2 inch, the
- *  default; 3 cm). Undefined without them, or with unit 1 (none). */
-function exifResolution(b: Uint8Array, t: number, end: number): { x: number; y: number } | undefined {
+/** What the first IFD of a TIFF structure says (`t` its first byte, the
+ *  offsets counted from it; a TIFF file, or the EXIF block of a JPEG or
+ *  WebP): `ImageWidth` / `ImageLength`, and `XResolution` / `YResolution`
+ *  in `ResolutionUnit` (2 inch, the default; 3 cm), left out with unit 1
+ *  (none). Both byte orders; undefined when the header is not TIFF's. */
+function tiffDirectory(b: Uint8Array, t: number, end: number): { width?: number; height?: number; resolution?: { x: number; y: number } } | undefined {
   if (t + 8 > end) return undefined;
   const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
   const order = String.fromCharCode(b[t]!, b[t + 1]!);
@@ -111,6 +113,8 @@ function exifResolution(b: Uint8Array, t: number, end: number): { x: number; y: 
   const ifd = t + view.getUint32(t + 4, le);
   if (ifd + 2 > end) return undefined;
   const count = view.getUint16(ifd, le);
+  let width: number | undefined;
+  let height: number | undefined;
   let x: number | undefined;
   let y: number | undefined;
   let unit = 2;
@@ -121,24 +125,67 @@ function exifResolution(b: Uint8Array, t: number, end: number): { x: number; y: 
     const den = view.getUint32(at + 4, le);
     return den > 0 ? view.getUint32(at, le) / den : undefined;
   };
+  // A SHORT or a LONG held in the entry itself.
+  const integer = (entry: number): number | undefined => {
+    const type = view.getUint16(entry + 2, le);
+    return type === 3 ? view.getUint16(entry + 8, le) : type === 4 ? view.getUint32(entry + 8, le) : undefined;
+  };
   for (let k = 0; k < count; k++) {
     const entry = ifd + 2 + k * 12;
     if (entry + 12 > end) break;
     const tag = view.getUint16(entry, le);
-    if (tag === 0x011a) x = rational(entry);
+    if (tag === 0x0100) width = integer(entry);
+    else if (tag === 0x0101) height = integer(entry);
+    else if (tag === 0x011a) x = rational(entry);
     else if (tag === 0x011b) y = rational(entry);
-    else if (tag === 0x0128) unit = view.getUint16(entry + 8, le);
+    else if (tag === 0x0128) unit = integer(entry) ?? unit;
   }
-  if (!x || !y || (unit !== 2 && unit !== 3)) return undefined;
   const k = unit === 3 ? 2.54 : 1;
-  return { x: x * k, y: y * k };
+  const resolution = x && y && (unit === 2 || unit === 3) ? { x: x * k, y: y * k } : undefined;
+  return { ...(width ? { width } : {}), ...(height ? { height } : {}), ...(resolution ? { resolution } : {}) };
+}
+
+/** The resolution of an EXIF block (a TIFF header and IFD0, `t` its first
+ *  byte), as {@link tiffDirectory} reads it. */
+function exifResolution(b: Uint8Array, t: number, end: number): { x: number; y: number } | undefined {
+  return tiffDirectory(b, t, end)?.resolution;
+}
+
+/** A Photoshop document's resolution, from its `ResolutionInfo` image
+ *  resource (1005): `hRes` / `vRes` as 16.16 fixed point, always pixels
+ *  per inch (the unit fields after them only say how Photoshop shows the
+ *  value). `at` is the length of the colour mode data, after the header. */
+function psdResolution(b: Uint8Array, at: number): { x: number; y: number } | undefined {
+  const view = new DataView(b.buffer, b.byteOffset, b.byteLength);
+  if (at + 4 > b.length) return undefined;
+  at += 4 + view.getUint32(at);
+  if (at + 4 > b.length) return undefined;
+  const end = Math.min(b.length, at + 4 + view.getUint32(at));
+  at += 4;
+  while (at + 12 <= end) {
+    if (view.getUint32(at) !== 0x3842494d) return undefined; // '8BIM'
+    const id = view.getUint16(at + 4);
+    // The name: a length byte and the name, padded to an even size.
+    const sizeAt = at + 6 + ((b[at + 6]! + 2) & ~1);
+    if (sizeAt + 4 > end) return undefined;
+    const size = view.getUint32(sizeAt);
+    const data = sizeAt + 4;
+    if (id === 1005) {
+      if (size < 16 || data + 16 > end) return undefined;
+      return { x: view.getUint32(data) / 65536, y: view.getUint32(data + 8) / 65536 };
+    }
+    at = data + size + (size & 1);
+  }
+  return undefined;
 }
 
 /** A bitmap's pixel size and, when the file states one, its resolution
  *  (#631): PNG `pHYs` in pixels per metre (unit 0, an aspect ratio only,
  *  is ignored); JPEG JFIF density (dpi or dots per cm; units 0 ignored) and
  *  EXIF `XResolution` / `YResolution`, EXIF winning when both are there
- *  (Photoshop writes both and edits the EXIF one); WebP EXIF. GIF carries
+ *  (Photoshop writes both and edits the EXIF one); WebP EXIF; TIFF, both
+ *  byte orders, from its first image's directory (#1690); a Photoshop
+ *  document (PSD or PSB) from its header and `ResolutionInfo`. GIF carries
  *  none. The value is returned as read: 72 or 96 ppi often means "no
  *  information" (see `layout.bitmapResolution: 'file'`). Undefined when the
  *  header is not recognised. */
@@ -168,6 +215,17 @@ export function bitmapInfo(bytes: ArrayBuffer | Uint8Array): BitmapInfo | undefi
       i += 12 + len;
     }
     return { width, height };
+  }
+  if (b.length >= 8 && (ascii(0, 4) === 'II*\0' || ascii(0, 4) === 'MM\0*')) {
+    const dir = tiffDirectory(b, 0, b.length);
+    return dir?.width && dir.height ? withResolution(dir.width, dir.height, dir.resolution, 'tiff') : undefined;
+  }
+  if (b.length >= 26 && ascii(0, 4) === '8BPS') {
+    const version = view.getUint16(4);
+    const height = view.getUint32(14);
+    const width = view.getUint32(18);
+    if ((version !== 1 && version !== 2) || !width || !height) return undefined;
+    return withResolution(width, height, psdResolution(b, 26), 'psd');
   }
   if (b.length >= 10 && ascii(0, 3) === 'GIF') {
     return { width: view.getUint16(6, true), height: view.getUint16(8, true) };
