@@ -325,7 +325,7 @@ export const COMMANDS: CommandSpec[] = [
 ];
 
 /** Commands that read a book (and take BOOK_OPTIONS). */
-export const BOOK_COMMANDS = new Set(['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'pack', 'design', 'info', 'check', 'build']);
+export const BOOK_COMMANDS = new Set(['pdf', 'html', 'epub', 'image', 'images', 'docx', 'idml', 'cover', 'pack', 'design', 'info', 'check', 'build']);
 
 export function findCommand(name: string): CommandSpec | undefined {
   return COMMANDS.find((c) => c.name === name);

@@ -5754,6 +5754,243 @@
      "value": 0,
      "unit": "pt"
     }
+   },
+   {
+    "id": "cover-title",
+    "name": "封面：書名",
+    "fontFamily": "LXGW WenKai TC",
+    "fontSize": {
+     "value": 30,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 40,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 16,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-note",
+    "name": "封面：版本",
+    "fontFamily": "LXGW WenKai TC",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-blurb",
+    "name": "封底：介紹",
+    "fontFamily": "Noto Serif TC",
+    "fontSize": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 20,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-imprint",
+    "name": "封底：出版",
+    "fontFamily": "Noto Serif TC",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#b23a2e",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#b23a2e",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#b23a2e",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 12,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-flap-head",
+    "name": "摺口：標題",
+    "fontFamily": "LXGW WenKai TC",
+    "fontSize": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#e9e1cf",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#e9e1cf",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#e9e1cf",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginBottom": {
+     "value": 8,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-flap",
+    "name": "摺口：正文",
+    "fontFamily": "Noto Serif TC",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#f5efe1",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#f5efe1",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#f5efe1",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-spine",
+    "name": "書脊",
+    "fontFamily": "LXGW WenKai TC",
+    "fontSize": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 20,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1f1b16",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 8,
+     "unit": "pt"
+    }
    }
   ],
   "parts": {
@@ -6342,6 +6579,205 @@
   },
   "tableStyle": {
    "splitInline": false
+  },
+  "production": {
+   "versions": [
+    {
+     "id": "softcover",
+     "name": "鎖線平裝",
+     "binding": "sewn-softcover",
+     "flaps": true
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#34405a",
+    "model": "hex"
+   },
+   "verticalAlign": {
+    "flapFront": "top",
+    "flapBack": "top"
+   },
+   "elements": [
+    {
+     "id": "art",
+     "kind": "image",
+     "zone": "front",
+     "x": -3,
+     "y": -3,
+     "width": 151.0,
+     "height": 216.0,
+     "resourceId": "cover-art",
+     "fit": "cover"
+    },
+    {
+     "id": "spine-label",
+     "kind": "box",
+     "zone": "spine",
+     "x": 18.65,
+     "y": 16,
+     "width": 0,
+     "height": 80,
+     "color": {
+      "hex": "#f5efe1",
+      "model": "hex"
+     },
+     "stroke": {
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "width": 0.21
+     },
+     "to": {
+      "zone": "back",
+      "x": -18.65
+     }
+    },
+    {
+     "id": "panel",
+     "kind": "box",
+     "zone": "back",
+     "x": 42.0,
+     "y": 41.0,
+     "width": 64.0,
+     "height": 128.0,
+     "color": {
+      "hex": "#f5efe1",
+      "model": "hex"
+     },
+     "stroke": {
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "width": 0.21
+     }
+    },
+    {
+     "id": "panel-frame",
+     "kind": "box",
+     "zone": "back",
+     "x": 43.6,
+     "y": 42.6,
+     "width": 60.8,
+     "height": 124.8,
+     "color": {
+      "hex": "#f5efe1",
+      "model": "hex"
+     },
+     "stroke": {
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "width": 0.1
+     }
+    },
+    {
+     "id": "slip",
+     "kind": "box",
+     "zone": "front",
+     "x": 11.0,
+     "y": 14.0,
+     "width": 23.0,
+     "height": 92.0,
+     "color": {
+      "hex": "#f5efe1",
+      "model": "hex"
+     },
+     "stroke": {
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "width": 0.21
+     }
+    },
+    {
+     "id": "slip-frame",
+     "kind": "box",
+     "zone": "front",
+     "x": 12.4,
+     "y": 15.4,
+     "width": 20.2,
+     "height": 89.2,
+     "color": {
+      "hex": "#f5efe1",
+      "model": "hex"
+     },
+     "stroke": {
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "width": 0.1
+     }
+    }
+   ],
+   "textBoxes": [
+    {
+     "name": "blurb",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 48.0,
+      "height": 112.0
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "top-left",
+      "x": 45.0,
+      "y": 44.0
+     }
+    },
+    {
+     "name": "slip-title",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 23.0,
+      "height": 66.0
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top-left",
+      "x": 6.0,
+      "y": 17.0
+     }
+    },
+    {
+     "name": "slip-note",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 6.4,
+      "height": 20
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top-left",
+      "x": 8.2,
+      "y": 77.0
+     }
+    },
+    {
+     "name": "spine-title",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 12.0,
+      "height": 72
+     },
+     "anchor": {
+      "to": "spine",
+      "edge": "top",
+      "x": 0,
+      "y": 15
+     }
+    }
+   ]
   }
  },
  "localized": {
@@ -9646,6 +10082,243 @@
        "unit": "pt"
       },
       "id": "credits"
+     },
+     {
+      "id": "cover-title",
+      "name": "封面：書名",
+      "fontFamily": "LXGW WenKai",
+      "fontSize": {
+       "value": 30,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 40,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "letterSpacing": {
+       "value": 16,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-note",
+      "name": "封面：版本",
+      "fontFamily": "LXGW WenKai",
+      "fontSize": {
+       "value": 9,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 11,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "letterSpacing": {
+       "value": 1,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-blurb",
+      "name": "封底：介紹",
+      "fontFamily": "Noto Serif SC",
+      "fontSize": {
+       "value": 11,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 20,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "left",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     {
+      "id": "cover-imprint",
+      "name": "封底：出版",
+      "fontFamily": "Noto Serif SC",
+      "fontSize": {
+       "value": 9,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 14,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#b23a2e",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#b23a2e",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#b23a2e",
+       "model": "hex"
+      },
+      "textAlign": "left",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "marginTop": {
+       "value": 12,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-flap-head",
+      "name": "摺口：標題",
+      "fontFamily": "LXGW WenKai",
+      "fontSize": {
+       "value": 11,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 18,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#e9e1cf",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#e9e1cf",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#e9e1cf",
+       "model": "hex"
+      },
+      "textAlign": "left",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "marginBottom": {
+       "value": 8,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-flap",
+      "name": "摺口：正文",
+      "fontFamily": "Noto Serif SC",
+      "fontSize": {
+       "value": 9.5,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 17,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#f5efe1",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#f5efe1",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#f5efe1",
+       "model": "hex"
+      },
+      "textAlign": "left",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     {
+      "id": "cover-spine",
+      "name": "書脊",
+      "fontFamily": "LXGW WenKai",
+      "fontSize": {
+       "value": 17,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 20,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "letterSpacing": {
+       "value": 8,
+       "unit": "pt"
+      }
      }
     ],
     "toc": {
@@ -10113,7 +10786,206 @@
     "captionStyle": {
      "fontFamily": "LXGW WenKai"
     },
-    "locale": "zh-Hans"
+    "locale": "zh-Hans",
+    "production": {
+     "versions": [
+      {
+       "id": "softcover",
+       "name": "锁线平装",
+       "binding": "sewn-softcover",
+       "flaps": true
+      }
+     ]
+    },
+    "cover": {
+     "verticalAlign": {
+      "flapFront": "top",
+      "flapBack": "top"
+     },
+     "textBoxes": [
+      {
+       "name": "blurb",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 84.0,
+        "height": 60.0
+       },
+       "anchor": {
+        "to": "back",
+        "edge": "top-left",
+        "x": 23.0,
+        "y": 66.5
+       }
+      },
+      {
+       "name": "slip-title",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 23.0,
+        "height": 66.0
+       },
+       "anchor": {
+        "to": "front",
+        "edge": "top-left",
+        "x": 101.0,
+        "y": 17.0
+       }
+      },
+      {
+       "name": "slip-note",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 6.4,
+        "height": 20
+       },
+       "anchor": {
+        "to": "front",
+        "edge": "top-left",
+        "x": 103.2,
+        "y": 77.0
+       }
+      },
+      {
+       "name": "spine-title",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 12.0,
+        "height": 72
+       },
+       "anchor": {
+        "to": "spine",
+        "edge": "top",
+        "x": 0,
+        "y": 15
+       }
+      }
+     ],
+     "elements": [
+      {
+       "id": "art",
+       "kind": "image",
+       "zone": "front",
+       "x": 0,
+       "y": -3,
+       "width": 143.0,
+       "height": 209.0,
+       "resourceId": "cover-art-zh-Hans",
+       "fit": "cover"
+      },
+      {
+       "id": "spine-label",
+       "kind": "box",
+       "zone": "spine",
+       "x": 9.3,
+       "y": 16,
+       "width": 0,
+       "height": 80,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.21
+       },
+       "to": {
+        "zone": "front",
+        "x": -9.3
+       }
+      },
+      {
+       "id": "panel",
+       "kind": "box",
+       "zone": "back",
+       "x": 20.0,
+       "y": 63.5,
+       "width": 100.0,
+       "height": 76.0,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.21
+       }
+      },
+      {
+       "id": "panel-frame",
+       "kind": "box",
+       "zone": "back",
+       "x": 21.6,
+       "y": 65.1,
+       "width": 96.8,
+       "height": 72.8,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.1
+       }
+      },
+      {
+       "id": "slip",
+       "kind": "box",
+       "zone": "front",
+       "x": 106.0,
+       "y": 14.0,
+       "width": 23.0,
+       "height": 92.0,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.21
+       }
+      },
+      {
+       "id": "slip-frame",
+       "kind": "box",
+       "zone": "front",
+       "x": 107.4,
+       "y": 15.4,
+       "width": 20.2,
+       "height": 89.2,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.1
+       }
+      }
+     ],
+     "background": {
+      "hex": "#34405a",
+      "model": "hex"
+     }
+    }
    },
    "resources": [
     {
@@ -10846,7 +11718,8 @@
      "width": 741,
      "height": 2842
     }
-   ]
+   ],
+   "coverMarkdown": "cover/zh-Hans.md"
   },
   "en": {
    "config": {
@@ -12796,6 +13669,286 @@
       "hyphenation": false,
       "id": "credits",
       "fontFamily": null
+     },
+     {
+      "id": "cover-title",
+      "name": "Cover: title",
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 21,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 24,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "letterSpacing": {
+       "value": 2,
+       "unit": "pt"
+      },
+      "textTransform": "uppercase"
+     },
+     {
+      "id": "cover-subtitle",
+      "name": "Cover: subtitle",
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 12,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 15,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "italic": true,
+      "marginTop": {
+       "value": 2,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-author",
+      "name": "Cover: author",
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 11,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 14,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#b23a2e",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#b23a2e",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#b23a2e",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "marginTop": {
+       "value": 6,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-blurb",
+      "name": "Cover: blurb",
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 11.5,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 16.5,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     {
+      "id": "cover-imprint",
+      "name": "Cover: imprint",
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 8.5,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 11,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "letterSpacing": {
+       "value": 2,
+       "unit": "pt"
+      },
+      "textTransform": "uppercase",
+      "marginTop": {
+       "value": 14,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-flap-head",
+      "name": "Cover: flap heading",
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 10,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 13,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#e9e1cf",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#e9e1cf",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#e9e1cf",
+       "model": "hex"
+      },
+      "textAlign": "left",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "letterSpacing": {
+       "value": 1.5,
+       "unit": "pt"
+      },
+      "textTransform": "uppercase",
+      "marginBottom": {
+       "value": 8,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-flap",
+      "name": "Cover: flap",
+      "fontFamily": "EB Garamond",
+      "fontSize": {
+       "value": 10,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 14,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#f5efe1",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#f5efe1",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#f5efe1",
+       "model": "hex"
+      },
+      "textAlign": "left",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     {
+      "id": "cover-spine",
+      "name": "Cover: spine",
+      "fontFamily": "LXGW WenKai TC",
+      "fontSize": {
+       "value": 17,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 20,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1f1b16",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
      }
     ],
     "parts": {
@@ -13425,7 +14578,199 @@
       "type": "hardcover"
      }
     },
-    "locale": "en"
+    "locale": "en",
+    "production": {
+     "versions": [
+      {
+       "id": "softcover",
+       "name": "Sewn paperback",
+       "binding": "sewn-softcover",
+       "flaps": true
+      }
+     ]
+    },
+    "cover": {
+     "verticalAlign": {
+      "flapFront": "top",
+      "flapBack": "top"
+     },
+     "textBoxes": [
+      {
+       "name": "slip-title",
+       "$remove": true
+      },
+      {
+       "name": "slip-note",
+       "$remove": true
+      },
+      {
+       "name": "blurb",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 84.0,
+        "height": 60.0
+       },
+       "anchor": {
+        "to": "back",
+        "edge": "top-left",
+        "x": 23.0,
+        "y": 73.0
+       }
+      },
+      {
+       "name": "label",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 88.0,
+        "height": 36.0
+       },
+       "anchor": {
+        "to": "front",
+        "edge": "top",
+        "x": 0,
+        "y": 17
+       }
+      },
+      {
+       "name": "spine-title",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 12.0,
+        "height": 72
+       },
+       "anchor": {
+        "to": "spine",
+        "edge": "top",
+        "x": 0,
+        "y": 15
+       }
+      }
+     ],
+     "elements": [
+      {
+       "id": "art",
+       "kind": "image",
+       "zone": "front",
+       "x": 0,
+       "y": -3,
+       "width": 143.0,
+       "height": 222.0,
+       "resourceId": "cover-art-zh-Hans",
+       "fit": "cover"
+      },
+      {
+       "id": "spine-label",
+       "kind": "box",
+       "zone": "spine",
+       "x": 14.1,
+       "y": 16,
+       "width": 0,
+       "height": 80,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.21
+       },
+       "to": {
+        "zone": "front",
+        "x": -14.100000000000001
+       }
+      },
+      {
+       "id": "panel",
+       "kind": "box",
+       "zone": "back",
+       "x": 20.0,
+       "y": 70.0,
+       "width": 100.0,
+       "height": 76.0,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.21
+       }
+      },
+      {
+       "id": "panel-frame",
+       "kind": "box",
+       "zone": "back",
+       "x": 21.6,
+       "y": 71.6,
+       "width": 96.8,
+       "height": 72.8,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.1
+       }
+      },
+      {
+       "id": "slip",
+       "kind": "box",
+       "zone": "front",
+       "x": 22.0,
+       "y": 18,
+       "width": 96.0,
+       "height": 44.0,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.21
+       }
+      },
+      {
+       "id": "slip-frame",
+       "kind": "box",
+       "zone": "front",
+       "x": 23.4,
+       "y": 19.4,
+       "width": 93.2,
+       "height": 41.2,
+       "color": {
+        "hex": "#f5efe1",
+        "model": "hex"
+       },
+       "stroke": {
+        "color": {
+         "hex": "#1f1b16",
+         "model": "hex"
+        },
+        "width": 0.1
+       }
+      }
+     ],
+     "background": {
+      "hex": "#34405a",
+      "model": "hex"
+     }
+    }
    },
    "resources": [
     {
@@ -13841,7 +15186,8 @@
    ],
    "view": {
     "canvasScope": "chapter"
-   }
+   },
+   "coverMarkdown": "cover/en.md"
   }
  },
  "resources": [
@@ -15432,5 +16778,6 @@
     }
    ]
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }

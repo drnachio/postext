@@ -1972,6 +1972,283 @@
      "value": 13,
      "unit": "pt"
     }
+   },
+   {
+    "id": "cover-title",
+    "name": "カバー：書名",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 30,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 36,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "letterSpacing": {
+     "value": 10,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-author",
+    "name": "カバー：著者",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "letterSpacing": {
+     "value": 4,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-blurb",
+    "name": "カバー：紹介文",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 20,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-flap",
+    "name": "カバー：そで",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 0,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-flap-head",
+    "name": "カバー：そで見出し",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 10.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#b5462c",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#b5462c",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#b5462c",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "marginBottom": {
+     "value": 8,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-imprint",
+    "name": "カバー：版元",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6f655a",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#6f655a",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#6f655a",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-spine",
+    "name": "カバー：背",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 15,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1d1916",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "letterSpacing": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-spine-case",
+    "name": "表紙：背",
+    "fontFamily": "Shippori Mincho B1",
+    "fontSize": {
+     "value": 15,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#f4ebd8",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "letterSpacing": {
+     "value": 6,
+     "unit": "pt"
+    }
    }
   ],
   "parts": {
@@ -2767,6 +3044,203 @@
    "lighting": {
     "environment": "daylight"
    }
+  },
+  "production": {
+   "versions": [
+    {
+     "id": "hardcover",
+     "name": "上製本（カバー装）",
+     "binding": "case-flat",
+     "caseMaterial": "printed",
+     "flaps": true
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#f4ebd8",
+    "model": "hex"
+   },
+   "verticalAlign": {
+    "back": "top",
+    "flapFront": "top",
+    "flapBack": "top"
+   },
+   "elements": [
+    {
+     "id": "art",
+     "kind": "image",
+     "zone": "front",
+     "x": -3,
+     "y": -3,
+     "width": 126.0,
+     "height": 200.0,
+     "resourceId": "cover-art",
+     "fit": "cover"
+    },
+    {
+     "id": "slip",
+     "kind": "box",
+     "zone": "front",
+     "x": 13.0,
+     "y": 15.0,
+     "width": 19.0,
+     "height": 86.0,
+     "color": {
+      "hex": "#b5462c",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "slip-frame",
+     "kind": "box",
+     "zone": "front",
+     "x": 14.3,
+     "y": 16.3,
+     "width": 16.4,
+     "height": 83.4,
+     "color": {
+      "hex": "#b5462c",
+      "model": "hex"
+     },
+     "stroke": {
+      "color": {
+       "hex": "#f4ebd8",
+       "model": "hex"
+      },
+      "width": 0.18
+     }
+    },
+    {
+     "id": "spine-head",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": 10,
+     "width": 0,
+     "height": 1.2,
+     "color": {
+      "hex": "#b5462c",
+      "model": "hex"
+     },
+     "to": {
+      "zone": "front",
+      "x": 0
+     }
+    },
+    {
+     "id": "spine-foot",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": 182.8,
+     "width": 0,
+     "height": 1.2,
+     "color": {
+      "hex": "#b5462c",
+      "model": "hex"
+     },
+     "to": {
+      "zone": "front",
+      "x": 0
+     }
+    }
+   ],
+   "textBoxes": [
+    {
+     "name": "slip-title",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 19.0,
+      "height": 46
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top-left",
+      "x": 8.0,
+      "y": 19.0
+     }
+    },
+    {
+     "name": "slip-author",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 19.0,
+      "height": 24
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top-left",
+      "x": 8.0,
+      "y": 65.0
+     }
+    }
+   ],
+   "sheets": {
+    "case": {
+     "background": {
+      "hex": "#b5462c",
+      "model": "hex"
+     },
+     "elements": [
+      {
+       "id": "seal-ground",
+       "kind": "box",
+       "zone": "back",
+       "x": 49.5,
+       "y": 120,
+       "width": 24,
+       "height": 32.7,
+       "color": {
+        "hex": "#f4ebd8",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "seal",
+       "kind": "image",
+       "zone": "back",
+       "x": 51.5,
+       "y": 122,
+       "width": 20.0,
+       "height": 28.7,
+       "resourceId": "kokoro-1914-seal"
+      }
+     ]
+    },
+    "endpapers": {
+     "background": {
+      "hex": "#f4ebd8",
+      "model": "hex"
+     },
+     "elements": [
+      {
+       "id": "pattern-paste",
+       "kind": "image",
+       "zone": "pastedown",
+       "x": -3,
+       "y": -3,
+       "width": 130.0,
+       "height": 194.0,
+       "resourceId": "endpaper",
+       "fit": "cover"
+      },
+      {
+       "id": "pattern-fly",
+       "kind": "image",
+       "zone": "flyleaf",
+       "x": 0,
+       "y": -3,
+       "width": 130.0,
+       "height": 194.0,
+       "resourceId": "endpaper",
+       "fit": "cover"
+      }
+     ]
+    }
+   }
   }
  },
  "localized": {
@@ -3006,5 +3480,6 @@
     }
    ]
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }

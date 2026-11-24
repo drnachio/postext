@@ -1848,6 +1848,403 @@
      "value": 4,
      "unit": "pt"
     }
+   },
+   {
+    "id": "cover-series",
+    "name": "Cubierta: serie",
+    "fontFamily": "IBM Plex Sans Condensed",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 600,
+    "letterSpacing": {
+     "value": 2.4,
+     "unit": "pt"
+    },
+    "textTransform": "uppercase"
+   },
+   {
+    "id": "cover-title",
+    "name": "Cubierta: título",
+    "fontFamily": "Bodoni Moda",
+    "fontSize": {
+     "value": 54,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 58,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 8,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-subtitle",
+    "name": "Cubierta: subtítulo",
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "italic": true,
+    "marginTop": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "endIndent": {
+     "value": 10,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-publisher",
+    "name": "Cubierta: editor",
+    "fontFamily": "IBM Plex Sans Condensed",
+    "fontSize": {
+     "value": 7.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.8,
+     "unit": "pt"
+    },
+    "textTransform": "uppercase"
+   },
+   {
+    "id": "cover-work",
+    "name": "Cubierta: obra",
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "italic": true
+   },
+   {
+    "id": "cover-blurb",
+    "name": "Cubierta: texto",
+    "fontFamily": "Bodoni Moda",
+    "fontSize": {
+     "value": 15,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 21,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 14,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-imprint",
+    "name": "Cubierta: sello",
+    "fontFamily": "IBM Plex Sans Condensed",
+    "fontSize": {
+     "value": 7.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.8,
+     "unit": "pt"
+    },
+    "textTransform": "uppercase"
+   },
+   {
+    "id": "cover-flap-head",
+    "name": "Cubierta: solapa, título",
+    "fontFamily": "IBM Plex Sans Condensed",
+    "fontSize": {
+     "value": 8.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c8c2b6",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 600,
+    "letterSpacing": {
+     "value": 2,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "textTransform": "uppercase"
+   },
+   {
+    "id": "cover-flap",
+    "name": "Cubierta: solapa",
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-flap-list",
+    "name": "Cubierta: solapa, lista",
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 9.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 12.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 4.5,
+     "unit": "pt"
+    },
+    "hangingIndent": {
+     "value": 5,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-spine",
+    "name": "Cubierta: lomo",
+    "fontFamily": "Bodoni Moda",
+    "fontSize": {
+     "value": 7.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 7.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
    }
   ],
   "parts": {
@@ -2591,6 +2988,115 @@
   },
   "crossRefs": {
    "breakLabels": false
+  },
+  "production": {
+   "versions": [
+    {
+     "id": "softcover",
+     "name": "Rústica cosida con solapas",
+     "binding": "sewn-softcover",
+     "flaps": true,
+     "spineText": {
+      "minSpine": 4
+     }
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#1c1a19",
+    "model": "hex"
+   },
+   "verticalAlign": {
+    "flapFront": "top",
+    "flapBack": "top"
+   },
+   "elements": [
+    {
+     "id": "painting",
+     "kind": "image",
+     "zone": "front",
+     "x": 0,
+     "y": -3,
+     "width": 213.0,
+     "height": 171.6,
+     "resourceId": "greco-laocoonte",
+     "fit": "cover"
+    },
+    {
+     "id": "back-painting",
+     "kind": "image",
+     "zone": "back",
+     "x": 41.0,
+     "y": 30,
+     "width": 128.0,
+     "height": 129.7,
+     "resourceId": "sorolla-paseo",
+     "fit": "cover"
+    }
+   ],
+   "textBoxes": [
+    {
+     "name": "masthead",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 164,
+      "height": 70
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top-left",
+      "x": 17,
+      "y": 175.6
+     }
+    },
+    {
+     "name": "publisher",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 164,
+      "height": 8
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "bottom-left",
+      "x": 17,
+      "y": -9
+     }
+    },
+    {
+     "name": "back-text",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 132,
+      "height": 60
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "top",
+      "x": 0,
+      "y": 155.4
+     }
+    },
+    {
+     "name": "back-foot",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 150,
+      "height": 8
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "bottom",
+      "x": 0,
+      "y": -9
+     }
+    }
+   ]
   }
  },
  "localized": {
@@ -2723,7 +3229,20 @@
       ]
      }
     },
-    "locale": "en-us"
+    "locale": "en-us",
+    "production": {
+     "versions": [
+      {
+       "id": "softcover",
+       "name": "Sewn paperback with flaps",
+       "binding": "sewn-softcover",
+       "flaps": true,
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
@@ -2816,7 +3335,8 @@
      "width": 121,
      "height": 3780
     }
-   ]
+   ],
+   "coverMarkdown": "cover/en.md"
   }
  },
  "resources": [
@@ -3151,5 +3671,6 @@
     }
    ]
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }

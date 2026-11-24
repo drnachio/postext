@@ -898,7 +898,7 @@
     "grammage": 130
    },
    "binding": {
-    "type": "saddleStitch",
+    "type": "hardcover",
     "cover": "pages"
    },
    "surface": {
@@ -914,7 +914,394 @@
      "www.peppercarrot.com · CC BY 4.0"
     ]
    }
-  }
+  },
+  "production": {
+   "versions": [
+    {
+     "id": "hardcover",
+     "name": "Hardcover",
+     "binding": "case-flat",
+     "caseMaterial": "printed",
+     "spineText": {
+      "minSpine": 4
+     }
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#fbf3dc",
+    "model": "hex"
+   },
+   "zones": {
+    "spine": {
+     "hex": "#b4402a",
+     "model": "hex"
+    },
+    "jointBack": {
+     "hex": "#b4402a",
+     "model": "hex"
+    },
+    "jointFront": {
+     "hex": "#b4402a",
+     "model": "hex"
+    }
+   },
+   "elements": [
+    {
+     "id": "art",
+     "kind": "image",
+     "zone": "front",
+     "x": 0,
+     "y": -18,
+     "width": 224.0,
+     "height": 161.3,
+     "resourceId": "e08-cover",
+     "fit": "cover",
+     "bleed": "own"
+    },
+    {
+     "id": "art-rule",
+     "kind": "box",
+     "zone": "front",
+     "x": 0,
+     "y": 143.3,
+     "width": 206.0,
+     "height": 1.6,
+     "color": {
+      "hex": "#b4402a",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "party-frame",
+     "kind": "box",
+     "zone": "back",
+     "x": 15.5,
+     "y": 26.5,
+     "width": 175.0,
+     "height": 107.6,
+     "color": {
+      "hex": "#151a20",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "party",
+     "kind": "image",
+     "zone": "back",
+     "x": 17.0,
+     "y": 28,
+     "width": 172.0,
+     "height": 104.6,
+     "resourceId": "e08p06-3",
+     "fit": "cover"
+    }
+   ],
+   "textBoxes": [
+    {
+     "name": "masthead",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 176,
+      "height": 90
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top",
+      "x": 0,
+      "y": 149.3
+     }
+    },
+    {
+     "name": "credits",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 176,
+      "height": 20
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "bottom",
+      "x": 0,
+      "y": -8
+     }
+    },
+    {
+     "name": "blurb",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 160,
+      "height": 110
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "top",
+      "x": 0,
+      "y": 142.6
+     }
+    },
+    {
+     "name": "site",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 176,
+      "height": 8
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "bottom",
+      "x": 0,
+      "y": -8
+     }
+    }
+   ]
+  },
+  "paragraphStyles": [
+   {
+    "id": "cover-series",
+    "name": "Cover: series",
+    "fontFamily": "Bangers",
+    "fontSize": {
+     "value": 26,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 28,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#b4402a",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#b4402a",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#b4402a",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.5,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-title",
+    "name": "Cover: title",
+    "fontFamily": "Bangers",
+    "fontSize": {
+     "value": 46,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 50,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 4,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-author",
+    "name": "Cover: author",
+    "fontFamily": "Comic Neue",
+    "fontSize": {
+     "value": 15,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 19,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "marginTop": {
+     "value": 12,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-credit",
+    "name": "Cover: credits",
+    "fontFamily": "Comic Neue",
+    "fontSize": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6b625a",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#6b625a",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#6b625a",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-blurb",
+    "name": "Cover: blurb",
+    "fontFamily": "Comic Neue",
+    "fontSize": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#1d1a17",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "spaceBetween": {
+     "value": 9,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-site",
+    "name": "Cover: site",
+    "fontFamily": "Comic Neue",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#6b625a",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#6b625a",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#6b625a",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-spine",
+    "name": "Cover: spine",
+    "fontFamily": "Bangers",
+    "fontSize": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#fbf3dc",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#fbf3dc",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#fbf3dc",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.2,
+     "unit": "pt"
+    }
+   }
+  ]
  },
  "localized": {
   "en": {
@@ -940,14 +1327,28 @@
       "id": "art"
      }
     ],
-    "locale": "es"
+    "locale": "es",
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "Cartoné",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
      "id": "e08-cover",
      "altText": "Pimienta, con los brazos en alto de alegría, y Zanahoria ante una mesa baja preparada para una fiesta: una tetera, magdalenas y una tarta de cumpleaños con velas, bajo guirnaldas de banderines."
     }
-   ]
+   ],
+   "coverMarkdown": "cover/es.md"
   },
   "ca": {
    "config": {
@@ -959,14 +1360,28 @@
       "id": "art"
      }
     ],
-    "locale": "ca"
+    "locale": "ca",
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "Cartoné",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
      "id": "e08-cover",
      "altText": "La Pepper, amb els braços enlaire d’alegria, i en Carrot davant d’una taula baixa parada per a una festa: una tetera, magdalenes i un pastís d’aniversari amb espelmes, sota garlandes de banderetes."
     }
-   ]
+   ],
+   "coverMarkdown": "cover/ca.md"
   },
   "fr": {
    "config": {
@@ -978,14 +1393,28 @@
       "id": "art"
      }
     ],
-    "locale": "fr"
+    "locale": "fr",
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "Relié",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
      "id": "e08-cover",
      "altText": "Pepper, les bras levés de joie, et Carrot devant une table basse dressée pour une fête : une théière, des petits gâteaux et un gâteau d’anniversaire avec ses bougies, sous des guirlandes de fanions."
     }
-   ]
+   ],
+   "coverMarkdown": "cover/fr.md"
   },
   "it": {
    "config": {
@@ -997,14 +1426,28 @@
       "id": "art"
      }
     ],
-    "locale": "it"
+    "locale": "it",
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "Cartonato",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
      "id": "e08-cover",
      "altText": "Pepper, con le braccia alzate per la gioia, e Carrot davanti a un tavolino apparecchiato per una festa: una teiera, dei cupcake e una torta di compleanno con le candeline, sotto festoni di bandierine."
     }
-   ]
+   ],
+   "coverMarkdown": "cover/it.md"
   },
   "pt-BR": {
    "config": {
@@ -1016,14 +1459,28 @@
       "id": "art"
      }
     ],
-    "locale": "pt-BR"
+    "locale": "pt-BR",
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "Capa dura",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
      "id": "e08-cover",
      "altText": "Pepper, de braços erguidos de alegria, e Carrot diante de uma mesa baixa arrumada para uma festa: um bule, cupcakes e um bolo de aniversário com velas, sob varais de bandeirinhas."
     }
-   ]
+   ],
+   "coverMarkdown": "cover/pt-BR.md"
   },
   "de": {
    "config": {
@@ -1035,14 +1492,28 @@
       "id": "art"
      }
     ],
-    "locale": "de"
+    "locale": "de",
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "Hardcover",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
      "id": "e08-cover",
      "altText": "Pepper, die Arme vor Freude hochgerissen, und Carrot an einem niedrigen, für ein Fest gedeckten Tisch: eine Teekanne, Muffins und ein Geburtstagskuchen mit Kerzen, darüber Wimpelketten."
     }
-   ]
+   ],
+   "coverMarkdown": "cover/de.md"
   },
   "ja": {
    "config": {
@@ -1510,6 +1981,323 @@
     "cjk": {
      "composeDesignText": false,
      "latinSpacingEdge": "letters"
+    },
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "上製本",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    },
+    "paragraphStyles": [
+     {
+      "id": "cover-title",
+      "name": "Cover: title",
+      "fontFamily": "Dela Gothic One",
+      "fontSize": {
+       "value": 34,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 44,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "marginTop": {
+       "value": 4,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-author",
+      "name": "Cover: author",
+      "fontFamily": "Zen Antique",
+      "fontSize": {
+       "value": 15,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 19,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "fontWeight": 400,
+      "marginTop": {
+       "value": 12,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-credit",
+      "name": "Cover: credits",
+      "fontFamily": "Zen Antique",
+      "fontSize": {
+       "value": 10,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 13,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     {
+      "id": "cover-blurb",
+      "name": "Cover: blurb",
+      "fontFamily": "Zen Antique",
+      "fontSize": {
+       "value": 13,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 22,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "fontWeight": 400,
+      "spaceBetween": {
+       "value": 9,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-site",
+      "name": "Cover: site",
+      "fontFamily": "Zen Antique",
+      "fontSize": {
+       "value": 9,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 12,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     }
+    ],
+    "cover": {
+     "background": {
+      "hex": "#fbf3dc",
+      "model": "hex"
+     },
+     "zones": {
+      "spine": {
+       "hex": "#b4402a",
+       "model": "hex"
+      },
+      "jointBack": {
+       "hex": "#b4402a",
+       "model": "hex"
+      },
+      "jointFront": {
+       "hex": "#b4402a",
+       "model": "hex"
+      }
+     },
+     "elements": [
+      {
+       "id": "art",
+       "kind": "image",
+       "zone": "front",
+       "x": -18,
+       "y": -18,
+       "width": 224.0,
+       "height": 161.3,
+       "resourceId": "e08-cover",
+       "fit": "cover",
+       "bleed": "own"
+      },
+      {
+       "id": "art-rule",
+       "kind": "box",
+       "zone": "front",
+       "x": 0,
+       "y": 143.3,
+       "width": 206.0,
+       "height": 1.6,
+       "color": {
+        "hex": "#b4402a",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "party-frame",
+       "kind": "box",
+       "zone": "back",
+       "x": 15.5,
+       "y": 26.5,
+       "width": 175.0,
+       "height": 107.6,
+       "color": {
+        "hex": "#151a20",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "party",
+       "kind": "image",
+       "zone": "back",
+       "x": 17.0,
+       "y": 28,
+       "width": 172.0,
+       "height": 104.6,
+       "resourceId": "e08p06-3",
+       "fit": "cover"
+      }
+     ],
+     "textBoxes": [
+      {
+       "name": "masthead",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 176,
+        "height": 90
+       },
+       "anchor": {
+        "to": "front",
+        "edge": "top",
+        "x": 0,
+        "y": 149.3
+       }
+      },
+      {
+       "name": "credits",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 176,
+        "height": 20
+       },
+       "anchor": {
+        "to": "front",
+        "edge": "bottom",
+        "x": 0,
+        "y": -8
+       }
+      },
+      {
+       "name": "blurb",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 110
+       },
+       "anchor": {
+        "to": "back",
+        "edge": "top",
+        "x": 0,
+        "y": 142.6
+       }
+      },
+      {
+       "name": "site",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 176,
+        "height": 8
+       },
+       "anchor": {
+        "to": "back",
+        "edge": "bottom",
+        "x": 0,
+        "y": -8
+       }
+      }
+     ]
     }
    },
    "resources": [
@@ -1517,7 +2305,8 @@
      "id": "e08-cover",
      "altText": "パーティーの支度ができた低いテーブルの前で、ペッパーが喜んで両手を上げ、キャロットも笑っている。テーブルにはティーポットとカップケーキ、ろうそくを立てたバースデーケーキ。頭上には三角の旗飾り。"
     }
-   ]
+   ],
+   "coverMarkdown": "cover/ja.md"
   },
   "zh-Hans": {
    "config": {
@@ -1599,14 +2388,199 @@
     "cjk": {
      "titleMinChars": 1,
      "composeDesignText": false
-    }
+    },
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "精装",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    },
+    "paragraphStyles": [
+     {
+      "id": "cover-title",
+      "name": "Cover: title",
+      "fontFamily": "ZCOOL KuaiLe",
+      "fontSize": {
+       "value": 34,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 44,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "marginTop": {
+       "value": 4,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-author",
+      "name": "Cover: author",
+      "fontFamily": "Noto Sans SC",
+      "fontSize": {
+       "value": 15,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 19,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "fontWeight": 400,
+      "marginTop": {
+       "value": 12,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-credit",
+      "name": "Cover: credits",
+      "fontFamily": "Noto Sans SC",
+      "fontSize": {
+       "value": 10,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 13,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     {
+      "id": "cover-blurb",
+      "name": "Cover: blurb",
+      "fontFamily": "Noto Sans SC",
+      "fontSize": {
+       "value": 13,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 22,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "fontWeight": 400,
+      "spaceBetween": {
+       "value": 9,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-site",
+      "name": "Cover: site",
+      "fontFamily": "Noto Sans SC",
+      "fontSize": {
+       "value": 9,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 12,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     }
+    ]
    },
    "resources": [
     {
      "id": "e08-cover",
      "altText": "小辣椒高兴地举起双手，萝卜头坐在一张布置好派对的矮桌旁。桌上有茶壶、纸杯蛋糕和插着蜡烛的生日蛋糕，头顶挂着一串串彩旗。"
     }
-   ]
+   ],
+   "coverMarkdown": "cover/zh-Hans.md"
   },
   "ar": {
    "config": {
@@ -1668,14 +2642,332 @@
       }
      ]
     },
-    "locale": "ar"
+    "locale": "ar",
+    "production": {
+     "versions": [
+      {
+       "id": "hardcover",
+       "name": "غلاف مقوى",
+       "binding": "case-flat",
+       "caseMaterial": "printed",
+       "spineText": {
+        "minSpine": 4
+       }
+      }
+     ]
+    },
+    "paragraphStyles": [
+     {
+      "id": "cover-title",
+      "name": "Cover: title",
+      "fontFamily": "Lalezar",
+      "fontSize": {
+       "value": 34,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 44,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "marginTop": {
+       "value": 4,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-author",
+      "name": "Cover: author",
+      "fontFamily": "Playpen Sans Arabic",
+      "fontSize": {
+       "value": 15,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 19,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "fontWeight": 400,
+      "marginTop": {
+       "value": 12,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-credit",
+      "name": "Cover: credits",
+      "fontFamily": "Playpen Sans Arabic",
+      "fontSize": {
+       "value": 10,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 13,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     },
+     {
+      "id": "cover-blurb",
+      "name": "Cover: blurb",
+      "fontFamily": "Playpen Sans Arabic",
+      "fontSize": {
+       "value": 13,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 22,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#1d1a17",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      },
+      "fontWeight": 400,
+      "spaceBetween": {
+       "value": 9,
+       "unit": "pt"
+      }
+     },
+     {
+      "id": "cover-site",
+      "name": "Cover: site",
+      "fontFamily": "Playpen Sans Arabic",
+      "fontSize": {
+       "value": 9,
+       "unit": "pt"
+      },
+      "lineHeight": {
+       "value": 12,
+       "unit": "pt"
+      },
+      "color": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "italicColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "boldColor": {
+       "hex": "#6b625a",
+       "model": "hex"
+      },
+      "textAlign": "center",
+      "hyphenation": false,
+      "firstLineIndent": {
+       "value": 0,
+       "unit": "mm"
+      }
+     }
+    ],
+    "cover": {
+     "background": {
+      "hex": "#fbf3dc",
+      "model": "hex"
+     },
+     "zones": {
+      "spine": {
+       "hex": "#b4402a",
+       "model": "hex"
+      },
+      "jointBack": {
+       "hex": "#b4402a",
+       "model": "hex"
+      },
+      "jointFront": {
+       "hex": "#b4402a",
+       "model": "hex"
+      }
+     },
+     "elements": [
+      {
+       "id": "art",
+       "kind": "image",
+       "zone": "front",
+       "x": -18,
+       "y": -18,
+       "width": 224.0,
+       "height": 161.3,
+       "resourceId": "e08-cover",
+       "fit": "cover",
+       "bleed": "own"
+      },
+      {
+       "id": "art-rule",
+       "kind": "box",
+       "zone": "front",
+       "x": 0,
+       "y": 143.3,
+       "width": 206.0,
+       "height": 1.6,
+       "color": {
+        "hex": "#b4402a",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "party-frame",
+       "kind": "box",
+       "zone": "back",
+       "x": 15.5,
+       "y": 26.5,
+       "width": 175.0,
+       "height": 107.6,
+       "color": {
+        "hex": "#151a20",
+        "model": "hex"
+       }
+      },
+      {
+       "id": "party",
+       "kind": "image",
+       "zone": "back",
+       "x": 17.0,
+       "y": 28,
+       "width": 172.0,
+       "height": 104.6,
+       "resourceId": "e08p06-3",
+       "fit": "cover"
+      }
+     ],
+     "textBoxes": [
+      {
+       "name": "masthead",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 176,
+        "height": 90
+       },
+       "anchor": {
+        "to": "front",
+        "edge": "top",
+        "x": 0,
+        "y": 149.3
+       }
+      },
+      {
+       "name": "credits",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 176,
+        "height": 20
+       },
+       "anchor": {
+        "to": "front",
+        "edge": "bottom",
+        "x": 0,
+        "y": -8
+       }
+      },
+      {
+       "name": "blurb",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 160,
+        "height": 110
+       },
+       "anchor": {
+        "to": "back",
+        "edge": "top",
+        "x": 0,
+        "y": 142.6
+       }
+      },
+      {
+       "name": "site",
+       "rect": {
+        "x": 0,
+        "y": 0,
+        "width": 176,
+        "height": 8
+       },
+       "anchor": {
+        "to": "back",
+        "edge": "bottom",
+        "x": 0,
+        "y": -8
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
      "id": "e08-cover",
      "altText": "فُلفُل ترفع ذراعيها فرحًا، وجزر أمام طاولة منخفضة أُعدّت لحفلة: إبريق شاي وكعكات صغيرة وكعكة عيد ميلاد بشموعها، تحت أشرطة من الرايات الملوّنة."
     }
-   ]
+   ],
+   "coverMarkdown": "cover/ar.md"
   }
  },
  "resources": [
@@ -2325,5 +3617,6 @@
    ],
    "redistributable": true
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }
