@@ -12,7 +12,7 @@ import { syncComicEditors } from '../../../comics/comicEditing.js';
 import { syncFrameEditors } from '../../../composed/frameEditor.js';
 import { syncLabelAnchorEditors } from '../../../composed/labelAnchorEditor.js';
 import { resolveDebugConfig, type PostextConfig, type VDTDocument } from 'postext';
-import { toBookSelection } from '../../../../book/compose.js';
+import { toBookSelection, type BookSelection } from '../../../../book/compose.js';
 import type { EditorSelection } from '../../../../context/SandboxContext.js';
 import { NO_SELECTION } from './constants.js';
 import { findCaretBlockIdx, findCarriedCaretBlockIdx } from '../caret.js';
@@ -104,7 +104,7 @@ export function useOverlays(deps: UseOverlaysDeps) {
     const chapterDoc = stitched ? chapterDocsRef.current.get(activeChapterId) : undefined;
     const source = stitched ? chapterDoc?.source ?? null : builtSourceRef.current;
     const mapped = source ? toBookSelection(source, activeChapterId, editorSelection, markdownRef.current) : stitched ? null : editorSelection;
-    const selection: EditorSelection = mapped ?? NO_SELECTION;
+    const selection: BookSelection = mapped ?? NO_SELECTION;
     const focused = editorFocused && mapped !== null;
     let chapterPages: { from: number; to: number } | undefined;
     if (stitched) {

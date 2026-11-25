@@ -159,11 +159,19 @@ export function offsetMapperToBuilt(built: string, current: string): (offset: nu
   };
 }
 
+/** An editor selection in book offsets. */
+export interface BookSelection extends EditorSelection {
+  /** The spaces the editor's text holds just before a caret (a collapsed
+   *  selection). The layout drops the spaces that end a paragraph: the
+   *  caret on the page is set past them all the same (#1714). */
+  spacesBefore?: number;
+}
+
 /** Shift an editor selection (chapter-local) into book offsets; null when
  *  the chapter is not part of the composed book. `current` is the chapter's
  *  text as the editor holds it: when the book was composed from an earlier
  *  one, the selection is read where it stands in the text of the book. */
-export function toBookSelection(book: ComposedBook, chapterId: string, sel: EditorSelection, current?: string): EditorSelection | null {
+export function toBookSelection(book: ComposedBook, chapterId: string, sel: EditorSelection, current?: string): BookSelection | null {
   const seg = segmentForChapter(book, chapterId);
   if (!seg) return null;
   let toBuilt = (n: number): number => n;
@@ -176,5 +184,11 @@ export function toBookSelection(book: ComposedBook, chapterId: string, sel: Edit
     }
   }
   const clamp = (n: number) => seg.start + Math.max(0, Math.min(toBuilt(n), seg.end - seg.start));
-  return { from: clamp(sel.from), to: clamp(sel.to), head: clamp(sel.head) };
+  const out: BookSelection = { from: clamp(sel.from), to: clamp(sel.to), head: clamp(sel.head) };
+  if (current !== undefined && sel.from === sel.to && sel.head > 0) {
+    let spaces = 0;
+    while (spaces < sel.head && current.charCodeAt(sel.head - 1 - spaces) === 32) spaces++;
+    if (spaces > 0) out.spacesBefore = spaces;
+  }
+  return out;
 }

@@ -7,8 +7,7 @@ import { onPageSelectionChange } from '../../../../selection/selectionStore.js';
 import { onEditModeChange } from '../../../../editing/editMode.js';
 import { syncComicEditors } from '../../../comics/comicEditing.js';
 import { resolveDebugConfig, type VDTDocument } from 'postext';
-import { toBookSelection } from '../../../../book/compose.js';
-import type { EditorSelection } from '../../../../context/SandboxContext.js';
+import { toBookSelection, type BookSelection } from '../../../../book/compose.js';
 import { drawOverlay } from '../../../canvas/CanvasPreview/overlay.js';
 import { findCaretBlockIdx } from '../../../canvas/CanvasPreview/caret.js';
 import { drawPickedMark } from '../../../../selection/pickedOverlay.js';
@@ -64,7 +63,7 @@ export function useOverlays(deps: UseOverlaysDeps) {
     const debug = resolveDebugConfig(state.config.debug);
     const source = builtSourceRef.current;
     const mapped = source ? toBookSelection(source, activeChapterId, state.selection, state.markdown) : state.selection;
-    const selection: EditorSelection = mapped ?? { from: -1, to: -1, head: -1 };
+    const selection: BookSelection = mapped ?? { from: -1, to: -1, head: -1 };
     const focused = state.editorFocused && mapped !== null;
 
     const caretBlockIdx = findCaretBlockIdx(doc, selection.head);

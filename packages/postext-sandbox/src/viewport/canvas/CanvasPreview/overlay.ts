@@ -5,7 +5,7 @@ import type { ResourceSelection } from '../../../context/SandboxContext.js';
 import { getSvgTextIndex } from '../../../controls/media/svgTextIndex.js';
 import { svgSourceOffsetToCaret, svgSourceRangeToBoxes, type SvgCharBox } from '../../../controls/media/svgSource.js';
 import { SVG_NS } from './dom.js';
-import { plainRangeInLine, sourceToPlainIndex, xForPlainInLine } from './geometry.js';
+import { lineEndSpaceAdvance, plainRangeInLine, sourceToPlainIndex, xForPlainInLine } from './geometry.js';
 import { bandLineBoxes, bandPrefixX, bandSourceToPlain, bandTitleBlocks, bandTitleOwner, isHiddenUnderBand } from './bandTitle.js';
 import { blockFrameMatrix, type FrameAffine } from '../../composed/frameHit.js';
 import { glyphMarks } from './glyphMarks.js';
@@ -285,7 +285,7 @@ function drawOverlayMarks(
   svg: SVGSVGElement,
   doc: VDTDocument,
   pageIndex: number,
-  selection: { from: number; to: number; head: number },
+  selection: { from: number; to: number; head: number; spacesBefore?: number },
   debug: ResolvedDebugConfig,
   focused: boolean,
   caretBlockIdx: number,
@@ -400,7 +400,10 @@ function drawOverlayMarks(
       const lineEnd = line.plainEnd;
       if (lineStart === undefined || lineEnd === undefined) continue;
       if (plainCaret < lineStart || plainCaret > lineEnd) continue;
-      const x = xForPlainInLine(caretBlock, line, plainCaret - lineStart, mirrored);
+      let x = xForPlainInLine(caretBlock, line, plainCaret - lineStart, mirrored);
+      // Past the spaces typed at the block's end, which the layout drops (#1714).
+      const spaces = selection.spacesBefore ?? 0;
+      if (spaces > 0 && plainCaret >= plainLen && caretBlock.sourceEnd !== undefined && head >= caretBlock.sourceEnd) x += spaces * lineEndSpaceAdvance(caretBlock, line, mirrored);
       cursorRect.setAttribute('x', String(x - 1.5));
       cursorRect.setAttribute('y', String(line.bbox.y));
       cursorRect.setAttribute('width', '3');
