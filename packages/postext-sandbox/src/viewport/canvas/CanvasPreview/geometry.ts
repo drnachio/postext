@@ -268,6 +268,17 @@ export function pixelToSourceOffset(
 
 let spaceMeasurer: CanvasRenderingContext2D | null | undefined;
 
+/** The advance of a space in `font` (a CSS font string), `fallback` where
+ *  it cannot be measured. */
+export function spaceWidth(font: string | undefined, fallback: number): number {
+  if (typeof document === 'undefined' || !font) return fallback;
+  if (spaceMeasurer === undefined) spaceMeasurer = document.createElement('canvas').getContext('2d');
+  if (!spaceMeasurer) return fallback;
+  spaceMeasurer.font = font;
+  const measured = spaceMeasurer.measureText(' ').width;
+  return measured > 0 ? measured : fallback;
+}
+
 /**
  * The advance of one space at the end of a line, signed along the flow
  * frame's x: in the font of the line's last text, leftwards when that text
@@ -283,14 +294,6 @@ export function lineEndSpaceAdvance(
   let last = placed?.[placed.length - 1];
   for (const p of placed ?? []) if (p.plainLen > 0) last = p;
   const font = (last?.seg as { fontString?: string } | undefined)?.fontString ?? block.fontString;
-  let width = line.bbox.height * 0.2;
-  if (typeof document !== 'undefined') {
-    if (spaceMeasurer === undefined) spaceMeasurer = document.createElement('canvas').getContext('2d');
-    if (spaceMeasurer && font) {
-      spaceMeasurer.font = font;
-      const measured = spaceMeasurer.measureText(' ').width;
-      if (measured > 0) width = measured;
-    }
-  }
+  const width = spaceWidth(font, line.bbox.height * 0.2);
   return (last ? last.reversed : mirrored) ? -width : width;
 }
