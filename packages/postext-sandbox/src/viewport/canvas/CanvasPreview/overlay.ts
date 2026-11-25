@@ -1,3 +1,4 @@
+import { clearLightLayer, syncBackdropMarks } from './backdrop.js';
 import type { VDTBlock, VDTDocument, ResolvedDebugConfig } from 'postext';
 import { comicBalloonMatrix, findLooseLines, pageComics, resourceBlockRectToPage } from 'postext';
 import type { ResourceSelection } from '../../../context/SandboxContext.js';
@@ -239,6 +240,7 @@ export function clearOverlay(svg: SVGSVGElement): void {
     cursorRect.style.display = 'none';
     cursorRect.style.visibility = 'hidden';
   }
+  clearLightLayer(svg);
 }
 
 /** A 2D affine matrix `[a b c d e f]`, as SVG's `matrix()` takes it. */
@@ -272,7 +274,14 @@ export interface CarriedSelection {
   only?: boolean;
 }
 
-export function drawOverlay(
+export function drawOverlay(...args: Parameters<typeof drawOverlayMarks>): SVGRectElement | null {
+  const rect = drawOverlayMarks(...args);
+  // The marks on a dark ground are painted again, lightening (#1712).
+  syncBackdropMarks(args[0]);
+  return rect;
+}
+
+function drawOverlayMarks(
   svg: SVGSVGElement,
   doc: VDTDocument,
   pageIndex: number,

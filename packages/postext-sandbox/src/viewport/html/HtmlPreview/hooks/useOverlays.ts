@@ -10,6 +10,7 @@ import { resolveDebugConfig, type VDTDocument } from 'postext';
 import { toBookSelection } from '../../../../book/compose.js';
 import type { EditorSelection } from '../../../../context/SandboxContext.js';
 import { drawOverlay } from '../../../canvas/CanvasPreview/overlay.js';
+import { findCaretBlockIdx } from '../../../canvas/CanvasPreview/caret.js';
 import { drawPickedMark } from '../../../../selection/pickedOverlay.js';
 import { syncLabelAnchorEditors } from '../../../composed/labelAnchorEditor.js';
 import { htmlVideoPlayers, htmlVideoState, playHtmlVideo } from '../videos.js';
@@ -62,27 +63,11 @@ export function useOverlays(deps: UseOverlaysDeps) {
     syncComicEditors();
     const debug = resolveDebugConfig(state.config.debug);
     const source = builtSourceRef.current;
-    const mapped = source ? toBookSelection(source, activeChapterId, state.selection) : state.selection;
+    const mapped = source ? toBookSelection(source, activeChapterId, state.selection, state.markdown) : state.selection;
     const selection: EditorSelection = mapped ?? { from: -1, to: -1, head: -1 };
     const focused = state.editorFocused && mapped !== null;
 
-    let caretBlockIdx = -1;
-    const { head } = selection;
-    for (let i = 0; i < doc.blocks.length; i++) {
-      const b = doc.blocks[i]!;
-      if (b.sourceStart === undefined || b.sourceEnd === undefined) continue;
-      if (head >= b.sourceStart && head <= b.sourceEnd) { caretBlockIdx = i; break; }
-    }
-    if (caretBlockIdx === -1) {
-      for (let i = 0; i < doc.blocks.length; i++) {
-        const b = doc.blocks[i]!;
-        if (b.sourceStart === undefined) continue;
-        if (b.sourceStart >= head) { caretBlockIdx = i; break; }
-      }
-    }
-    if (caretBlockIdx === -1 && doc.blocks.length > 0) {
-      caretBlockIdx = doc.blocks.length - 1;
-    }
+    const caretBlockIdx = findCaretBlockIdx(doc, selection.head);
 
     // The editor's caret, moved there by the reader, is followed on the
     // page (#865).

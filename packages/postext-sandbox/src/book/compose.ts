@@ -134,11 +134,47 @@ export function fromBookLine(book: ComposedBook, bookLine: number): { chapterId:
   return { chapterId: seg.chapterId, line };
 }
 
+/**
+ * Where an offset of `current` stands in `built`, an earlier state of the
+ * same text (the one a page was laid out from, one edit behind while the
+ * reader types): what stands before the edit keeps its offset, what stands
+ * after it shifts with it, and what was typed sits where it was typed. An
+ * edit inside a run of equal characters (a blank line among blank lines) is
+ * read as late as it can be, so text typed after a paragraph stays at that
+ * paragraph's end rather than at the start of the next one.
+ */
+export function offsetMapperToBuilt(built: string, current: string): (offset: number) => number {
+  if (built === current) return (o) => o;
+  const shortest = Math.min(built.length, current.length);
+  let suffix = 0;
+  while (suffix < shortest && built.charCodeAt(built.length - 1 - suffix) === current.charCodeAt(current.length - 1 - suffix)) suffix++;
+  let prefix = 0;
+  while (prefix < shortest - suffix && built.charCodeAt(prefix) === current.charCodeAt(prefix)) prefix++;
+  const delta = current.length - built.length;
+  const builtMiddle = built.length - suffix - prefix;
+  return (o) => {
+    if (o <= prefix) return o;
+    if (o >= current.length - suffix) return o - delta;
+    return prefix + Math.min(o - prefix, builtMiddle);
+  };
+}
+
 /** Shift an editor selection (chapter-local) into book offsets; null when
- *  the chapter is not part of the composed book. */
-export function toBookSelection(book: ComposedBook, chapterId: string, sel: EditorSelection): EditorSelection | null {
+ *  the chapter is not part of the composed book. `current` is the chapter's
+ *  text as the editor holds it: when the book was composed from an earlier
+ *  one, the selection is read where it stands in the text of the book. */
+export function toBookSelection(book: ComposedBook, chapterId: string, sel: EditorSelection, current?: string): EditorSelection | null {
   const seg = segmentForChapter(book, chapterId);
   if (!seg) return null;
-  const clamp = (n: number) => seg.start + Math.max(0, Math.min(n, seg.end - seg.start));
+  let toBuilt = (n: number): number => n;
+  if (current !== undefined && sel.head >= 0) {
+    const built = book.markdown.slice(seg.start, seg.end);
+    if (built !== current) {
+      // A later chapter's front matter is blanked in the book.
+      const blanked = current.startsWith('---') && !built.startsWith('---');
+      toBuilt = offsetMapperToBuilt(built, blanked ? blankFrontmatter(current) : current);
+    }
+  }
+  const clamp = (n: number) => seg.start + Math.max(0, Math.min(toBuilt(n), seg.end - seg.start));
   return { from: clamp(sel.from), to: clamp(sel.to), head: clamp(sel.head) };
 }

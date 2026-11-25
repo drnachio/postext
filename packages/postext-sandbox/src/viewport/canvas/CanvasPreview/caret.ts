@@ -2,8 +2,10 @@ import type { VDTDocument } from 'postext';
 
 /**
  * Resolve which block should host the caret given a source offset.
- * Prefers the block that actually contains the offset; otherwise falls back
- * to the first block starting at or after the offset (caret between paragraphs).
+ * Prefers the block that actually contains the offset; a caret between two
+ * blocks (a blank line, text the page has not laid out yet) goes to the
+ * nearer one, and on a tie to the block before it: what is typed after a
+ * paragraph shows at its end, never at the head of the next one.
  *
  * `pages` narrows the search to the blocks of a page range (`[from, to)`):
  * a whole-book canvas holds every chapter's blocks with chapter offsets, so
@@ -12,8 +14,9 @@ import type { VDTDocument } from 'postext';
 export function findCaretBlockIdx(doc: VDTDocument, head: number, pages?: { from: number; to: number }): number {
   const inRange = (b: VDTDocument['blocks'][number]): boolean =>
     !pages || (b.pageIndex >= pages.from && b.pageIndex < pages.to);
-  let caretBlockIdx = -1;
   let last = -1;
+  let before = -1;
+  let after = -1;
   for (let i = 0; i < doc.blocks.length; i++) {
     const b = doc.blocks[i]!;
     if (!inRange(b)) continue;
@@ -21,17 +24,19 @@ export function findCaretBlockIdx(doc: VDTDocument, head: number, pages?: { from
     if (b.sourceChapter !== undefined) continue;
     last = i;
     if (b.sourceStart === undefined || b.sourceEnd === undefined) continue;
-    if (head >= b.sourceStart && head <= b.sourceEnd) { caretBlockIdx = i; break; }
-  }
-  if (caretBlockIdx === -1) {
-    for (let i = 0; i < doc.blocks.length; i++) {
-      const b = doc.blocks[i]!;
-      if (!inRange(b) || b.sourceStart === undefined || b.sourceChapter !== undefined) continue;
-      if (b.sourceStart >= head) { caretBlockIdx = i; break; }
+    if (head >= b.sourceStart && head <= b.sourceEnd) return i;
+    // The block with lines wins over the box round it (same end or start).
+    if (b.sourceEnd < head) {
+      const held = doc.blocks[before];
+      if (!held || b.sourceEnd > held.sourceEnd! || (b.sourceEnd === held.sourceEnd && b.lines.length > 0)) before = i;
+    } else {
+      const held = doc.blocks[after];
+      if (!held || b.sourceStart < held.sourceStart! || (b.sourceStart === held.sourceStart && held.lines.length === 0 && b.lines.length > 0)) after = i;
     }
   }
-  if (caretBlockIdx === -1) caretBlockIdx = last;
-  return caretBlockIdx;
+  if (before === -1) return after === -1 ? last : after;
+  if (after === -1) return before;
+  return head - doc.blocks[before]!.sourceEnd! <= doc.blocks[after]!.sourceStart! - head ? before : after;
 }
 
 /**
