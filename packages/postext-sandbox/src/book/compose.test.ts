@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { composeBook, composeBookMemo, fromBookLine, fromBookOffset, segmentAtOffset, toBookLine, toBookOffset, toBookSelection } from './compose.js';
+import { composeBook, composeBookMemo, fromBookLine, fromBookOffset, segmentAtOffset, offsetMapperToBuilt, toBookLine, toBookOffset, toBookSelection } from './compose.js';
 import { newChapter } from './chapterOps.js';
 
 const a = newChapter('a', 'A', '---\ntitle: Book\n---\n# One\n\nFirst.', 1);
@@ -93,5 +93,32 @@ describe('composeBook chapter-only scope', () => {
     expect(only.segments[0]!.index).toBe(2);
     expect(only.segments[0]!.start).toBe(0);
     expect(only.scope).toEqual({ only: 'c' });
+  });
+});
+
+describe('a selection one edit ahead of the laid-out text (#1711)', () => {
+  const built = 'First.\n\nNext one.';
+  it('text typed in a new paragraph stays at the end of the paragraph before it', () => {
+    // Two Enters at the end of "First.": the caret is on the new blank line.
+    expect(offsetMapperToBuilt(built, 'First.\n\n\n\nNext one.')(8)).toBe(6);
+    // The layout caught up with "a"; "b" is typed after it.
+    expect(offsetMapperToBuilt('First.\n\na\n\nNext one.', 'First.\n\nab\n\nNext one.')(10)).toBe(9);
+  });
+  it('keeps what stands before the edit and shifts what stands after it', () => {
+    const toBuilt = offsetMapperToBuilt(built, 'First.\n\nxNext one.');
+    expect(toBuilt(3)).toBe(3);
+    expect(toBuilt(9)).toBe(8);
+    expect(toBuilt(13)).toBe(12);
+  });
+  it('a deletion keeps the caret at the cut', () => {
+    expect(offsetMapperToBuilt(built, 'First.\n\nNext on')(15)).toBe(15);
+    expect(offsetMapperToBuilt(built, 'Fist.\n\nNext one.')(1)).toBe(1);
+  });
+  it('maps the editor selection through the chapter text of the book', () => {
+    const book = composeBook(chapters);
+    const typed = `${b.markdown}\n\nab`;
+    const end = book.segments[1]!.end;
+    expect(toBookSelection(book, 'b', { from: typed.length, to: typed.length, head: typed.length }, typed)!.head).toBe(end);
+    expect(toBookSelection(book, 'b', { from: 3, to: 3, head: 3 }, b.markdown)!.head).toBe(book.segments[1]!.start + 3);
   });
 });

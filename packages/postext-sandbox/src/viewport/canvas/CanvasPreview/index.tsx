@@ -84,6 +84,10 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   const locale = useSandboxSelector((s) => s.locale);
   const activePanel = useSandboxSelector((s) => s.activePanel);
   const editorSelection = useSandboxSelector((s) => s.selection);
+  // The text the selection is an offset of: read with it, one edit ahead
+  // of the page while the reader types (#1711).
+  const markdownRef = useRef('');
+  markdownRef.current = useSandboxSelector((s) => s.markdown);
   const editorFocused = useSandboxSelector((s) => s.editorFocused);
   // Read by the follow below (it changes with the selection it describes).
   const selectionFromViewerRef = useRef(false);
@@ -295,7 +299,7 @@ function CanvasPreview({ zoom, viewMode, fitMode, onGeneratingChange, onPageCoun
   }, [dieLines, docVersion, paintKey, layoutKey, zoom, viewMode, fitMode, deferredConfig]);
 
   useOverlays({
-    activeChapterId, config, editorSelection, editorFocused, selectionFromViewerRef,
+    activeChapterId, config, editorSelection, markdownRef, editorFocused, selectionFromViewerRef,
     resourceSelection, containerRef, dispatchRef, activePanelRef, labelsRef, uiLocaleRef,
     pageSourceRef, docRef, stitchedRef, drawnOverlaysRef, chapterDocsRef, overlayMapRef,
     builtSourceRef, docVersion

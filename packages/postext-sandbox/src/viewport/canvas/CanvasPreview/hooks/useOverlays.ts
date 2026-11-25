@@ -35,6 +35,8 @@ export interface UseOverlaysDeps {
   activeChapterId: string;
   config: PostextConfig;
   editorSelection: EditorSelection;
+  /** The active chapter's text, which the selection is an offset of. */
+  markdownRef: React.RefObject<string>;
   editorFocused: boolean;
   selectionFromViewerRef: React.RefObject<boolean>;
   resourceSelection: ResourceSelection | null;
@@ -55,7 +57,7 @@ export interface UseOverlaysDeps {
 
 export function useOverlays(deps: UseOverlaysDeps) {
   const {
-    activeChapterId, config, editorSelection, editorFocused, selectionFromViewerRef,
+    activeChapterId, config, editorSelection, markdownRef, editorFocused, selectionFromViewerRef,
     resourceSelection, containerRef, dispatchRef, activePanelRef, labelsRef, uiLocaleRef,
     pageSourceRef, docRef, stitchedRef, drawnOverlaysRef, chapterDocsRef, overlayMapRef,
     builtSourceRef, docVersion
@@ -101,7 +103,7 @@ export function useOverlays(deps: UseOverlaysDeps) {
     const stitched = stitchedRef.current;
     const chapterDoc = stitched ? chapterDocsRef.current.get(activeChapterId) : undefined;
     const source = stitched ? chapterDoc?.source ?? null : builtSourceRef.current;
-    const mapped = source ? toBookSelection(source, activeChapterId, editorSelection) : stitched ? null : editorSelection;
+    const mapped = source ? toBookSelection(source, activeChapterId, editorSelection, markdownRef.current) : stitched ? null : editorSelection;
     const selection: EditorSelection = mapped ?? NO_SELECTION;
     const focused = editorFocused && mapped !== null;
     let chapterPages: { from: number; to: number } | undefined;

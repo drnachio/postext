@@ -100,6 +100,9 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
   useTemplateEditorHost();
   const { chapterId: activeChapterId } = useLayoutSource();
   const editorSelection = useSandboxSelector((s) => s.selection);
+  // The text the selection is an offset of (it changes with it).
+  const markdownRef = useRef('');
+  markdownRef.current = useSandboxSelector((s) => s.markdown);
   const editorFocused = useSandboxSelector((s) => s.editorFocused);
   const selectionFromViewer = useSandboxSelector((s) => s.selectionFromViewer);
   const resourceSelection = useSandboxSelector((s) => s.resourceSelection);
@@ -187,7 +190,7 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
     const debug = resolveDebugConfig(debugConfig);
     const stitched = stitchedRef.current;
     const source = stitched ? chapterDocsRef.current.get(activeChapterId)?.source ?? null : sourceRef.current;
-    const mapped = source ? toBookSelection(source, activeChapterId, editorSelection) : stitched ? null : editorSelection;
+    const mapped = source ? toBookSelection(source, activeChapterId, editorSelection, markdownRef.current) : stitched ? null : editorSelection;
     const selection = mapped ?? NO_SELECTION;
     const focused = editorFocused && mapped !== null;
     let chapterPages: { from: number; to: number } | undefined;
