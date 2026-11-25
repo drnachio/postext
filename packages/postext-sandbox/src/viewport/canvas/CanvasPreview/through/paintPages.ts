@@ -8,6 +8,7 @@
 
 import { composedPagePaintKey, renderPageToCanvas, type PageImageSource, type RenderPageOptions, type VDTDocument, type VDTPage } from 'postext';
 import { optionsKey, type PaintedPages } from '../pageReuse.js';
+import { backdropPainted } from '../backdrop.js';
 import { hiddenScale, paintOrder, throughChain, throughPaintKey, type ThroughChain } from './chain.js';
 
 /** The see-through state of the document on screen: its chain and the
@@ -147,6 +148,8 @@ function paintOne(deps: PaintPagesDeps, i: number, opts: RenderPageOptions): boo
   }
   if (page.dieCut || canvas.style.backgroundColor === 'transparent' || canvas.dataset.dieShaped) styleCutCanvas(canvas, page);
   deps.painted.painted(i, page, opts, throughKeyOf(deps, i));
+  // The marks over it are read against the new ground (#1712).
+  backdropPainted(canvas);
   deps.rendered.add(i);
   deps.stale.delete(i);
   // Its own hidden copy, if it had one, is older than this paint.

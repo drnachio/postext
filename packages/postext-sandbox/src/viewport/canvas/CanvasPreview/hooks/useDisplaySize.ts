@@ -1,6 +1,7 @@
 // The canvas preview's display size: the gaps between the pages, the page
 // geometry at a container size and the observer that follows it (#1276:
 // split out of CanvasPreview/index.tsx).
+import { resizeLightLayer } from '../backdrop.js';
 import { useMemo, useRef, useCallback, useEffect } from 'react';
 import { type PageGaps, rowPadding, PAGE_PADDING, innerRowWidth, fitRowPageWidth, type ViewMode, type FitMode, type GeomSnapshot } from '../layoutUtils.js';
 import { resolveCanvasViewerConfig, watchFonts, onFontsChanged, type PostextConfig, type VDTDocument, type RenderPageOptions } from 'postext';
@@ -71,6 +72,7 @@ export function useDisplaySize(deps: UseDisplaySizeDeps) {
     for (const [, overlay] of overlayMapRef.current) {
       overlay.style.width = `${displayWidth}px`;
       overlay.style.height = `${displayHeight}px`;
+      resizeLightLayer(overlay);
     }
     const spacers = container.querySelectorAll<HTMLDivElement>('[data-spread-spacer="1"]');
     for (const spacer of spacers) spacer.style.width = `${displayWidth}px`;
