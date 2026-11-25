@@ -5565,6 +5565,228 @@
      "value": 1,
      "unit": "em"
     }
+   },
+   {
+    "id": "cover-title-lip",
+    "name": "الغلاف: ظل العنوان",
+    "fontFamily": "Aref Ruqaa",
+    "fontSize": {
+     "value": 50,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 60,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#4a1d17",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#4a1d17",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#4a1d17",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700
+   },
+   {
+    "id": "cover-volumes-lip",
+    "name": "الغلاف: ظل الأجزاء",
+    "fontFamily": "Amiri",
+    "fontSize": {
+     "value": 21,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 26,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#4a1d17",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#4a1d17",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#4a1d17",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700
+   },
+   {
+    "id": "cover-title",
+    "name": "الغلاف: العنوان",
+    "fontFamily": "Aref Ruqaa",
+    "fontSize": {
+     "value": 50,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 60,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700
+   },
+   {
+    "id": "cover-volumes",
+    "name": "الغلاف: الأجزاء",
+    "fontFamily": "Amiri",
+    "fontSize": {
+     "value": 21,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 26,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700
+   },
+   {
+    "id": "cover-blurb",
+    "name": "الغلاف: النبذة",
+    "fontFamily": "Amiri",
+    "fontSize": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 22,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#efe3c6",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#efe3c6",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#efe3c6",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-imprint",
+    "name": "الغلاف: الطابع",
+    "fontFamily": "Amiri",
+    "fontSize": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-spine",
+    "name": "الغلاف: الكعب",
+    "fontFamily": "Aref Ruqaa",
+    "fontSize": {
+     "value": 34,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 36,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#d2ad5c",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700
    }
   ],
   "parts": {
@@ -6969,6 +7191,304 @@
      "ألف ليلة وليلة"
     ]
    }
+  },
+  "production": {
+   "versions": [
+    {
+     "id": "hardcover",
+     "name": "مجلد",
+     "binding": "case-flat",
+     "caseMaterial": "printed"
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#4a1d17",
+    "model": "hex"
+   },
+   "elements": [
+    {
+     "id": "art",
+     "kind": "image",
+     "zone": "front",
+     "x": 0,
+     "y": 0,
+     "width": 166.0,
+     "height": 246.0,
+     "resourceId": "cover-art",
+     "fit": "cover"
+    },
+    {
+     "id": "spine-art",
+     "kind": "image",
+     "zone": "spine",
+     "x": 0,
+     "y": -18,
+     "width": 75.8,
+     "height": 282.0,
+     "resourceId": "spine-art",
+     "fit": "cover",
+     "bleed": "own"
+    },
+    {
+     "id": "fillet-out-t",
+     "kind": "box",
+     "zone": "back",
+     "x": 10,
+     "y": 10,
+     "width": 146.0,
+     "height": 0.9,
+     "color": {
+      "hex": "#d2ad5c",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "fillet-out-b",
+     "kind": "box",
+     "zone": "back",
+     "x": 10,
+     "y": 235.1,
+     "width": 146.0,
+     "height": 0.9,
+     "color": {
+      "hex": "#d2ad5c",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "fillet-out-l",
+     "kind": "box",
+     "zone": "back",
+     "x": 10,
+     "y": 10,
+     "width": 0.9,
+     "height": 226.0,
+     "color": {
+      "hex": "#d2ad5c",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "fillet-out-r",
+     "kind": "box",
+     "zone": "back",
+     "x": 155.1,
+     "y": 10,
+     "width": 0.9,
+     "height": 226.0,
+     "color": {
+      "hex": "#d2ad5c",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "fillet-in-t",
+     "kind": "box",
+     "zone": "back",
+     "x": 13,
+     "y": 13,
+     "width": 140.0,
+     "height": 0.4,
+     "color": {
+      "hex": "#a8823a",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "fillet-in-b",
+     "kind": "box",
+     "zone": "back",
+     "x": 13,
+     "y": 232.6,
+     "width": 140.0,
+     "height": 0.4,
+     "color": {
+      "hex": "#a8823a",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "fillet-in-l",
+     "kind": "box",
+     "zone": "back",
+     "x": 13,
+     "y": 13,
+     "width": 0.4,
+     "height": 220.0,
+     "color": {
+      "hex": "#a8823a",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "fillet-in-r",
+     "kind": "box",
+     "zone": "back",
+     "x": 152.6,
+     "y": 13,
+     "width": 0.4,
+     "height": 220.0,
+     "color": {
+      "hex": "#a8823a",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "rosette",
+     "kind": "image",
+     "zone": "back",
+     "x": 68.0,
+     "y": 44,
+     "width": 30,
+     "height": 30,
+     "resourceId": "rosette-gold"
+    }
+   ],
+   "finishes": [
+    {
+     "id": "foil-fillet-out-t",
+     "process": "foil",
+     "sheen": "gloss",
+     "shape": {
+      "element": "fillet-out-t"
+     }
+    },
+    {
+     "id": "foil-fillet-out-b",
+     "process": "foil",
+     "sheen": "gloss",
+     "shape": {
+      "element": "fillet-out-b"
+     }
+    },
+    {
+     "id": "foil-fillet-out-l",
+     "process": "foil",
+     "sheen": "gloss",
+     "shape": {
+      "element": "fillet-out-l"
+     }
+    },
+    {
+     "id": "foil-fillet-out-r",
+     "process": "foil",
+     "sheen": "gloss",
+     "shape": {
+      "element": "fillet-out-r"
+     }
+    },
+    {
+     "id": "foil-fillet-in-t",
+     "process": "foil",
+     "sheen": "gloss",
+     "shape": {
+      "element": "fillet-in-t"
+     }
+    },
+    {
+     "id": "foil-fillet-in-b",
+     "process": "foil",
+     "sheen": "gloss",
+     "shape": {
+      "element": "fillet-in-b"
+     }
+    },
+    {
+     "id": "foil-fillet-in-l",
+     "process": "foil",
+     "sheen": "gloss",
+     "shape": {
+      "element": "fillet-in-l"
+     }
+    },
+    {
+     "id": "foil-fillet-in-r",
+     "process": "foil",
+     "sheen": "gloss",
+     "shape": {
+      "element": "fillet-in-r"
+     }
+    }
+   ],
+   "textBoxes": [
+    {
+     "name": "title",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 166.0,
+      "height": 30
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top",
+      "x": 0,
+      "y": 21.25
+     }
+    },
+    {
+     "name": "volumes",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 166.0,
+      "height": 12
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top",
+      "x": 0,
+      "y": 205.85
+     }
+    },
+    {
+     "name": "blurb",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 110,
+      "height": 100
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "top",
+      "x": 0,
+      "y": 80
+     }
+    },
+    {
+     "name": "imprint",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 110,
+      "height": 10
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "bottom",
+      "x": 0,
+      "y": -16
+     }
+    },
+    {
+     "name": "spine-title",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 61.8,
+      "height": 34
+     },
+     "anchor": {
+      "to": "spine",
+      "edge": "top",
+      "x": 0,
+      "y": 45.4
+     }
+    }
+   ]
   }
  },
  "localized": {
@@ -8275,6 +8795,22 @@
    },
    "caption": "كعب الكتاب",
    "altText": ""
+  },
+  {
+   "id": "spine-art",
+   "typeId": "ornament",
+   "kind": "bitmap",
+   "file": "resources/spine-art.jpg",
+   "width": 1120,
+   "height": 3360,
+   "placement": {
+    "position": "here",
+    "span": "column",
+    "width": 0.2,
+    "align": "center"
+   },
+   "caption": "كعب الكتاب",
+   "altText": ""
   }
  ],
  "fonts": [
@@ -8303,5 +8839,6 @@
     }
    ]
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }

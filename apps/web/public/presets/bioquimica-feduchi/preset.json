@@ -905,6 +905,375 @@
      "value": 0,
      "unit": "pt"
     }
+   },
+   {
+    "id": "cover-spine",
+    "name": "Cubierta: lomo",
+    "fontFamily": "Optima 110",
+    "fontSize": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-title",
+    "name": "Cubierta: título",
+    "fontFamily": "Optima 105",
+    "fontSize": {
+     "value": 64,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 66,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-subtitle",
+    "name": "Cubierta: subtítulo",
+    "fontFamily": "Optima 105",
+    "fontSize": {
+     "value": 20,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 24,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-chapter",
+    "name": "Cubierta: capítulo",
+    "fontFamily": "Optima 110",
+    "fontSize": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 18,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-author",
+    "name": "Cubierta: autores",
+    "fontFamily": "Optima 105",
+    "fontSize": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-publisher",
+    "name": "Cubierta: editorial",
+    "fontFamily": "Optima 110",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 6,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-back-head",
+    "name": "Cubierta: contra, título",
+    "fontFamily": "Optima 105",
+    "fontSize": {
+     "value": 21,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 25,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginBottom": {
+     "value": 14,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-blurb",
+    "name": "Cubierta: texto",
+    "fontFamily": "Adobe Garamond Pro",
+    "fontSize": {
+     "value": 13.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 8,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-part",
+    "name": "Cubierta: parte",
+    "fontFamily": "Optima 110",
+    "fontSize": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 15,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#f36f21",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#f36f21",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#f36f21",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "marginTop": {
+     "value": 26,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 8,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-list",
+    "name": "Cubierta: capítulos",
+    "fontFamily": "Optima 105",
+    "fontSize": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 18,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-sample",
+    "name": "Cubierta: muestra",
+    "fontFamily": "Optima 105",
+    "fontSize": {
+     "value": 8,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#074ea2",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
    }
   ],
   "headingStyles": [
@@ -22472,7 +22841,7 @@
     "grammage": 90
    },
    "binding": {
-    "type": "saddleStitch",
+    "type": "paperback",
     "coverColor": {
      "hex": "#263471",
      "model": "hex",
@@ -22499,6 +22868,164 @@
   },
   "crossRefs": {
    "breakLabels": false
+  },
+  "production": {
+   "bindings": [
+    {
+     "id": "digital-pur",
+     "name": "Encolado PUR de impresión digital",
+     "style": "perfect",
+     "accepts": {
+      "spine": {
+       "min": 1.2
+      }
+     }
+    }
+   ],
+   "versions": [
+    {
+     "id": "paperback",
+     "name": "Rústica",
+     "binding": "digital-pur",
+     "spineText": {
+      "minSpine": 1
+     }
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#ffffff",
+    "model": "hex"
+   },
+   "zones": {
+    "spine": {
+     "hex": "#263471",
+     "model": "hex"
+    },
+    "back": {
+     "hex": "#e0e2ee",
+     "model": "hex"
+    }
+   },
+   "elements": [
+    {
+     "id": "band",
+     "kind": "box",
+     "zone": "front",
+     "x": 0,
+     "y": -3,
+     "width": 213.0,
+     "height": 26,
+     "color": {
+      "hex": "#35b4e7",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "back-band",
+     "kind": "box",
+     "zone": "back",
+     "x": -3,
+     "y": -3,
+     "width": 213.0,
+     "height": 26,
+     "color": {
+      "hex": "#35b4e7",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "spine-band",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": -3,
+     "width": 0,
+     "height": 26,
+     "color": {
+      "hex": "#35b4e7",
+      "model": "hex"
+     },
+     "to": {
+      "zone": "front",
+      "x": 0
+     }
+    },
+    {
+     "id": "illustration",
+     "kind": "image",
+     "zone": "front",
+     "x": 109.2,
+     "y": 92,
+     "width": 103.8,
+     "height": 150.0,
+     "resourceId": "illustration-01",
+     "fit": "contain"
+    }
+   ],
+   "textBoxes": [
+    {
+     "name": "masthead",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 160,
+      "height": 70
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top-left",
+      "x": 10,
+      "y": 30
+     }
+    },
+    {
+     "name": "authors",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 120,
+      "height": 30
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "bottom-left",
+      "x": 10,
+      "y": -6
+     }
+    },
+    {
+     "name": "back-text",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 150,
+      "height": 150
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "top-left",
+      "x": 10,
+      "y": 30
+     }
+    },
+    {
+     "name": "back-foot",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 150,
+      "height": 12
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "bottom-left",
+      "x": 10,
+      "y": -6
+     }
+    }
+   ]
   }
  },
  "localized": {
@@ -23651,7 +24178,31 @@
       ]
      }
     },
-    "locale": "en-us"
+    "locale": "en-us",
+    "production": {
+     "bindings": [
+      {
+       "id": "digital-pur",
+       "name": "Digital print, PUR binding",
+       "style": "perfect",
+       "accepts": {
+        "spine": {
+         "min": 1.2
+        }
+       }
+      }
+     ],
+     "versions": [
+      {
+       "id": "paperback",
+       "name": "Paperback",
+       "binding": "digital-pur",
+       "spineText": {
+        "minSpine": 1
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
@@ -23970,7 +24521,8 @@
      "id": "strip-resources",
      "file": "resources/en/strip-resources.svg"
     }
-   ]
+   ],
+   "coverMarkdown": "cover/en.md"
   }
  },
  "resources": [
@@ -25324,5 +25876,6 @@
    ],
    "redistributable": false
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }

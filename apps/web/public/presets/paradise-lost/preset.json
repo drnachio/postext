@@ -1406,6 +1406,327 @@
      "value": 5,
      "unit": "pt"
     }
+   },
+   {
+    "id": "cover-title",
+    "name": "Cover: title",
+    "fontFamily": "IM Fell English",
+    "fontSize": {
+     "value": 30,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 32,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.5,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-author",
+    "name": "Cover: author",
+    "fontFamily": "IM Fell English SC",
+    "fontSize": {
+     "value": 12.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 15,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 2,
+     "unit": "pt"
+    },
+    "marginTop": {
+     "value": 12,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-subtitle",
+    "name": "Cover: edition",
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "italic": true,
+    "marginTop": {
+     "value": 14,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-spine",
+    "name": "Cover: spine",
+    "fontFamily": "IM Fell English",
+    "fontSize": {
+     "value": 15,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.2,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-quote",
+    "name": "Cover: quotation",
+    "fontFamily": "IM Fell English",
+    "fontSize": {
+     "value": 11.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "italic": true,
+    "marginBottom": {
+     "value": 12,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-blurb",
+    "name": "Cover: blurb",
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 9.2,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13.3,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-imprint",
+    "name": "Cover: imprint",
+    "fontFamily": "IM Fell English SC",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.2,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-flap",
+    "name": "Cover: flap",
+    "fontFamily": "EB Garamond",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#efe6d2",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "spaceBetween": {
+     "value": 5,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-flap-head",
+    "name": "Cover: flap heading",
+    "fontFamily": "IM Fell English SC",
+    "fontSize": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#c9a96a",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.2,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 6,
+     "unit": "pt"
+    }
    }
   ],
   "footnotes": {
@@ -1883,6 +2204,313 @@
     "environment": "overcast",
     "intensity": 1.0,
     "shadows": true
+   }
+  },
+  "production": {
+   "versions": [
+    {
+     "id": "hardcover",
+     "name": "Cloth, in a dust jacket",
+     "binding": "case-flat",
+     "caseMaterial": "cloth",
+     "flaps": true
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#17151a",
+    "model": "hex"
+   },
+   "verticalAlign": {
+    "front": "top",
+    "back": "top",
+    "flapFront": "top",
+    "flapBack": "top"
+   },
+   "elements": [
+    {
+     "id": "front-frame",
+     "kind": "box",
+     "zone": "front",
+     "x": 23.8,
+     "y": 21.8,
+     "width": 104.4,
+     "height": 130.6,
+     "color": {
+      "hex": "#c9a96a",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "front-plate",
+     "kind": "image",
+     "zone": "front",
+     "x": 26.0,
+     "y": 24,
+     "width": 100.0,
+     "height": 126.2,
+     "resourceId": "plate-01-cover",
+     "fit": "cover"
+    },
+    {
+     "id": "back-frame",
+     "kind": "box",
+     "zone": "back",
+     "x": 41.8,
+     "y": 27.8,
+     "width": 68.4,
+     "height": 83.8,
+     "color": {
+      "hex": "#c9a96a",
+      "model": "hex"
+     }
+    },
+    {
+     "id": "back-plate",
+     "kind": "image",
+     "zone": "back",
+     "x": 44.0,
+     "y": 30,
+     "width": 64.0,
+     "height": 79.4,
+     "resourceId": "plate-50-cover",
+     "fit": "cover"
+    },
+    {
+     "id": "j-rule-0",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": 14,
+     "width": 0,
+     "height": 1.1,
+     "color": {
+      "hex": "#c9a96a",
+      "model": "hex"
+     },
+     "to": {
+      "zone": "front",
+      "x": 0
+     }
+    },
+    {
+     "id": "j-rule-1",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": 16.2,
+     "width": 0,
+     "height": 0.5,
+     "color": {
+      "hex": "#c9a96a",
+      "model": "hex"
+     },
+     "to": {
+      "zone": "front",
+      "x": 0
+     }
+    },
+    {
+     "id": "j-rule-2",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": 223.3,
+     "width": 0,
+     "height": 0.5,
+     "color": {
+      "hex": "#c9a96a",
+      "model": "hex"
+     },
+     "to": {
+      "zone": "front",
+      "x": 0
+     }
+    },
+    {
+     "id": "j-rule-3",
+     "kind": "box",
+     "zone": "spine",
+     "x": 0,
+     "y": 225.0,
+     "width": 0,
+     "height": 1.1,
+     "color": {
+      "hex": "#c9a96a",
+      "model": "hex"
+     },
+     "to": {
+      "zone": "front",
+      "x": 0
+     }
+    }
+   ],
+   "textBoxes": [
+    {
+     "name": "title",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 120,
+      "height": 40
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top",
+      "x": 0,
+      "y": 154.2
+     }
+    },
+    {
+     "name": "quote",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 106,
+      "height": 40
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "top",
+      "x": 0,
+      "y": 113.4
+     },
+     "maxHeight": 60
+    },
+    {
+     "name": "imprint",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 106,
+      "height": 8
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "bottom",
+      "x": 0,
+      "y": -14
+     }
+    }
+   ],
+   "sheets": {
+    "case": {
+     "background": {
+      "hex": "#17151a",
+      "model": "hex"
+     },
+     "elements": [
+      {
+       "id": "c-rule-0",
+       "kind": "box",
+       "zone": "spine",
+       "x": 0,
+       "y": 14,
+       "width": 0,
+       "height": 1.1,
+       "color": {
+        "hex": "#c9a96a",
+        "model": "hex"
+       },
+       "to": {
+        "zone": "jointFront",
+        "x": 0
+       }
+      },
+      {
+       "id": "c-rule-1",
+       "kind": "box",
+       "zone": "spine",
+       "x": 0,
+       "y": 16.2,
+       "width": 0,
+       "height": 0.5,
+       "color": {
+        "hex": "#c9a96a",
+        "model": "hex"
+       },
+       "to": {
+        "zone": "jointFront",
+        "x": 0
+       }
+      },
+      {
+       "id": "c-rule-2",
+       "kind": "box",
+       "zone": "spine",
+       "x": 0,
+       "y": 223.3,
+       "width": 0,
+       "height": 0.5,
+       "color": {
+        "hex": "#c9a96a",
+        "model": "hex"
+       },
+       "to": {
+        "zone": "jointFront",
+        "x": 0
+       }
+      },
+      {
+       "id": "c-rule-3",
+       "kind": "box",
+       "zone": "spine",
+       "x": 0,
+       "y": 225.0,
+       "width": 0,
+       "height": 1.1,
+       "color": {
+        "hex": "#c9a96a",
+        "model": "hex"
+       },
+       "to": {
+        "zone": "jointFront",
+        "x": 0
+       }
+      }
+     ],
+     "finishes": [
+      {
+       "id": "foil-0",
+       "process": "foil",
+       "sheen": "gloss",
+       "shape": {
+        "element": "c-rule-0"
+       }
+      },
+      {
+       "id": "foil-1",
+       "process": "foil",
+       "sheen": "gloss",
+       "shape": {
+        "element": "c-rule-1"
+       }
+      },
+      {
+       "id": "foil-2",
+       "process": "foil",
+       "sheen": "gloss",
+       "shape": {
+        "element": "c-rule-2"
+       }
+      },
+      {
+       "id": "foil-3",
+       "process": "foil",
+       "sheen": "gloss",
+       "shape": {
+        "element": "c-rule-3"
+       }
+      }
+     ]
+    },
+    "endpapers": {
+     "background": {
+      "hex": "#efe6d2",
+      "model": "hex"
+     }
+    }
    }
   }
  },
@@ -2842,5 +3470,6 @@
     }
    ]
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }

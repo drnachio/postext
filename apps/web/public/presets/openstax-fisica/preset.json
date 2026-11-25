@@ -2494,6 +2494,367 @@
      "model": "hex",
      "paletteId": "muted"
     }
+   },
+   {
+    "id": "cover-series",
+    "name": "Cubierta: colección",
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 9,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "letterSpacing": {
+     "value": 2.4,
+     "unit": "pt"
+    },
+    "textTransform": "uppercase"
+   },
+   {
+    "id": "cover-title",
+    "name": "Cubierta: título",
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 46,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 50,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "marginTop": {
+     "value": 8,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-subtitle",
+    "name": "Cubierta: subtítulo",
+    "fontFamily": "Source Serif 4",
+    "fontSize": {
+     "value": 13,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "italic": true,
+    "marginTop": {
+     "value": 14,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-publisher",
+    "name": "Cubierta: editor",
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 7.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 10,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "letterSpacing": {
+     "value": 1.4,
+     "unit": "pt"
+    },
+    "textTransform": "uppercase"
+   },
+   {
+    "id": "cover-back-title",
+    "name": "Cubierta: cabecera",
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 34,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 38,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "marginTop": {
+     "value": 8,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-back-subtitle",
+    "name": "Cubierta: subtítulo (contra)",
+    "fontFamily": "Source Serif 4",
+    "fontSize": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 16,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#e8f1f7",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "italic": true,
+    "marginTop": {
+     "value": 11,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-rule",
+    "name": "Cubierta: filete",
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 20,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 20,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#d9822b",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#d9822b",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#d9822b",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "marginTop": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "marginBottom": {
+     "value": 12,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-blurb",
+    "name": "Cubierta: texto",
+    "fontFamily": "Source Serif 4",
+    "fontSize": {
+     "value": 12,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 17,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    }
+   },
+   {
+    "id": "cover-site",
+    "name": "Cubierta: sitio",
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 11,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 14,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "left",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "marginBottom": {
+     "value": 8,
+     "unit": "pt"
+    }
+   },
+   {
+    "id": "cover-spine",
+    "name": "Cubierta: lomo",
+    "fontFamily": "Source Sans 3",
+    "fontSize": {
+     "value": 7.5,
+     "unit": "pt"
+    },
+    "lineHeight": {
+     "value": 7.5,
+     "unit": "pt"
+    },
+    "color": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "italicColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "boldColor": {
+     "hex": "#ffffff",
+     "model": "hex"
+    },
+    "textAlign": "center",
+    "hyphenation": false,
+    "firstLineIndent": {
+     "value": 0,
+     "unit": "mm"
+    },
+    "fontWeight": 700,
+    "letterSpacing": {
+     "value": 1.2,
+     "unit": "pt"
+    },
+    "textTransform": "uppercase"
    }
   ],
   "calloutStyles": [
@@ -3594,6 +3955,99 @@
   },
   "crossRefs": {
    "breakLabels": false
+  },
+  "production": {
+   "versions": [
+    {
+     "id": "paperback",
+     "name": "Rústica",
+     "binding": "perfect",
+     "spineText": {
+      "minSpine": 3.5
+     }
+    }
+   ]
+  },
+  "cover": {
+   "background": {
+    "hex": "#005a8c",
+    "model": "hex"
+   },
+   "elements": [
+    {
+     "id": "photo",
+     "kind": "image",
+     "zone": "front",
+     "x": 0,
+     "y": -3,
+     "width": 213.0,
+     "height": 163,
+     "resourceId": "es-1-cnx-uphysics-01-00-whirlpool",
+     "fit": "cover"
+    }
+   ],
+   "textBoxes": [
+    {
+     "name": "masthead",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 174,
+      "height": 90
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "top-left",
+      "x": 15,
+      "y": 165
+     }
+    },
+    {
+     "name": "publisher",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 174,
+      "height": 8
+     },
+     "anchor": {
+      "to": "front",
+      "edge": "bottom-left",
+      "x": 15,
+      "y": -9
+     }
+    },
+    {
+     "name": "back-head",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 150,
+      "height": 150
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "top-left",
+      "x": 11,
+      "y": 35
+     }
+    },
+    {
+     "name": "back-foot",
+     "rect": {
+      "x": 0,
+      "y": 0,
+      "width": 150,
+      "height": 16
+     },
+     "anchor": {
+      "to": "back",
+      "edge": "bottom-left",
+      "x": 11,
+      "y": -9
+     }
+    }
+   ]
   }
  },
  "localized": {
@@ -3669,7 +4123,19 @@
       }
      ]
     },
-    "locale": "en-us"
+    "locale": "en-us",
+    "production": {
+     "versions": [
+      {
+       "id": "paperback",
+       "name": "Paperback",
+       "binding": "perfect",
+       "spineText": {
+        "minSpine": 3.5
+       }
+      }
+     ]
+    }
    },
    "resources": [
     {
@@ -3678,7 +4144,8 @@
      "width": 60,
      "height": 3850
     }
-   ]
+   ],
+   "coverMarkdown": "cover/en.md"
   }
  },
  "resources": [
@@ -6743,5 +7210,6 @@
     }
    ]
   }
- ]
+ ],
+ "coverMarkdown": "cover.md"
 }
