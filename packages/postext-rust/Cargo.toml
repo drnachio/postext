@@ -5,7 +5,7 @@
 # follows the command line's: release.yml sets it with every release.
 [package]
 name = "postext"
-version = "1.98.3"
+version = "1.98.4"
 edition = "2024"
 rust-version = "1.88"
 description = "Typeset books from Rust with Postext: PDF, HTML, EPUB, page images, Word and InDesign from a .postext book or Markdown, through the self-contained postext command line."
