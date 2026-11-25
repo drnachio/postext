@@ -377,7 +377,8 @@
     "wordFiles": "Word, d’anada i tornada: envia un llibre a la correctora i recupera cada correcció, amb Postext",
     "indesign": "InDesign, entrada i sortida: importa, porta i exporta llibres d’InDesign amb Postext",
     "specialInks": "Tintes especials i troquels: estampació or, tinta blanca, vernís i forats troquelats amb Postext",
-    "videos": "Vídeos als llibres: un codi QR en paper, un reproductor en pantalla i una pel·lícula a la pàgina"
+    "videos": "Vídeos als llibres: un codi QR en paper, un reproductor en pantalla i una pel·lícula a la pàgina",
+    "printCovers": "Cobertes per a impremta a partir del llibre: el llom, de les pàgines; tapes, sobrecoberta i guardes"
   },
   "About": {
     "eyebrow": "Per què Postext",

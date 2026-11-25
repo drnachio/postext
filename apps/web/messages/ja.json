@@ -377,7 +377,8 @@
     "wordFiles": "Word、行きも帰りも：本を校正者に送り、すべての直しを元の場所へ戻す。Postext で",
     "indesign": "InDesign、取り込んで、書き出す：InDesign の本を Postext で読み込み、移植し、書き出す",
     "specialInks": "特殊インキと抜き加工：金箔押し、白インキ、ニス、抜き穴を Postext で",
-    "videos": "あなたの本に、動画を：紙には QR コード、画面にはプレーヤー、ページの上には映画。Postext で"
+    "videos": "あなたの本に、動画を：紙には QR コード、画面にはプレーヤー、ページの上には映画。Postext で",
+    "printCovers": "本から作る印刷用の表紙：背幅はページから、上製本の表紙・カバー・見返しまで。Postext で"
   },
   "About": {
     "eyebrow": "なぜPostextか",
