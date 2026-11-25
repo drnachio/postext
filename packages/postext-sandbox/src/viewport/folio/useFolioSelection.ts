@@ -8,7 +8,7 @@ import { toBookSelection } from '../../book/compose.js';
 import type { StitchedBook } from '../../book/stitch.js';
 import type { ComposedBook } from '../../book/types.js';
 import { findCaretBlockIdx } from '../canvas/CanvasPreview/caret.js';
-import { canvasGroundIsDark } from '../canvas/CanvasPreview/backdrop.js';
+import { canvasMarkTreatment, SHADE_FILL } from '../canvas/CanvasPreview/backdrop.js';
 import { createOverlaySvg } from '../canvas/CanvasPreview/dom.js';
 import { findResourceLocation } from '../canvas/CanvasPreview/geometry.js';
 import { attachPageInteraction, type PageInteraction } from '../canvas/CanvasPreview/interaction.js';
@@ -165,16 +165,17 @@ export function useFolioSelection({ viewerRef, docRef, stitchedRef, chapterDocsR
     }
     if (!rects?.length) return comic !== undefined || !!labelMarks?.length;
     // Over the print, as the canvas's overlay lies over its page.
-    // A mark on a dark ground is painted again, lightening: a darkening
-    // blend shows nothing there (#1712). Read before anything is painted.
-    const dark = rects.map((r) => canvasGroundIsDark(ctx, r.x, r.y, r.w, r.h, r.matrix));
-    for (const blend of ['multiply', 'screen'] as const) {
-      ctx.globalCompositeOperation = blend;
+    // A mark whose tint does not show on its ground is painted again:
+    // lightening on a dark one, as a shade on one of the tint's hue
+    // (#1712, #1716). Read before anything is painted.
+    const treated = rects.map((r) => canvasMarkTreatment(ctx, r.x, r.y, r.w, r.h, r.fill, r.matrix));
+    for (const pass of ['none', 'screen', 'shade'] as const) {
+      ctx.globalCompositeOperation = pass === 'screen' ? 'screen' : 'multiply';
       rects.forEach((r, i) => {
-        if (blend === 'screen' && !dark[i]) return;
+        if (pass !== 'none' && treated[i] !== pass) return;
         ctx.save();
         if (r.matrix) ctx.transform(...r.matrix);
-        ctx.fillStyle = r.fill;
+        ctx.fillStyle = pass === 'shade' ? SHADE_FILL : r.fill;
         ctx.fillRect(r.x, r.y, r.w, r.h);
         ctx.restore();
       });

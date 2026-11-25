@@ -5,7 +5,7 @@ import type { ResourceSelection } from '../../../context/SandboxContext.js';
 import { getSvgTextIndex } from '../../../controls/media/svgTextIndex.js';
 import { svgSourceOffsetToCaret, svgSourceRangeToBoxes, type SvgCharBox } from '../../../controls/media/svgSource.js';
 import { SVG_NS } from './dom.js';
-import { lineEndSpaceAdvance, plainRangeInLine, sourceToPlainIndex, xForPlainInLine } from './geometry.js';
+import { lineEndSpaceAdvance, spaceWidth, plainRangeInLine, sourceToPlainIndex, xForPlainInLine } from './geometry.js';
 import { bandLineBoxes, bandPrefixX, bandSourceToPlain, bandTitleBlocks, bandTitleOwner, isHiddenUnderBand } from './bandTitle.js';
 import { blockFrameMatrix, type FrameAffine } from '../../composed/frameHit.js';
 import { glyphMarks } from './glyphMarks.js';
@@ -372,7 +372,10 @@ function drawOverlayMarks(
     const box = boxes.find((b) => plainCaret >= b.plainStart && plainCaret <= b.plainStart + b.text.length)
       ?? boxes[boxes.length - 1];
     if (box) {
-      const x = bandPrefixX(box, plainCaret - box.plainStart);
+      let x = bandPrefixX(box, plainCaret - box.plainStart);
+      // Past the spaces typed at the title's end, which the layout drops (#1717).
+      const titleSpaces = selection.spacesBefore ?? 0;
+      if (titleSpaces > 0 && box === boxes[boxes.length - 1] && plainCaret >= box.plainStart + box.text.length && head >= bandCaretBlock.sourceEnd!) x += titleSpaces * spaceWidth(box.font, box.height * 0.2);
       cursorRect.setAttribute('x', String(x - 1.5));
       cursorRect.setAttribute('y', String(box.y));
       cursorRect.setAttribute('width', '3');
