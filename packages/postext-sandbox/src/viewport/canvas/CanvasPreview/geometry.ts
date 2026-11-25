@@ -265,3 +265,32 @@ export function pixelToSourceOffset(
   if (mapIdx >= hitBlock.sourceMap.length) return hitBlock.sourceEnd ?? null;
   return hitBlock.sourceMap[mapIdx] ?? null;
 }
+
+let spaceMeasurer: CanvasRenderingContext2D | null | undefined;
+
+/**
+ * The advance of one space at the end of a line, signed along the flow
+ * frame's x: in the font of the line's last text, leftwards when that text
+ * runs right to left. For a caret that stands past spaces the layout
+ * dropped (the ones that end a paragraph, #1714).
+ */
+export function lineEndSpaceAdvance(
+  block: VDTDocument['blocks'][number],
+  line: VDTDocument['blocks'][number]['lines'][number],
+  mirrored = false,
+): number {
+  const placed = placeLineSegments(block, line, mirrored);
+  let last = placed?.[placed.length - 1];
+  for (const p of placed ?? []) if (p.plainLen > 0) last = p;
+  const font = (last?.seg as { fontString?: string } | undefined)?.fontString ?? block.fontString;
+  let width = line.bbox.height * 0.2;
+  if (typeof document !== 'undefined') {
+    if (spaceMeasurer === undefined) spaceMeasurer = document.createElement('canvas').getContext('2d');
+    if (spaceMeasurer && font) {
+      spaceMeasurer.font = font;
+      const measured = spaceMeasurer.measureText(' ').width;
+      if (measured > 0) width = measured;
+    }
+  }
+  return (last ? last.reversed : mirrored) ? -width : width;
+}

@@ -122,3 +122,21 @@ describe('a selection one edit ahead of the laid-out text (#1711)', () => {
     expect(toBookSelection(book, 'b', { from: 3, to: 3, head: 3 }, b.markdown)!.head).toBe(book.segments[1]!.start + 3);
   });
 });
+
+describe('the spaces before a caret (#1714)', () => {
+  const book = composeBook(chapters);
+  it('are counted in the editor\'s text, for a collapsed selection', () => {
+    const typed = `${b.markdown}  `;
+    const at = typed.length;
+    const sel = toBookSelection(book, 'b', { from: at, to: at, head: at }, typed)!;
+    expect(sel.spacesBefore).toBe(2);
+    // The caret itself stays at the end of the laid-out text.
+    expect(sel.head).toBe(book.segments[1]!.end);
+  });
+  it('are left out after a letter, and for a range', () => {
+    const at = b.markdown.length;
+    expect(toBookSelection(book, 'b', { from: at, to: at, head: at }, b.markdown)!.spacesBefore).toBeUndefined();
+    const typed = `${b.markdown} `;
+    expect(toBookSelection(book, 'b', { from: 2, to: typed.length, head: typed.length }, typed)!.spacesBefore).toBeUndefined();
+  });
+});
