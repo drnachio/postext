@@ -114,8 +114,9 @@ function marksOf(svg: SVGSVGElement): { selection: SVGGElement | null; cursor: S
 
 /** The layer of lightening copies beside an overlay. */
 export function lightLayerOf(svg: SVGSVGElement): SVGSVGElement | null {
-  const next = svg.nextElementSibling;
-  return next instanceof SVGSVGElement && next.dataset.role === 'overlay-light' ? next : null;
+  // Read by its name: an overlay may be drawn where there is no page.
+  const next = svg.nextElementSibling as (Element & { dataset?: DOMStringMap }) | null | undefined;
+  return next && next.tagName?.toLowerCase() === 'svg' && next.dataset?.role === 'overlay-light' ? (next as SVGSVGElement) : null;
 }
 
 function ensureLightLayer(svg: SVGSVGElement): SVGSVGElement {
