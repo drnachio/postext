@@ -272,6 +272,18 @@ export const YOUTUBE_VIDEOS = {
     de: { id: "QMO6KU1VyQ4", duration: "4:27" },
     it: { id: "zPR_kTn9qoE", duration: "4:13" },
   },
+  printCovers: {
+    en: { id: "FFNnaWQPUVY", duration: "4:21" },
+    es: { id: "G8Z2ZksKXU4", duration: "4:21" },
+    ca: { id: "lWjb9A2M2iU", duration: "4:15" },
+    zh: { id: "k5lqqxZXQZA", duration: "4:18" },
+    ja: { id: "OCRE8Jf1NPs", duration: "5:07" },
+    ar: { id: "FPcfd_8Qw-g", duration: "4:57" },
+    pt: { id: "xRzXG3fORnY", duration: "4:27" },
+    fr: { id: "VmzFgbMzvfg", duration: "4:08" },
+    de: { id: "sYIetdRYi54", duration: "4:33" },
+    it: { id: "UNVpOpee7Kg", duration: "4:19" },
+  },
 } as const;
 
 export type YouTubeFilm = keyof typeof YOUTUBE_VIDEOS;

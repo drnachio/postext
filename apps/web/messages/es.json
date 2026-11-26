@@ -377,7 +377,8 @@
     "wordFiles": "Word, ida y vuelta: el libro va a la correctora y cada corrección vuelve a su sitio, con Postext",
     "indesign": "InDesign, entrar y salir: importar, portar y exportar libros de InDesign con Postext",
     "specialInks": "Tintas especiales y troqueles: estampación oro, tinta blanca, barniz y huecos con Postext",
-    "videos": "Vídeos en tus libros: QR en papel, reproductor en pantalla y película en la página, con Postext"
+    "videos": "Vídeos en tus libros: QR en papel, reproductor en pantalla y película en la página, con Postext",
+    "printCovers": "Cubiertas para imprenta desde el libro: el lomo, de las páginas; tapas, sobrecubierta y guardas"
   },
   "About": {
     "eyebrow": "Por qué Postext",

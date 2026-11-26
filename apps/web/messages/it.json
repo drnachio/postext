@@ -377,7 +377,8 @@
     "wordFiles": "Word, andata e ritorno: manda un libro alla redattrice e riporta ogni correzione, con Postext",
     "indesign": "InDesign, in entrata e in uscita: importare, portare ed esportare libri InDesign con Postext",
     "specialInks": "Inchiostri speciali e fustelle: lamina oro, bianco, vernice e fori fustellati con Postext",
-    "videos": "Video nei tuoi libri: codice QR su carta, lettore sullo schermo e film sulla pagina, con Postext"
+    "videos": "Video nei tuoi libri: codice QR su carta, lettore sullo schermo e film sulla pagina, con Postext",
+    "printCovers": "Copertine per la stampa: il dorso dalle pagine, coperta, sovraccoperta e risguardi, con Postext"
   },
   "About": {
     "eyebrow": "Perché Postext",

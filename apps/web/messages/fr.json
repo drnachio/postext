@@ -377,7 +377,8 @@
     "wordFiles": "Word, dans les deux sens : un livre envoyé en correction, chaque correction reportée, avec Postext",
     "indesign": "InDesign, aller et retour : importer, porter et exporter des livres InDesign avec Postext",
     "specialInks": "Encres spéciales et découpes : dorure or, blanc, vernis et trous découpés avec Postext",
-    "videos": "Des vidéos dans vos livres : QR code sur papier, lecteur à l’écran, film sur la page, avec Postext"
+    "videos": "Des vidéos dans vos livres : QR code sur papier, lecteur à l’écran, film sur la page, avec Postext",
+    "printCovers": "Couvertures imprimées tirées du livre : le dos d’après les pages, jaquette et gardes, avec Postext"
   },
   "About": {
     "eyebrow": "Pourquoi Postext",

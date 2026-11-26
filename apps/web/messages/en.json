@@ -377,7 +377,8 @@
     "wordFiles": "Word, both ways: send a book to the copy editor and bring every correction back, with Postext",
     "indesign": "InDesign, in and out: import, port and export InDesign books with Postext",
     "specialInks": "Special inks and die-cuts: gold foil, white ink, varnish and die-cut holes with Postext",
-    "videos": "Videos in your books: a QR code on paper, a player on screen and a film on the page, with Postext"
+    "videos": "Videos in your books: a QR code on paper, a player on screen and a film on the page, with Postext",
+    "printCovers": "Print covers from the book: the spine from the pages, case, jacket and endpapers, with Postext"
   },
   "About": {
     "eyebrow": "Why Postext",

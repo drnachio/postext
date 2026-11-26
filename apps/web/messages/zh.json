@@ -377,7 +377,8 @@
     "wordFiles": "Word，双向往来：用 Postext 把书交给编辑，再把每一处校改带回书中",
     "indesign": "InDesign，进得来，出得去：用 Postext 导入、移植和导出 InDesign 书",
     "specialInks": "特种油墨与模切：用 Postext 做烫金、白墨、上光油和模切孔",
-    "videos": "书中的视频：用 Postext 在纸上印二维码，在屏幕上放播放器，在页面上播放影片"
+    "videos": "书中的视频：用 Postext 在纸上印二维码，在屏幕上放播放器，在页面上播放影片",
+    "printCovers": "用书本身做印刷封面：书脊由页数算出，精装书的封壳、护封和环衬，用 Postext 完成"
   },
   "About": {
     "eyebrow": "为什么选择Postext",

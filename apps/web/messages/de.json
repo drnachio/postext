@@ -377,7 +377,8 @@
     "wordFiles": "Word, in beide Richtungen: das Buch zur Lektorin, jede Korrektur zurück ins Buch, mit Postext",
     "indesign": "InDesign, hinein und hinaus: InDesign-Bücher mit Postext importieren, portieren und exportieren",
     "specialInks": "Spezialfarben und Stanzungen: Heißfolie, Deckweiß, Lack und gestanzte Löcher mit Postext",
-    "videos": "Videos in Ihren Büchern: QR-Code auf Papier, Player am Bildschirm, Film auf der Seite, mit Postext"
+    "videos": "Videos in Ihren Büchern: QR-Code auf Papier, Player am Bildschirm, Film auf der Seite, mit Postext",
+    "printCovers": "Umschläge für den Druck: der Rücken aus den Seiten, Bezug, Schutzumschlag und Vorsätze, mit Postext"
   },
   "About": {
     "eyebrow": "Warum Postext",
