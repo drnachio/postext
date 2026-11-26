@@ -5332,6 +5332,7 @@ export interface SandboxLabels {
   pageTemplatesReshapeRepeated: string;
   pageTemplatesReshapeNotLattice: string;
   pageTemplatesReshapeWidths: string;
+  pageTemplatesReshapeHeights: string;
   pageTemplatesReshapeMembers: string;
   pageTemplatesReshapeSplitsGrid: string;
   pageTemplatesReshapeHasModules: string;

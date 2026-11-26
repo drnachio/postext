@@ -5165,6 +5165,7 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     pageTemplatesReshapeRepeated: t("pageTemplatesReshapeRepeated"),
     pageTemplatesReshapeNotLattice: t("pageTemplatesReshapeNotLattice"),
     pageTemplatesReshapeWidths: t("pageTemplatesReshapeWidths"),
+    pageTemplatesReshapeHeights: t("pageTemplatesReshapeHeights"),
     pageTemplatesReshapeMembers: t("pageTemplatesReshapeMembers"),
     pageTemplatesReshapeSplitsGrid: t("pageTemplatesReshapeSplitsGrid"),
     pageTemplatesReshapeHasModules: t("pageTemplatesReshapeHasModules"),

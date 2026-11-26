@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "Estos marcos ya los repite una rejilla: __frames__",
     "pageTemplatesReshapeNotLattice": "Las tarjetas no están en una misma rejilla: columnas iguales separadas por un mismo espacio, filas completas salvo la última y separadas por un mismo espacio.",
     "pageTemplatesReshapeWidths": "Las tarjetas no tienen todas el mismo ancho: __frames__",
+    "pageTemplatesReshapeHeights": "Las tarjetas no tienen todas la misma altura y una altura fija cortaría las más altas: __frames__",
     "pageTemplatesReshapeMembers": "Las tarjetas no tienen todas los mismos marcos colgados (un pie bajo cada una, por ejemplo): __frames__",
     "pageTemplatesReshapeSplitsGrid": "Elige todos los marcos de la rejilla o ninguno: __frames__",
     "pageTemplatesReshapeHasModules": "Esta plantilla ya tiene un grupo de módulos: pasa estos marcos a un módulo a mano.",

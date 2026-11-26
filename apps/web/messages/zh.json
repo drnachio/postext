@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "这些框已由网格重复：__frames__",
     "pageTemplatesReshapeNotLattice": "这些卡片不在同一个网格上：各列等宽、间距相同，除最后一行外各行排满，行间距相同。",
     "pageTemplatesReshapeWidths": "这些卡片宽度不一：__frames__",
+    "pageTemplatesReshapeHeights": "这些卡片高度不一，固定高度会截掉较高卡片的内容：__frames__",
     "pageTemplatesReshapeMembers": "这些卡片附带的框不尽相同（例如每张下面一条题注）：__frames__",
     "pageTemplatesReshapeSplitsGrid": "要么选中网格的全部框，要么一个都不选：__frames__",
     "pageTemplatesReshapeHasModules": "这个模板已有模块组：请手动把这些框移进模块。",

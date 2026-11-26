@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "These frames are already repeated by a grid: __frames__",
     "pageTemplatesReshapeNotLattice": "The cards do not stand on one grid: equal columns one gap apart, full rows but the last, the rows one gap apart.",
     "pageTemplatesReshapeWidths": "The cards are not all as wide: __frames__",
+    "pageTemplatesReshapeHeights": "The cards are not all as tall, and a set height would cut the taller ones: __frames__",
     "pageTemplatesReshapeMembers": "The cards do not all have the same frames hanging from them (a caption under each, for instance): __frames__",
     "pageTemplatesReshapeSplitsGrid": "Pick every frame of the grid, or none: __frames__",
     "pageTemplatesReshapeHasModules": "This template already has a modules group: move these frames into a module by hand.",

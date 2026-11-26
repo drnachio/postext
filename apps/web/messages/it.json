@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "Queste cornici sono già ripetute da una griglia: __frames__",
     "pageTemplatesReshapeNotLattice": "Le schede non stanno su una stessa griglia: colonne uguali separate da uno stesso spazio, righe complete tranne l’ultima, separate da uno stesso spazio.",
     "pageTemplatesReshapeWidths": "Le schede non sono tutte larghe uguali: __frames__",
+    "pageTemplatesReshapeHeights": "Le schede non sono tutte alte uguali e un’altezza fissa taglierebbe quelle più alte: __frames__",
     "pageTemplatesReshapeMembers": "Le schede non hanno tutte le stesse cornici agganciate (una didascalia sotto ciascuna, per esempio): __frames__",
     "pageTemplatesReshapeSplitsGrid": "Scegli tutte le cornici della griglia, o nessuna: __frames__",
     "pageTemplatesReshapeHasModules": "Questo modello ha già un gruppo dei moduli: sposta queste cornici in un modulo a mano.",

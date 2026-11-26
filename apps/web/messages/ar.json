@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "هذه الإطارات تكرّرها شبكة أصلًا: ⁦__frames__⁩",
     "pageTemplatesReshapeNotLattice": "البطاقات ليست على شبكة واحدة: أعمدة متساوية بينها مسافة واحدة، وصفوف كاملة إلا الأخير، وبين الصفوف مسافة واحدة.",
     "pageTemplatesReshapeWidths": "البطاقات ليست كلها بعرض واحد: ⁦__frames__⁩",
+    "pageTemplatesReshapeHeights": "البطاقات ليست كلها بارتفاع واحد، والارتفاع الثابت سيقطع الأطول منها: ⁦__frames__⁩",
     "pageTemplatesReshapeMembers": "لا تتعلّق بالبطاقات كلها الإطارات نفسها (تعليق تحت كل بطاقة مثلًا): ⁦__frames__⁩",
     "pageTemplatesReshapeSplitsGrid": "اختر كل إطارات الشبكة أو لا شيء منها: ⁦__frames__⁩",
     "pageTemplatesReshapeHasModules": "لهذا القالب مجموعة وحدات أصلًا: انقل هذه الإطارات إلى وحدة يدويًا.",

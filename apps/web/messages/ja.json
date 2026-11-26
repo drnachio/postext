@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "これらの枠はすでにグリッドで繰り返されています：__frames__",
     "pageTemplatesReshapeNotLattice": "カードが1つのグリッドに並んでいません。同じ幅の列が同じ間隔で並び、最後の行以外はすべて埋まり、行も同じ間隔で並ぶ必要があります。",
     "pageTemplatesReshapeWidths": "カードの幅がそろっていません：__frames__",
+    "pageTemplatesReshapeHeights": "カードの高さがそろっておらず、固定の高さでは高いカードの内容が切れてしまいます：__frames__",
     "pageTemplatesReshapeMembers": "カードに付いている枠がそろっていません（たとえば各カードの下のキャプション）：__frames__",
     "pageTemplatesReshapeSplitsGrid": "グリッドの枠はすべて選ぶか、1つも選ばないでください：__frames__",
     "pageTemplatesReshapeHasModules": "このテンプレートにはすでにモジュールグループがあります。これらの枠は手作業でモジュールに移してください。",

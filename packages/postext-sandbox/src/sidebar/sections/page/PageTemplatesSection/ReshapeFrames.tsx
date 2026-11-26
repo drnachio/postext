@@ -25,6 +25,7 @@ export function reshapeRefusal(labels: SandboxLabels, reason: GridRefusal | Extr
     repeated: labels.pageTemplatesReshapeRepeated,
     notLattice: labels.pageTemplatesReshapeNotLattice,
     widths: labels.pageTemplatesReshapeWidths,
+    heights: labels.pageTemplatesReshapeHeights,
     members: labels.pageTemplatesReshapeMembers,
     splitsGrid: labels.pageTemplatesReshapeSplitsGrid,
     hasModules: labels.pageTemplatesReshapeHasModules,
