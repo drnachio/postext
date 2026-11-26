@@ -1,7 +1,7 @@
 // renderPage and paintPage: one page of the document painted, its
 // blocks, decorations, rules and print pass (#1276: split out of
 // pdf-backend/index.ts).
-import { PDFDocument, BlendMode } from 'pdf-lib';
+import { PDFDocument, PDFName, BlendMode } from 'pdf-lib';
 import { shapingLanguageOf, type VDTPage, type VDTDocument, dimensionToPx, comicPaintsUnderText, verticalFlowOf, computePageTextExtent, cjkGridCells, pageColumnRule, type VDTBlock, columnClipRect, composedFrameBlockIds, composedSheetClipOnSheet, decorationUnder, decorationOver, comicBlockOnSheet, comicHoldsText } from 'postext';
 import type { ColorMode } from '../../print/colorMode.js';
 import { FontCache } from '../../fontCache.js';
@@ -365,6 +365,17 @@ function paintPage(
   // Crop marks remain un-inverted (drawn afterwards).
   tagArtifact(ctx, { type: 'Page' });
   if (pageNegative) {
+    // The page's own transparency group (#1722): renderers that see no
+    // `/Group` on the page (Poppler, PDFKit) may leave the Difference fill
+    // unblended. A non-isolated, non-knockout group in the PDF's own
+    // colour space blends it with the opaque white ground and the art.
+    page.node.set(PDFName.of('Group'), pdfDoc.context.obj({
+      Type: 'Group',
+      S: 'Transparency',
+      CS: colorSpace === 'grayscale' ? 'DeviceGray' : colorSpace === 'rgb' ? 'DeviceRGB' : 'DeviceCMYK',
+      I: false,
+      K: false,
+    }));
     const invX = trimOff - bleedPx;
     const invY = trimOff - bleedPx;
     const invW = vdtPage.width - (trimOff - bleedPx) * 2;
