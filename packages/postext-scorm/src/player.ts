@@ -411,8 +411,13 @@ function scormPlayer(): void {
   function paint(): void {
     prev.disabled = at <= 0;
     next.disabled = at >= data.docs.length - 1;
+    // Two numbers of one kind (#1721): a printed page's folio over the
+    // unit's last folio, or a section's place over the count of sections
+    // (a reflowable doc's label is the page its section starts on).
+    const n = fixed && data.docs[at] ? data.docs[at]!.label : String(at + 1);
+    const total = fixed ? data.docs[data.docs.length - 1]!.label : String(data.docs.length);
     where.textContent = data.docs.length > 1
-      ? String(words.position).replace('{n}', data.docs[at] ? data.docs[at]!.label : String(at + 1)).replace('{total}', String(fixed ? data.docs[data.docs.length - 1]!.label : data.docs.length))
+      ? String(words.position).replace('{n}', n).replace('{total}', total)
       : '';
     if (at >= 0) {
       set(K.location, String(at));
