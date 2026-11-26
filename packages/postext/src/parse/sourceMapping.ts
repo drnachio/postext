@@ -3,6 +3,7 @@ import { MATH_PLACEHOLDER } from './inlineMath.js';
 import { GAP_PLACEHOLDER, gapCloseAt } from './exerciseGaps.js';
 import { BREAK_PLACEHOLDER, CHIP_PLACEHOLDER, FOOTNOTE_PLACEHOLDER, MARK_OPENER, REF_PLACEHOLDER, SMALLCAPS_OPENER, SWATCH_PLACEHOLDER, TAB_PLACEHOLDER, UNDERLINE_OPENER, extractInlineRefs, readMarkAt, readUnderlineAt } from './inlineFormatting.js';
 import { sliceSpan } from './links.js';
+import { linkDestinationRanges } from './inlineFormatting/links.js';
 import { orientationOpenerAt } from './orientationMarks.js';
 import { annotationSourceSkips } from './annotations.js';
 import { CITATION_PLACEHOLDER, extractInlineCitations } from './citations.js';
@@ -88,7 +89,7 @@ export function computeSourceMap(
   const annotationSkips = annotationSourceSkips(markdown, blockSrcStart, blockSrcEnd);
   // Looked for in the block only: a search of the whole document made
   // every block cost the document's length (#1395).
-  const markSkips = markSourceSkips(markdown, blockSrcStart, blockSrcEnd, code);
+  const markSkips = [...markSourceSkips(markdown, blockSrcStart, blockSrcEnd, code), ...linkDestinationSkips(markdown, blockSrcStart, blockSrcEnd)];
   const skips = markSkips.length > 0 ? [...annotationSkips, ...markSkips].sort((a, b) => a[0] - b[0]) : annotationSkips;
   let si = 0;
   // The citations of the block (#1215), read as the parser reads them:
@@ -348,6 +349,26 @@ export function computeSourceMap(
     }
   }
   return map;
+}
+
+/** The `](destination)` of each Markdown link and image of `[from, end)`,
+ *  which prints nothing, as `[start, end)` source offsets in order (#1725):
+ *  without them a character after a link (a period after
+ *  `[Moodle](https://moodle.org)`) matched the first one like it inside
+ *  the URL. Not an empty label's (`[](x)` stays literal) nor one in inline
+ *  code, which is text. */
+function linkDestinationSkips(markdown: string, from: number, end: number): Array<[number, number]> {
+  const block = markdown.slice(from, end);
+  if (!block.includes('](')) return [];
+  const code: Array<[number, number]> = [];
+  const re = /(?<!\\)`[^`\n]+?`/g;
+  for (let m = re.exec(block); m; m = re.exec(block)) code.push([m.index, m.index + m[0].length]);
+  const out: Array<[number, number]> = [];
+  for (const [s, e] of linkDestinationRanges(block)) {
+    if (block[s - 3] === '[' || code.some(([a, b]) => s >= a && s < b)) continue;
+    out.push([from + s - 2, from + e]);
+  }
+  return out;
 }
 
 /** The inline code spans (`` `…` ``) of `[from, end)` that may hold a

@@ -4,6 +4,7 @@ import { existsSync as exists, readdirSync as readDir, readFileSync as readFile 
 import { strFromU8, unzipSync } from 'fflate';
 import { parseMarkdown } from '../../parse/index.js';
 import type { ContentBlock } from '../../parse/index.js';
+import { linkDestinationRanges } from '../../parse/inlineFormatting/links.js';
 
 // A block's `sourceMap` points every character of its text at its own
 // source character (#1215), after citations, cross-references, maths and
@@ -20,9 +21,17 @@ const MARKUP_START = new Set(['[', '@', '-', ':', '\\', '$', '\t', '|']);
 function mapProblem(markdown: string, block: ContentBlock): string | undefined {
   const { text, sourceMap: map } = block;
   if (map.length !== text.length) return `map ${map.length} for text ${text.length}`;
+  // A link's destination prints nothing (#1725): no character maps into
+  // one, unless the link is written in inline code.
+  const src = markdown.slice(block.sourceStart, block.sourceEnd);
+  const inCode = (k: number): boolean => [...src.matchAll(/`[^`\n]+?`/g)].some((m) => k >= m.index! && k < m.index! + m[0].length);
+  const destinations = linkDestinationRanges(src)
+    .filter(([s]) => src[s - 3] !== '[' && !inCode(s))
+    .map(([s, e]) => [block.sourceStart + s, block.sourceStart + e] as const);
   for (let i = 0; i < text.length; i++) {
     const at = map[i]!;
     if (i > 0 && at < map[i - 1]!) return `entry ${i} goes back (${map[i - 1]} → ${at})`;
+    if (destinations.some(([s, e]) => at >= s && at < e)) return `entry ${i} (${JSON.stringify(text[i])}) points into a link destination (${at})`;
     const c = text[i]!;
     const s = markdown[at];
     if (c === s) continue;
@@ -88,6 +97,28 @@ describe('sourceMap after code spans holding role syntax', () => {
 
   it('maps `` `:mark[…]` `` in code and a real mark after it', () => {
     expectMapped('Write `:mark[x]{style="a"}` for :mark[this]{style="a"} text.');
+  });
+});
+
+describe('sourceMap after links (#1725)', () => {
+  it('maps a period after a link to itself, not to a period of the URL', () => {
+    for (const md of ['como [Moodle](https://moodle.org). Cada', 'A **B** como [Moodle](https://moodle.org). Cada']) {
+      const b = expectMapped(md);
+      expect(b.sourceMap[b.text.indexOf('Moodle.') + 6]).toBe(md.indexOf(').') + 1);
+    }
+  });
+
+  it('maps the text after a link with a title, an image, and a parenthesis right after', () => {
+    const md = 'See [docs](https://a.b/c_(d).html "The. title")(x). And ![p](i.png) then.';
+    const b = expectMapped(md);
+    expect(b.sourceMap[b.text.indexOf('(x)')]).toBe(md.indexOf('(x)'));
+    expect(b.sourceMap[b.text.lastIndexOf('.')]).toBe(md.length - 1);
+  });
+
+  it('keeps a link in inline code as text', () => {
+    const md = 'Write `[a](b.c)` for a link.';
+    const b = expectMapped(md);
+    expect(b.sourceMap[b.text.indexOf('.')]).toBe(md.indexOf('.'));
   });
 });
 
