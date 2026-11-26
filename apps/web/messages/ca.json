@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "Aquests marcs ja els repeteix una graella: __frames__",
     "pageTemplatesReshapeNotLattice": "Les targetes no són en una mateixa graella: columnes iguals separades per un mateix espai, files completes llevat de l'última i separades per un mateix espai.",
     "pageTemplatesReshapeWidths": "Les targetes no tenen totes la mateixa amplada: __frames__",
+    "pageTemplatesReshapeHeights": "Les targetes no tenen totes la mateixa alçada i una alçada fixa tallaria les més altes: __frames__",
     "pageTemplatesReshapeMembers": "Les targetes no tenen totes els mateixos marcs penjats (un peu sota cadascuna, per exemple): __frames__",
     "pageTemplatesReshapeSplitsGrid": "Tria tots els marcs de la graella o cap: __frames__",
     "pageTemplatesReshapeHasModules": "Aquesta plantilla ja té un grup de mòduls: passa aquests marcs a un mòdul a mà.",

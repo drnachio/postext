@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "Ces blocs sont déjà répétés par une grille : __frames__",
     "pageTemplatesReshapeNotLattice": "Les cartes ne sont pas sur une même grille : colonnes égales séparées par un même espace, rangées complètes sauf la dernière, séparées par un même espace.",
     "pageTemplatesReshapeWidths": "Les cartes n’ont pas toutes la même largeur : __frames__",
+    "pageTemplatesReshapeHeights": "Les cartes n’ont pas toutes la même hauteur, et une hauteur fixe couperait les plus hautes : __frames__",
     "pageTemplatesReshapeMembers": "Les cartes n’ont pas toutes les mêmes blocs rattachés (une légende sous chacune, par exemple) : __frames__",
     "pageTemplatesReshapeSplitsGrid": "Choisissez tous les blocs de la grille, ou aucun : __frames__",
     "pageTemplatesReshapeHasModules": "Ce gabarit a déjà un groupe de modules : déplacez ces blocs dans un module à la main.",

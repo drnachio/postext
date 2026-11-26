@@ -23,6 +23,7 @@ const REFUSALS: Record<GridRefusal | ExtractRefusal, string> = {
   repeated: 'These frames are already repeated by a grid.',
   notLattice: 'The cards do not stand on one lattice: equal columns with one gap, full rows but the last, rows one gap apart.',
   widths: 'The cards are not all as wide.',
+  heights: 'The cards are not all as tall and the first one has a set height: the taller ones would lose their text. Give the cards one height, or let the first one grow with its content.',
   members: 'The cards do not all have the same frames hanging from them (a caption under each, for instance).',
   splitsGrid: 'Give every frame of the grid, or none.',
   hasModules: 'The template already has a modules group: extract into it is not done; move these frames by hand.',

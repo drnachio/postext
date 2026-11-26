@@ -5747,6 +5747,7 @@
     "pageTemplatesReshapeRepeated": "Estes blocos já são repetidos por uma grade: __frames__",
     "pageTemplatesReshapeNotLattice": "Os cartões não estão numa mesma grade: colunas iguais separadas por um mesmo espaço, linhas completas exceto a última, separadas por um mesmo espaço.",
     "pageTemplatesReshapeWidths": "Os cartões não têm todos a mesma largura: __frames__",
+    "pageTemplatesReshapeHeights": "Os cartões não têm todos a mesma altura e uma altura fixa cortaria os mais altos: __frames__",
     "pageTemplatesReshapeMembers": "Os cartões não têm todos os mesmos blocos presos a eles (uma legenda embaixo de cada um, por exemplo): __frames__",
     "pageTemplatesReshapeSplitsGrid": "Escolha todos os blocos da grade, ou nenhum: __frames__",
     "pageTemplatesReshapeHasModules": "Este modelo já tem um grupo de módulos: passe estes blocos para um módulo à mão.",

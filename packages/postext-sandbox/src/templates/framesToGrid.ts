@@ -36,6 +36,7 @@ export type GridRefusal =
   | 'repeated'
   | 'notLattice'
   | 'widths'
+  | 'heights'
   | 'members';
 
 export interface LaidTemplatePage {
@@ -243,6 +244,16 @@ export function planFramesToGrid(input: {
   const width = cells[0]!.rect.width;
   const odd = cells.filter((c) => Math.abs(c.rect.width - width) > tol).map((c) => c.main);
   if (odd.length > 0) return { ok: false, reason: 'widths', frames: odd };
+  // Every card takes the first card's frame (#1723): cards that differ in
+  // height keep their look only when that frame grows with its content
+  // and every card did too. A fixed height would cut the taller cards.
+  const height = cells[0]!.rect.height;
+  const grows = (name: string): boolean => {
+    const f = own.find((x) => x.name === name)!;
+    return (f.height ?? f.placement?.size?.height ?? 'auto') === 'auto';
+  };
+  const unlike = cells.filter((c) => Math.abs(c.rect.height - height) > tol).map((c) => c.main);
+  if (unlike.length > 0 && !cells.every((c) => grows(c.main))) return { ok: false, reason: 'heights', frames: [cells[0]!.main, ...unlike] };
   const colGaps = xs.slice(1).map((x, k) => x - xs[k]! - width);
   const colGap = colGaps.length > 0 ? colGaps.reduce((a, b) => a + b, 0) / colGaps.length : 0;
   if (colGaps.some((g) => Math.abs(g - colGap) > tol) || colGap < -tol) return { ok: false, reason: 'notLattice', frames: off };

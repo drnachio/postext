@@ -5757,6 +5757,7 @@
     "pageTemplatesReshapeRepeated": "Diese Rahmen wiederholt bereits ein Raster: __frames__",
     "pageTemplatesReshapeNotLattice": "Die Karten stehen nicht auf einem Raster: gleiche Spalten mit einem Abstand dazwischen, volle Zeilen bis auf die letzte, die Zeilen mit einem Abstand dazwischen.",
     "pageTemplatesReshapeWidths": "Die Karten sind nicht alle gleich breit: __frames__",
+    "pageTemplatesReshapeHeights": "Die Karten sind nicht alle gleich hoch, und eine feste Höhe würde die höheren abschneiden: __frames__",
     "pageTemplatesReshapeMembers": "An den Karten hängen nicht alle dieselben Rahmen (etwa eine Legende unter jeder): __frames__",
     "pageTemplatesReshapeSplitsGrid": "Wählen Sie alle Rahmen des Rasters oder keinen: __frames__",
     "pageTemplatesReshapeHasModules": "Diese Vorlage hat bereits eine Modulgruppe: Verschieben Sie diese Rahmen von Hand in ein Modul.",
