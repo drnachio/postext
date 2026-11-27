@@ -17,7 +17,7 @@ export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, 
 export type { BundleSource, BundleFontProviderOptions, BundleFontRequest, LoadBundleFontsOptions, BundleImageOptions } from './adapters.js';
 
 // Low-level codec, for hosts that store or serve bundles their own way.
-export { readBundle, planBundle, resolveBundleFiles, bundleBaseConfig, traceBundleContours, EXPORTABLE_FONT_FORMATS } from './codec.js';
+export { readBundle, planBundle, resolveBundleFiles, bundleBaseConfig, traceBundleContours, EXPORTABLE_FONT_FORMATS, chapterOrdinals } from './codec.js';
 export type { ReadBundleOptions, ReadBundleResult, BundleMeta, BundleContent, BundleLocaleContent, PlannedFile, BundlePlan, BundleByteSources, ResolvedBundleFiles } from './codec.js';
 export { openBundleZip, zipBundle, POSTEXT_EXTENSION, POSTEXT_MIME, MANIFEST_FILE } from './zip.js';
 export type { OpenedBundleZip, ZipBundleOptions } from './zip.js';

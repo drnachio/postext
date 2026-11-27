@@ -6,7 +6,7 @@
 
 export { bundleBaseConfig, readBundle } from './codec/read.js';
 export type { ReadBundleOptions, ReadBundleResult } from './codec/read.js';
-export { traceBundleContours, EXPORTABLE_FONT_FORMATS, planBundle } from './codec/plan.js';
+export { traceBundleContours, EXPORTABLE_FONT_FORMATS, planBundle, chapterOrdinals } from './codec/plan.js';
 export type { BundleMeta, BundleLocaleContent, BundleContent, PlannedFile, BundlePlan } from './codec/plan.js';
 export { resolveBundleFiles } from './codec/files.js';
 export type { BundleByteSources, ResolvedBundleFiles } from './codec/files.js';

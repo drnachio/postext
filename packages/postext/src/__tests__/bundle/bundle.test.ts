@@ -121,6 +121,26 @@ describe('createBundle', () => {
     expect(bytes[0]).toBe(0x50); // PK
   });
 
+  it('names chapter files after the chapters\' own numbers, not their positions', async () => {
+    // A part of a book: chapters 1 and 2, then 9 (its heading says startAt=9) and 10, which follows it.
+    // Written by position, the ninth would come back as `03-…`, and a book exported, edited elsewhere
+    // and joined with other parts would lose its chapter numbers.
+    const { manifest } = await createBundle({
+      name: 'Patterns',
+      locale: 'es',
+      chapters: [
+        { title: 'Uno', markdown: '---\ntitle: "Patterns"\n---\n\n# Uno\n\nTexto.\n' },
+        { title: 'Dos', markdown: '# Dos\n\nTexto.\n' },
+        { title: 'Columna lumbar', markdown: '# Columna lumbar {startAt=9 author="A. B."}\n\nTexto.\n' },
+        { title: 'Cadera', markdown: '# Cadera\n\nTexto.\n' },
+      ],
+      config,
+    });
+    expect((manifest.chapters as { file: string }[]).map((c) => c.file)).toEqual([
+      'chapters/01-uno.md', 'chapters/02-dos.md', 'chapters/09-columna-lumbar.md', 'chapters/10-cadera.md',
+    ]);
+  });
+
   it('carries an uploaded output profile as a file and reads it back (#607)', async () => {
     const icc = new Uint8Array([0, 1, 2, 3, 4]);
     const { bytes, manifest, files } = await createBundle({

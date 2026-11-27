@@ -21,6 +21,7 @@ import { resourceTools } from './resources.js';
 import { viewTools } from './view.js';
 import { viewerCommandTools } from './viewerCommands.js';
 import { wordTools } from './word.js';
+import { partTools } from './parts.js';
 import { wordEditTools } from './wordEdits.js';
 
 /** Every tool the Sandbox hands an agent, in the order an agent meets
@@ -48,6 +49,7 @@ export function createSandboxTools(host: SandboxToolHost): WebMcpTool[] {
     ...comicTools(host),
     ...libraryTools(host),
     ...wordTools(host),
+    ...partTools(host),
     ...wordEditTools(host),
     ...idmlTools(host),
     ...answerTools(host),

@@ -436,6 +436,7 @@ await browser.close();
 
 - **从书库面板写出一本书**：`sandbox_export`加上`format`（`pdf`、`epub`或`html`）和`book: { "kind": "project", "id": "…", "language": "en" }`，会像该行的 **下载为 …** 一样写出一个项目（postext 1.81 起）：整本书、该语言，与屏幕上的书分开排版；屏幕上的书会先保存并保持原样。不带`book`的`html`写出屏幕上的项目。返回结果给出文件、页数、写出的语言和警告；`epubLayout`选择EPUB的呈现方式。
 - **导入`.postext`文件**用`sandbox_import_book`（加上`inspect: true`只报告文件里有哪些语言，并不导入）。
+- **并入另一个 `.postext` 的章节**（单独制作的书的一部分）用 `sandbox_import_chapters`。每章保留其标题给出的编号：替换书中同编号的章节，或在相应位置加入。`inspect: true` 不做任何更改，只回答对每章的建议，以及名称冲突的资源和各自将采用的名称；`chapters` 和 `renames` 可以更改。设计仍是本书的。
 - <strong>从InDesign文档做一本书</strong>用`sandbox_import_idml`。加上`dryRun: true`时它什么都不创建，回答`.idml`的内容和导入报告：将采用的排版方式及理由、结论、发现的问题、这本书需要的字体，以及仍缺少的链接图片。`layout`选择`pages`或`flow`，`links`交上链接的图片，每张按其`fileName`匹配。`file`也可以是压缩成zip的InDesign打包文件：其中链接的图片和字体放入书中（`linksFromPackage`、`fontsFromPackage`）；打包文件中有多个IDML时，`document`指定要导入哪一个（回答中的`documents`列出它们）。
 - **导入Word书稿**用`sandbox_import_word`。先加上`dryRun: true`运行一次：它什么都不改，回答质量报告、每种Word样式会转换成什么，以及将会生成的章节和资源。然后修正对应关系，再正式运行：
 
@@ -487,7 +488,7 @@ await browser.close();
 
 ## 哪些操作要先征得你的同意
 
-有六个工具做的事无法撤回，它们标记为有后果的操作（`consequentialHint`），浏览器可以在运行前先问你：`sandbox_remove_chapter`、`sandbox_delete_resource`、`sandbox_delete_book`、`sandbox_reset_to_original`、`sandbox_import_word`（它可能替换整本书）和`sandbox_answer`（它可能删除你手里的一本书的副本）。拿不准的时候，先让智能体导出一份`.postext`副本。
+有七个工具做的事无法撤回，它们标记为有后果的操作（`consequentialHint`），浏览器可以在运行前先问你：`sandbox_remove_chapter`、`sandbox_delete_resource`、`sandbox_delete_book`、`sandbox_reset_to_original`、`sandbox_import_chapters`、`sandbox_import_word`（它可能替换整本书）和`sandbox_answer`（它可能删除你手里的一本书的副本）。拿不准的时候，先让智能体导出一份`.postext`副本。
 
 只读的工具标记为`readOnlyHint`；回答中带有并非页面自己写出的文字（书本身的文字、获取来的文件）的工具标记为`untrustedContentHint`，浏览器据此可以避免把这些文字当成指令。
 
@@ -527,7 +528,7 @@ await browser.close();
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
 - **模板页**：`sandbox_modules`、`sandbox_create_module`、`sandbox_rename_module`、`sandbox_insert_module`、`sandbox_extract_module`、`sandbox_frames_to_grid`、`sandbox_edit_labels`。
 - **印刷封面**：`sandbox_cover_get`、`sandbox_cover_write_text`、`sandbox_cover_export`、`sandbox_cover_sheet_design`、`sandbox_cover_set_collection`、`sandbox_cover_text_box`。
-- **书和文件**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
+- **书和文件**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_import_chapters`、`sandbox_export`。
 - **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
 - **InDesign**：`sandbox_import_idml`。
 - **询问**：`sandbox_answer`。

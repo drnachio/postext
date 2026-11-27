@@ -1,7 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
-import { BookDown, Download, FileInput, FileOutput, Upload, RotateCcw, Search } from 'lucide-react';
+import { BookDown, BookPlus, Download, FileInput, FileOutput, Upload, RotateCcw, Search } from 'lucide-react';
 import { MarkdownEditor } from '../editor/MarkdownEditor.js';
 import { FindBar } from '../editor/find/FindBar.js';
 import { closeFind, openFind, searchableSelection, useFindState } from '../editor/find/findStore.js';
@@ -16,6 +16,7 @@ import { WordExportDialog } from '../word/WordExportDialog.js';
 import { IdmlExportDialog } from '../idml/IdmlExportDialog.js';
 import { WordEditsDialog, type WordEditsFile } from '../word/WordEditsDialog.js';
 import { isWordExport } from '../word/wordEdits.js';
+import { PartImportDialog, type PartImportFile } from '../presets/PartImportDialog.js';
 
 interface MarkdownPanelProps {
   isDark?: boolean;
@@ -27,6 +28,8 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
   const { hasResetBaseline, projects, activeProjectId } = useSandboxProjects();
   const importRef = useRef<HTMLInputElement>(null);
   const wordRef = useRef<HTMLInputElement>(null);
+  const partRef = useRef<HTMLInputElement>(null);
+  const [partFile, setPartFile] = useState<PartImportFile | null>(null);
   const [wordFile, setWordFile] = useState<WordImportFile | null>(null);
   const [wordEdits, setWordEdits] = useState<WordEditsFile | null>(null);
   const [wordExportOpen, setWordExportOpen] = useState(false);
@@ -74,6 +77,15 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
       if (!(err instanceof DocxReadError)) console.error(err);
       announce(state.labels.wordImportFailed.replace('__file__', isolate(file.name)));
     }
+  };
+
+  // Chapters of another .postext (a part of this book made apart) open the
+  // dialog that says where each one goes; nothing changes until its button.
+  const handlePartImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+    setPartFile({ name: file.name, bytes: new Uint8Array(await file.arrayBuffer()) });
   };
 
   const exportName = () => {
@@ -141,6 +153,15 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
             />
             <IconButton label={state.labels.wordImport} icon={<FileInput size={14} />} onClick={() => wordRef.current?.click()} />
             <IconButton label={state.labels.wordExport} icon={<FileOutput size={14} />} onClick={() => setWordExportOpen(true)} />
+            <IconButton label={state.labels.partImport} icon={<BookPlus size={14} />} onClick={() => partRef.current?.click()} />
+            <input
+              ref={partRef}
+              type="file"
+              accept=".postext,application/zip"
+              onChange={(e) => void handlePartImport(e)}
+              className="hidden"
+              aria-hidden="true"
+            />
             {/* The whole book for InDesign (#1491), laid out as the PDF is. */}
             <IconButton label={state.labels.idmlExport} icon={<BookDown size={14} />} onClick={() => setIdmlExportOpen(true)} />
             <input
@@ -164,6 +185,7 @@ export function MarkdownPanel({ isDark }: MarkdownPanelProps) {
       </div>
       <WordImportDialog file={wordFile} onClose={() => setWordFile(null)} />
       <WordEditsDialog file={wordEdits} onClose={() => setWordEdits(null)} />
+      <PartImportDialog file={partFile} onClose={() => setPartFile(null)} />
       <WordExportDialog open={wordExportOpen} onClose={() => setWordExportOpen(false)} bookTitle={bookTitle} />
       <IdmlExportDialog open={idmlExportOpen} onClose={() => setIdmlExportOpen(false)} bookTitle={bookTitle} />
     </div>
