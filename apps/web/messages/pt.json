@@ -6684,6 +6684,8 @@
     "partImportNoSuchChapter": "O livro não tem capítulo __n__ para substituir.",
     "partImportSameNumber": "O número __n__ está ocupado: substitua esse capítulo ou escolha outro número.",
     "partImportBadNumber": "O número tem de ser 1 ou mais.",
+    "partImportUnnumbered": "Não tem um título numerado, por isso os capítulos depois do que substitui perderiam um número: adicione-o em vez disso.",
+    "partImportNoNumber": "__title__ (sem número de capítulo)",
     "partImportClashes": "Recursos com o nome dos do livro",
     "partImportClashesHint": "Outros capítulos do livro usam estes nomes. Cada recurso entra com um nome novo, e os capítulos com que chega citam-no com ele.",
     "partImportNewName": "Novo nome para __id__",

@@ -6694,6 +6694,8 @@
     "partImportNoSuchChapter": "ليس في الكتاب فصل رقمه __n__ لاستبداله.",
     "partImportSameNumber": "الرقم __n__ مستخدَم: استبدل ذلك الفصل أو اختر رقمًا آخر.",
     "partImportBadNumber": "يجب أن يكون الرقم 1 أو أكثر.",
+    "partImportUnnumbered": "ليس له عنوان مرقّم، فتفقد الفصول التي تلي الفصل الذي يحلّ محله رقمًا: أضِفه بدلًا من ذلك.",
+    "partImportNoNumber": "__title__ (بلا رقم فصل)",
     "partImportClashes": "موارد تحمل أسماء موارد الكتاب",
     "partImportClashesHint": "تستخدم فصول أخرى من الكتاب هذه الأسماء. يدخل كل مورد باسم جديد، وتشير إليه به الفصول التي يأتي معها.",
     "partImportNewName": "اسم جديد لـ __id__",

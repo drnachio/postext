@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Kommandozeile',
   description: 'Eine eigenständige ausführbare Datei für macOS, Linux und Windows. Sie wandelt ein .postext-Buch, einen Buchordner oder lose Markdown-Dateien in PDF, HTML, EPUB, Seitenbilder und Word um, packt Pakete, prüft Bücher und liefert JSON-Ausgabe für Skripte und Agenten, dazu Pakete für Python und Rust, die es aus dem Code steuern',
   lang: 'de',
-  lastUpdated: '2026-11-16',
+  lastUpdated: '2026-11-27',
   readingTime: '13 min',
   order: 53,
   plainSummary: "Diese Seite richtet sich an alle, die Bücher mit Postext im Terminal statt auf der Website machen wollen. Sie laden eine einzige Datei für Ihren Computer herunter und führen sie aus, ohne etwas zu installieren. Sie geben ihr Ihr Buch oder ein paar Textdateien, und sie erzeugt ein PDF, eine Webseite, ein E-Book, Bilder der Seiten oder ein Word-Dokument. Sie kann ein Buch auch auf Probleme prüfen und seine Dateien zu einer einzigen packen. Auch Programme und KI-Assistenten können sie nutzen, denn sie kann in einem Format antworten, das diese leicht lesen.",
@@ -171,6 +171,7 @@ Konfiguration des Buchs gelegt. Ein mehrsprachiges Paket wird in seiner eigenen 
     <tr><td><code>import-docx</code></td><td>Die Korrekturen aus einer exportierten Word-Datei zurück ins Buch; jedes andere Word-Dokument als neues Buch (ein Ordner oder eine <code>.postext</code>-Datei).</td></tr>
     <tr><td><code>import-idml</code></td><td>Ein als IDML gespeichertes InDesign-Dokument oder ein gezipptes InDesign-Paket als neues Buch (ein Ordner oder eine <code>.postext</code>-Datei).</td></tr>
     <tr><td><code>design</code></td><td>Die Gestaltung eines Buchs (einige ihrer Teile oder alle) als Gestaltungsdatei, eine <code>.postext</code> ohne Kapitel.</td></tr>
+    <tr><td><code>join</code></td><td>Die Kapitel einer anderen <code>.postext</code> (ein getrennt erstellter Teil des Buchs) in das Buch übernommen, jedes an seiner Nummer.</td></tr>
     <tr><td><code>pack</code></td><td>Einen Buchordner oder lose Markdown-Dateien als eine einzige <code>.postext</code>-Datei.</td></tr>
     <tr><td><code>unpack</code></td><td>Eine <code>.postext</code>-Datei als Ordner.</td></tr>
     <tr><td><code>info</code></td><td>Kapitel, Sprachen, Ressourcen und Schriften des Buchs, mit <code>--pages</code> auch seine Seitenzahl.</td></tr>
@@ -484,6 +485,21 @@ hashen lässt. Bei losen Markdown-Dateien setzen `--id`, `--description` und `--
 (ein Titelbild) die ID, die Beschreibung und das Vorschaubild des Pakets; die ID ist
 standardmäßig ein Slug des Namens. Ein Ordner behält, was seine `preset.json` angibt. Ein Buch, das kein Titelbild angibt, erhält seine erste Seite als Titelbild (`thumbnail.jpg`, 1024 px an der langen Seite), das Bild, das ein Dateimanager für die Datei anzeigen kann; `--no-auto-thumbnail` lässt es weg. `unpack` weigert sich, in einen Ordner zu schreiben, der nicht leer ist, es sei denn,
 `--force` ist angegeben.
+
+### join
+
+```bash
+postext join book/ chapter-9.postext --dry-run
+postext join book.postext part.postext
+postext join book.postext part.postext --chapters "replace,add:5,skip" --rename fig-1-1=fig-5-1
+postext join book/ part.postext -o joined.postext --json
+```
+
+`join` holt die Kapitel einer anderen `.postext` in ein Buch (seit postext 1.99): ein Modul, das auf einem anderen Rechner konvertiert wurde, einige getrennt gesetzte Kapitel, ein korrigiertes und neu exportiertes Kapitel. Jedes Kapitel des Teils behält die Nummer, die ihm der Satz gibt: das `{startAt=N}` seiner Überschrift der Ebene 1, sonst eins mehr als das vorige nummerierte Kapitel (ein Überschriftenstil mit `numbered: false` zählt nicht mit). Standardmäßig ersetzt ein Kapitel das Kapitel des Buchs mit derselben Nummer, in dessen Datei; gibt es keines, wird es an seiner Stelle eingefügt, in einer Datei, die nach seiner Nummer benannt ist (`chapters/05-wrist-and-hand.md`). Ein Kapitel ohne nummerierte Überschrift bleibt draußen.
+
+`--chapters` legt fest, was aus jedem Kapitel des Teils wird, in seiner Reihenfolge: `add`, `add:N`, `replace`, `replace:N` oder `skip`. `--dry-run` gibt die Kapitel des Buchs mit ihren Nummern aus, was mit jedem Kapitel des Teils geschähe und welche Ressourcen umbenannt würden, und schreibt nichts; mit `--json` kommt dasselbe als Daten. Eine Wahl, die nicht passt (eine Nummer, die das Buch schon hat, ein Ersetzen ohne Kapitel dieser Nummer), bricht den Befehl mit einem Fehler ab, und nichts wird geschrieben.
+
+Die Ressourcen, die die Kapitel verwenden, kommen mit ihren Dateien. Heißt eine so wie eine Ressource, die das Buch weiter verwendet (in einem anderen Kapitel, in seiner Gestaltung oder in einer anderen Ressource), wird sie umbenannt, standardmäßig in `fig-1-1-2` oder in die ID, die `--rename OLD=NEW` angibt, und mit ihr jeder Verweis auf sie in den Kapiteln und Ressourcen, mit denen sie kommt; eine Datei des Teils, die auf einer anderen Datei des Buchs landen würde, bekommt daneben einen freien Namen. Die Gestaltung bleibt die des Buchs: Nur die Schriftfamilien, die dem Buch fehlen, kommen mit ihren Dateien hinzu. Das Buch wird an Ort und Stelle bearbeitet: Ein Ordner erhält nur die Dateien, die das Zusammenführen schreibt, und eine `.postext` wird neu geschrieben, mit allem anderen, wie es war (ihren anderen Ausgaben, Umschlägen und gespeicherten Umbrüchen). `-o` schreibt das Ergebnis an einen anderen Ort, als `.postext` oder als Ordner. `--locale` wählt bei einem mehrsprachigen Buch die Ausgabe, in die die Kapitel kommen. Die Sandbox tut dasselbe im Bedienfeld Text (siehe [Kapitel aus einem anderen Buch hinzufügen](/de/docs/sandbox-books-saving#kapitel-aus-einem-anderen-buch-hinzufügen)).
 
 ### info und check
 

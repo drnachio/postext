@@ -222,3 +222,25 @@ def test_design_and_import_idml_reports():
     assert (r.layout, r.chapters, r.quality, r.package) == ("pages", 1, raw["report"], raw["package"])
     assert r.reason == raw["reason"] and r.fonts == raw["fonts"] and r.missing_links == raw["missingLinks"]
     assert postext.ImportIdmlReport.from_json({"ok": True}).package is None
+
+
+def test_join_args_and_report(tmp_path: Path):
+    client = postext.Postext("postext")
+    calls = _Calls(client)
+    client.join(tmp_path / "book", tmp_path / "part.postext", chapters=["replace", "add:5"], renames={"fig-1-1": "fig-5-1"}, locale="es", dry_run=True)
+    command, args, _ = calls.calls[-1]
+    assert command == "join" and args[:2] == [str(tmp_path / "book"), str(tmp_path / "part.postext")]
+    assert calls.options() == {"--chapters": "replace,add:5", "--rename": "fig-1-1=fig-5-1", "--locale": "es", "--dry-run": True}
+    client.join(tmp_path / "book.postext", b"PK\x03\x04", out=tmp_path / "joined.postext", chapters="skip,add")
+    args = calls.calls[-1][1]
+    assert args[1].endswith("part.postext") and calls.options() == {"--chapters": "skip,add", "--out": str(tmp_path / "joined.postext")}
+    r = postext.JoinReport.from_json({
+        "ok": True, "command": "join",
+        "join": {"choices": [{"action": "replace", "number": 2}]},
+        "added": [{"title": "Muñeca", "file": "chapters/05-muneca.md", "number": 5}],
+        "replaced": [], "resources": ["fig-5-1"], "renamed": [{"from": "fig-1-1", "to": "fig-5-1"}],
+        "fontsAdded": ["Barlow"], "written": ["preset.json"],
+    })
+    assert r.plan["choices"][0]["number"] == 2 and r.added[0]["number"] == 5
+    assert (r.resources, r.fonts_added, r.written) == (["fig-5-1"], ["Barlow"], ["preset.json"])
+    assert r.renamed == [{"from": "fig-1-1", "to": "fig-5-1"}]

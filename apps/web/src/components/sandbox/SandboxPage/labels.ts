@@ -6099,6 +6099,8 @@ export function buildSandboxLabels(t: SandboxTranslator): SandboxLabels {
     partImportNoSuchChapter: t("partImportNoSuchChapter"),
     partImportSameNumber: t("partImportSameNumber"),
     partImportBadNumber: t("partImportBadNumber"),
+    partImportUnnumbered: t("partImportUnnumbered"),
+    partImportNoNumber: t("partImportNoNumber"),
     partImportClashes: t("partImportClashes"),
     partImportClashesHint: t("partImportClashesHint"),
     partImportNewName: t("partImportNewName"),

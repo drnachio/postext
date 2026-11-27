@@ -12,12 +12,14 @@ export { createDesignBundle, openDesignBundle, DESIGN_BUNDLE_MAX_BYTES } from '.
 export type { DesignBundleInput, OpenedDesign, OpenDesignOptions } from './design.js';
 export type { BuildBundleOptions, BuildBundleParallelOptions, ChapterLayoutJob, ChapterLayoutContext, ChapterPageHint } from './book.js';
 export { createBundleLayoutCache } from './layoutCache.js';
+// Chapters of another book joined to this one, each at its number (#1727).
+export * from './join/index.js';
 export type { BundleLayoutCache, BundleLayoutStats, ChapterRecord } from './layoutCache.js';
 export { loadBundleFonts, registerBundleImages, bundleImageUrl, bundleVideoUrl, bundleResourceBytes, bundlePreviewBytes, bundleFontProvider, bundleSvgFontProvider, svgInlinesFonts, diagramInkHex } from './adapters.js';
 export type { BundleSource, BundleFontProviderOptions, BundleFontRequest, LoadBundleFontsOptions, BundleImageOptions } from './adapters.js';
 
 // Low-level codec, for hosts that store or serve bundles their own way.
-export { readBundle, planBundle, resolveBundleFiles, bundleBaseConfig, traceBundleContours, EXPORTABLE_FONT_FORMATS, chapterOrdinals } from './codec.js';
+export { readBundle, planBundle, resolveBundleFiles, bundleBaseConfig, traceBundleContours, EXPORTABLE_FONT_FORMATS } from './codec.js';
 export type { ReadBundleOptions, ReadBundleResult, BundleMeta, BundleContent, BundleLocaleContent, PlannedFile, BundlePlan, BundleByteSources, ResolvedBundleFiles } from './codec.js';
 export { openBundleZip, zipBundle, POSTEXT_EXTENSION, POSTEXT_MIME, MANIFEST_FILE } from './zip.js';
 export type { OpenedBundleZip, ZipBundleOptions } from './zip.js';

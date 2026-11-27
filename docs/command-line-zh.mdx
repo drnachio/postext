@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '命令行',
   description: '适用于macOS、Linux和Windows的单个独立可执行文件。它能把.postext图书、图书文件夹或零散的Markdown文件转成PDF、HTML、EPUB、页面图像和Word文档，还能打包文件包、检查图书，并为脚本和智能体输出JSON，还可通过Python和Rust包在代码中使用',
   lang: 'zh',
-  lastUpdated: '2026-11-16',
+  lastUpdated: '2026-11-27',
   readingTime: '10分钟',
   order: 53,
   plainSummary: "本页写给想在终端里而不是在网站上用Postext做书的人。你下载一个适合自己电脑的文件，直接运行，不用另装任何东西。你把书或者几个文本文件交给它，它就能做出PDF、网页、电子书、页面图片或Word文档。它还能检查书里的问题，并把书的所有文件打包成一个文件。其他程序和AI助手也能使用它，因为它可以用这些程序容易读懂的格式回答。",
@@ -134,6 +134,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>import-docx</code></td><td>把在导出的Word文件中做的校改带回书中；其他Word文档则转成新书（文件夹或<code>.postext</code>文件）。</td></tr>
     <tr><td><code>import-idml</code></td><td>把存为IDML的InDesign文档或压缩成zip的InDesign打包文件转成新书（文件夹或<code>.postext</code>文件）。</td></tr>
     <tr><td><code>design</code></td><td>把一本书的设计（部分或全部）写成设计文件，即没有章节的<code>.postext</code>。</td></tr>
+    <tr><td><code>join</code></td><td>把另一个<code>.postext</code>（单独制作的书的一部分）的章节并入本书，每章放在自己的编号处。</td></tr>
     <tr><td><code>pack</code></td><td>把图书文件夹或零散的Markdown打包成一个<code>.postext</code>文件。</td></tr>
     <tr><td><code>unpack</code></td><td>把<code>.postext</code>文件解包成文件夹。</td></tr>
     <tr><td><code>info</code></td><td>列出书的各章、语言、资源和字体，加上<code>--pages</code>时还给出页数。</td></tr>
@@ -295,6 +296,21 @@ postext unpack my-book.postext -o my-book/
 ```
 
 `pack`把图书文件夹原样压缩，或者用零散的Markdown构建一个文件包。同样的输入总是生成逐字节相同的文件，所以可以比较文件包，或计算它的哈希。对于零散的Markdown，`--id`、`--description`和`--thumbnail FILE`（一张封面图片）设置文件包的id、描述和缩略图；id默认由名称生成slug。文件夹保留它的`preset.json`所写的内容。没有指定封面的图书会以第一页作为封面（`thumbnail.jpg`，长边1024 px），文件管理器可以把它显示为文件的图标；`--no-auto-thumbnail`不生成它。`unpack`拒绝写入非空的文件夹，除非给出`--force`。
+
+### join
+
+```bash
+postext join book/ chapter-9.postext --dry-run
+postext join book.postext part.postext
+postext join book.postext part.postext --chapters "replace,add:5,skip" --rename fig-1-1=fig-5-1
+postext join book/ part.postext -o joined.postext --json
+```
+
+`join`把另一个`.postext`的章节并入一本书（自postext 1.99起）：在另一台电脑上转换的模块、单独排版的几章、校对后重新导出的一章。并入部分的每一章保留排版给它的编号：有一级标题的`{startAt=N}`时取该值，否则为前一个编号章节加一（`numbered: false`的标题样式不计数）。默认情况下，一章会在原文件中替换书中编号相同的章节；没有这样的章节时，就加在相应位置，文件按编号命名（`chapters/05-wrist-and-hand.md`）。没有编号标题的章节不并入。
+
+`--chapters`按顺序指定并入部分每一章的处理方式：`add`、`add:N`、`replace`、`replace:N`或`skip`。`--dry-run`列出书中的章节及其编号、并入部分每一章会怎样处理、哪些资源会改名，但不写入任何内容；加上`--json`则以数据形式给出同样的内容。选择行不通时（书中已有的编号、要替换的编号没有对应章节），命令报错停止，不写入任何内容。
+
+章节用到的资源连同文件一起并入。如果某个资源与书中仍在使用的资源同名（用在其他章节、书的设计或其他资源中），它会改名，默认改为`fig-1-1-2`，或改为`--rename OLD=NEW`给出的id；随之并入的章节和资源中对它的每处引用也一并改名。并入部分中会落在书中另一个文件上的文件，在旁边另取一个空闲的名称。设计仍是本书的：只添加本书缺少的字体族及其文件。书在原处修改：文件夹只收到合并写出的文件；`.postext`会重新写出，其他内容（其他版本、封面和存储的分页）保持原样。`-o`把结果写到别处，可以是`.postext`或文件夹。`--locale`选择多语言图书中章节并入的版本。沙盒在正文面板中做同样的事（见[从另一本书添加章节](/zh/docs/sandbox-books-saving#从另一本书添加章节)）。
 
 ### info和check
 

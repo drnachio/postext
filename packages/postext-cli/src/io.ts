@@ -1,5 +1,6 @@
-import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, mkdirSync, renameSync, rmSync, writeFileSync } from 'node:fs';
+import { basename, dirname, join } from 'node:path';
+import { CliError } from './args';
 
 /** Create a folder and its parents. Bun on Windows throws EEXIST for a
  *  folder that exists even with `recursive` (`.` included). */
@@ -50,4 +51,18 @@ export const byteLength = (data: Uint8Array | string) => (typeof data === 'strin
 /** `name` with its extension replaced (or added). */
 export function withExtension(name: string, ext: string): string {
   return name.replace(/\.[^./\\]*$/, '') + ext;
+}
+
+/** Write a file the book holds in place: to a temporary file beside it,
+ *  then renamed over it, so a failed write never leaves it half-written. */
+export function writeAtomic(path: string, data: Uint8Array | string): void {
+  ensureDir(dirname(path));
+  const temp = join(dirname(path), `.${basename(path)}.${process.pid}.tmp`);
+  try {
+    writeFileSync(temp, data);
+    renameSync(temp, path);
+  } catch (err) {
+    rmSync(temp, { force: true });
+    throw new CliError(`${path}: could not be written (${(err as Error).message})`);
+  }
 }

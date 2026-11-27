@@ -1,19 +1,19 @@
 import { strToU8, zipSync } from 'fflate';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { PostextConfig, Resource } from 'postext';
-import { chapter, harness } from './testHarness.js';
+import { chapter, harness, state } from '../testHarness.js';
 
 // The blob and font stores are IndexedDB; here they are maps.
 const { blobs, fonts } = vi.hoisted(() => ({
   blobs: new Map<string, { contentType: string }>(),
   fonts: new Map<string, { fileName: string }>(),
 }));
-vi.mock('../../storage/blobStore.js', async (original) => ({
-  ...(await original<typeof import('../../storage/blobStore.js')>()),
+vi.mock('../../../storage/blobStore.js', async (original) => ({
+  ...(await original<typeof import('../../../storage/blobStore.js')>()),
   putBlobAt: async (fileId: string, _bytes: ArrayBuffer, contentType: string) => { blobs.set(fileId, { contentType }); return fileId; },
 }));
-vi.mock('../../storage/fontStorage.js', async (original) => ({
-  ...(await original<typeof import('../../storage/fontStorage.js')>()),
+vi.mock('../../../storage/fontStorage.js', async (original) => ({
+  ...(await original<typeof import('../../../storage/fontStorage.js')>()),
   putFontFile: async (file: { fileId: string; fileName: string }) => { fonts.set(file.fileId, file); },
 }));
 
@@ -113,5 +113,22 @@ describe('sandbox_import_chapters', () => {
     expect(done).toMatchObject({ added: 1, replaced: 0 });
     expect(get().chapters.map((c) => c.title)).toEqual(['Uno', 'Dos', 'Columna lumbar', 'Muñeca y mano']);
     expect(get().chapters[3]!.markdown).toMatch(/^# Muñeca y mano \{startAt=12\}/);
+  });
+
+  it('counts the book as the layout does: an unnumbered prologue takes no number (#1727)', async () => {
+    // Counted by position, the part's chapter 2 would replace the book's second chapter, "Uno".
+    const { chapters, ...rest } = book();
+    const { call, get } = harness({
+      ...rest,
+      chapters: [chapter('c0', 'Prólogo', '# Prólogo {style=front}\n\nAntes.\n'), ...chapters],
+      config: { ...state().config, headingStyles: [{ id: 'front', numbered: false }] } as PostextConfig,
+    });
+    const seen = await call('sandbox_import_chapters', { file: partFile(), inspect: true });
+    expect(seen).toMatchObject({
+      chapters: [{ action: 'replace', to: 2, replaces: { chapter: 3, title: 'Dos' } }, { action: 'add', to: 5 }],
+      book: [{ number: null, title: 'Prólogo' }, { number: 1 }, { number: 2 }, { number: 9 }],
+    });
+    await call('sandbox_import_chapters', { file: partFile(), wait: false });
+    expect(get().chapters.map((c) => c.title)).toEqual(['Prólogo', 'Uno', 'Dos, corregido', 'Muñeca y mano', 'Columna lumbar']);
   });
 });

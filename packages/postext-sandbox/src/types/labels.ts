@@ -6284,6 +6284,8 @@ export interface SandboxLabels {
   partImportNoSuchChapter: string;
   partImportSameNumber: string;
   partImportBadNumber: string;
+  partImportUnnumbered: string;
+  partImportNoNumber: string;
   partImportClashes: string;
   partImportClashesHint: string;
   partImportNewName: string;

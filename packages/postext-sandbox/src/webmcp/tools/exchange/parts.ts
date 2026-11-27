@@ -1,12 +1,20 @@
 // `sandbox_import_chapters`: the chapters of another .postext joined to the
-// book on screen, each at its number (book/partImport.ts).
+// book on screen, each at its number (#1727). The plan is postext's
+// (`planPartJoin`), the one `postext join` follows on a bundle's files.
 
-import { bookNumbers, choiceProblems, partChapters, proposeChoices, replacedChapter, resourceClashes, type PartAction, type PartChoice } from '../../book/partImport.js';
-import { joinPart, openBook, readPartBundle } from '../../presets/partBundle.js';
-import { dispatchAndWait, type SandboxToolHost } from '../host.js';
-import { ToolError, type WebMcpTool } from '../modelContext.js';
-import { fileParam, layoutAnswer, WAIT_PARAM } from './book.js';
-import { readFileInput, type FileInput } from './resources.js';
+import { bookNumbers, choiceProblems, partChapters, proposeChoices, renameProblems, replacedChapter, resourceClashes, type PartAction, type PartChoice, type PartProblem } from 'postext/bundle';
+import { joinPart, openBook, partSide, readPartBundle } from '../../../presets/partBundle.js';
+import { dispatchAndWait, type SandboxToolHost } from '../../host.js';
+import { ToolError, type WebMcpTool } from '../../modelContext.js';
+import { fileParam, layoutAnswer, WAIT_PARAM } from '../book.js';
+import { readFileInput, type FileInput } from '../resources.js';
+
+const PROBLEM_TEXT: Record<PartProblem, string> = {
+  noSuchChapter: 'no chapter of the book has that number to replace',
+  sameNumber: 'its number is taken (by the book or another chapter of the file): replace it, or choose another',
+  badNumber: 'the number must be 1 or more',
+  unnumbered: 'it has no numbered heading, so the chapters after the one it replaces would lose a number: add it instead',
+};
 
 export function partTools(host: SandboxToolHost): WebMcpTool[] {
   const { store } = host;
@@ -14,7 +22,7 @@ export function partTools(host: SandboxToolHost): WebMcpTool[] {
   const importChapters: WebMcpTool = {
     name: 'sandbox_import_chapters',
     title: 'Sandbox: join chapters of another book',
-    description: "Join the chapters of another .postext to the book on screen — a part of the book made or edited apart (a module, a few chapters laid out elsewhere) — as the Manuscript panel's \"Add chapters from another book\" does. Each chapter keeps the number its heading gives it ({startAt=…}, else the one after the chapter before): it takes the place of the book's chapter with that number (replace), or is added at its place among the book's chapters (add), or is left out (skip); its heading is given the number it goes to. The resources its text uses come along; one named as a resource the book's other chapters still use is renamed (renames, else the name proposed), with every reference to it. The design stays the book's: of the file's settings only the font families the book lacks are taken. Run it first with inspect: true — it changes nothing and answers with each chapter's number, what is proposed for it and which of the book's chapters it would replace, the clashing resources with their proposed names and the fonts that would be added.",
+    description: "Join the chapters of another .postext to the book on screen — a part of the book made or edited apart (a module, a few chapters laid out elsewhere) — as the Manuscript panel's \"Add chapters from another book\" does. Each chapter keeps the number the layout gives it ({startAt=…}, else the one after the numbered chapter before; a heading style with numbered: false counts for nothing, and a chapter with no numbered heading has no number and is proposed skip): it takes the place of the book's chapter with that number (replace), or is added at its place among the book's chapters (add), or is left out (skip); its heading is given the number it goes to ({startAt=…}) when its place does not give it that number. The resources its text uses come along; one named as a resource the book's other chapters still use is renamed (renames, else the name proposed), with every reference to it. The design stays the book's: of the file's settings only the font families the book lacks are taken. Run it first with inspect: true — it changes nothing and answers with each chapter's number, what is proposed for it and which of the book's chapters it would replace, the clashing resources with their proposed names and the fonts that would be added.",
     inputSchema: {
       type: 'object',
       properties: {
@@ -50,14 +58,16 @@ export function partTools(host: SandboxToolHost): WebMcpTool[] {
         throw new ToolError(`The file could not be read as a .postext book: ${err instanceof Error ? err.message : String(err)}`);
       }
       const book = openBook(s);
-      const proposed = proposeChoices(book, part);
-      const info = partChapters(part);
+      const side = partSide(part);
+      const proposed = proposeChoices(book, side);
+      const info = partChapters(side);
       const given = args.chapters as { action: PartAction; number?: number }[] | undefined;
       if (given && given.length !== info.length) throw new ToolError(`The file has ${info.length} chapter(s); chapters needs one entry for each, in the file's order.`);
-      const choices: PartChoice[] = given ? given.map((g, i) => ({ action: g.action, number: g.number ?? info[i]!.number })) : proposed;
+      const choices: PartChoice[] = given ? given.map((g, i) => ({ action: g.action, number: g.number ?? info[i]!.number ?? 0 })) : proposed;
       const renames = (args.renames as Record<string, string> | undefined) ?? {};
-      const clashes = resourceClashes(book, part, choices);
-      const problems = choiceProblems(book, choices);
+      const clashes = resourceClashes(book, side, choices);
+      const problems = choiceProblems(book, side, choices);
+      const badNames = renameProblems(book, side, choices, renames);
       const describe = () => ({
         chapters: info.map((c, i) => {
           const at = replacedChapter(book, choices[i]!);
@@ -70,10 +80,14 @@ export function partTools(host: SandboxToolHost): WebMcpTool[] {
         book: ((numbers) => book.chapters.map((c, i) => ({ chapter: i + 1, number: numbers[i], title: c.title })))(bookNumbers(book)),
         clashes: clashes.map((c) => ({ id: c.id, renamedTo: renames[c.id] ?? c.rename })),
         ...(problems.length > 0 ? { problems: problems.map((p) => ({ chapter: p.chapter + 1, problem: p.problem })) } : {}),
+        ...(badNames.length > 0 ? { badNames } : {}),
       });
       if (args.inspect) return { imported: false, file: file.name, ...describe() };
       if (problems.length > 0) {
-        throw new ToolError(`The choices do not fit the book: ${problems.map((p) => `chapter ${p.chapter + 1} of the file, ${p.problem === 'noSuchChapter' ? 'no chapter of the book has that number to replace' : p.problem === 'sameNumber' ? 'its number is taken (by the book or another chapter of the file): replace it, or choose another' : 'the number must be 1 or more'}`).join('; ')}.`);
+        throw new ToolError(`The choices do not fit the book: ${problems.map((p) => `chapter ${p.chapter + 1} of the file, ${PROBLEM_TEXT[p.problem]}`).join('; ')}.`);
+      }
+      if (badNames.length > 0) {
+        throw new ToolError(`These resources cannot take the names given (an id of letters, digits, _ . : -, free in the book and the file): ${badNames.join(', ')}.`);
       }
       const joined = await joinPart(s, part, choices, renames, async (action) => { await dispatchAndWait(host, action); });
       return { imported: true, file: file.name, ...joined, ...(await layoutAnswer(host, args.wait, signal)) };

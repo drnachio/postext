@@ -34,7 +34,7 @@
 //! Every command of the command line is a builder, made by a function of
 //! the same name ([`pdf`], [`html`], [`epub`], [`image`], [`images`],
 //! [`docx`], [`idml`], [`pack`], [`unpack`], [`design`], [`info`],
-//! [`check`], [`build`], [`import_docx`], [`import_idml`]). Its options are
+//! [`check`], [`build`], [`import_docx`], [`import_idml`], [`join`]). Its options are
 //! methods; [`Command::run`] runs it with `--json` and returns its report,
 //! [`Command::bytes`] returns the file instead.
 //!
@@ -113,7 +113,7 @@ pub use commands::kind;
 pub use error::{Error, Failure, Result};
 pub use report::{
     BookSummary, ChapterInfo, CheckReport, DesignReport, Diagnostic, FontInfo, FromReport, ImageReport,
-    ImportDocxReport, ImportIdmlReport, InfoReport, Output, PageRef, Report, UnpackReport,
+    ImportDocxReport, ImportIdmlReport, InfoReport, JoinReport, Output, PageRef, Report, UnpackReport,
 };
 
 /// The client the functions at the crate's root use.
@@ -162,6 +162,11 @@ root! {
     unpack(bundle: impl Into<Book>) -> Unpack;
     /// [`Postext::import_idml`] with the default client.
     import_idml(idml: impl Into<Book>) -> ImportIdml;
+}
+
+/// [`Postext::join`] with the default client.
+pub fn join(book: impl AsRef<std::path::Path>, part: impl Into<Book>) -> Command<'static, kind::Join> {
+    client().join(book, part)
 }
 
 /// [`Postext::image`] with the default client.

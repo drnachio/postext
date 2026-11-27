@@ -34,6 +34,7 @@ from ._report import (
     ImportDocxReport,
     ImportIdmlReport,
     InfoReport,
+    JoinReport,
     Output,
     PageRef,
     Report,
@@ -53,6 +54,7 @@ docx = _default.docx
 idml = _default.idml
 import_docx = _default.import_docx
 import_idml = _default.import_idml
+join = _default.join
 pack = _default.pack
 design = _default.design
 unpack = _default.unpack
@@ -95,6 +97,7 @@ __all__ = [
     "idml",
     "import_docx",
     "import_idml",
+    "join",
     "pack",
     "design",
     "unpack",
@@ -125,6 +128,7 @@ __all__ = [
     "ImageReport",
     "ImportDocxReport",
     "ImportIdmlReport",
+    "JoinReport",
     "UnpackReport",
     "DesignReport",
     "Output",

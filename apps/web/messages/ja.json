@@ -6694,6 +6694,8 @@
     "partImportNoSuchChapter": "置き換える第__n__章がこの本にありません。",
     "partImportSameNumber": "番号 __n__ は使われています。その章を置き換えるか、別の番号を選んでください。",
     "partImportBadNumber": "番号は 1 以上にしてください。",
+    "partImportUnnumbered": "番号付きの見出しがないため、置き換える章より後の章の番号がずれます。代わりに追加してください。",
+    "partImportNoNumber": "__title__（章番号なし）",
     "partImportClashes": "本のリソースと同じ名前のリソース",
     "partImportClashesHint": "本の他の章がこれらの名前を使っています。各リソースは新しい名前で入り、一緒に来る章はその名前で参照します。",
     "partImportNewName": "__id__ の新しい名前",

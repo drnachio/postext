@@ -10,7 +10,8 @@ use crate::args::{Book, Books, join};
 use crate::client::Postext;
 use crate::command::{Command, Kind, OutMode, ReadsBook, TakesFonts, WritesFile, sealed::Sealed};
 use crate::report::{
-    CheckReport, DesignReport, ImageReport, ImportDocxReport, ImportIdmlReport, InfoReport, Report, UnpackReport,
+    CheckReport, DesignReport, ImageReport, ImportDocxReport, ImportIdmlReport, InfoReport, JoinReport, Report,
+    UnpackReport,
 };
 
 /// The commands, as types: `Command<'_, kind::Pdf>` builds a `pdf` run.
@@ -56,6 +57,8 @@ pub mod kind {
         Unpack;
         /// `postext import-idml`
         ImportIdml;
+        /// `postext join`
+        Join;
     }
 }
 
@@ -89,6 +92,7 @@ kind!(Build, "build", Report, Never; ReadsBook, TakesFonts);
 kind!(ImportDocx, "import-docx", ImportDocxReport, Required, input = "book.docx", font_defaults = false;);
 kind!(Unpack, "unpack", UnpackReport, Required, font_defaults = false;);
 kind!(ImportIdml, "import-idml", ImportIdmlReport, Required, input = "document.idml";);
+kind!(Join, "join", JoinReport, Never, input = "part.postext", font_defaults = false;);
 
 macro_rules! options {
     ($kind:ident { $($(#[$m:meta])* $fn:ident: $how:ident $flag:literal;)* }) => {
@@ -375,6 +379,25 @@ options!(ImportIdml {
     cache_dir: text "cache-dir";
 });
 
+options!(Join {
+    /// What becomes of each chapter of the part, in its order:
+    /// `"replace,add:5,skip"` (default: replace the book's chapter with its
+    /// number, else add it).
+    chapters: text "chapters";
+    /// The edition of a book in several languages the chapters join.
+    locale: text "locale";
+    /// Report the plan, write nothing.
+    dry_run: switch "dry-run";
+});
+
+impl Command<'_, kind::Join> {
+    /// The id a clashing resource of the part takes instead of the one
+    /// proposed (repeats: one call per resource).
+    pub fn rename(self, from: impl Display, to: impl Display) -> Self {
+        self.repeat("rename", format!("{from}={to}").into())
+    }
+}
+
 impl Command<'_, kind::Design> {
     /// The parts to take (`["page", "text", "headings"]`; default: all).
     pub fn parts<I, S>(self, parts: I) -> Self
@@ -525,5 +548,16 @@ impl Postext {
     /// [`links`](Command::<kind::ImportIdml>::links).
     pub fn import_idml(&self, idml: impl Into<Book>) -> Command<'_, kind::ImportIdml> {
         Command::new(self, Books(vec![idml.into()]))
+    }
+
+    /// Join the chapters of `part` (a `.postext`, its path or bytes: a part
+    /// of the book made apart) to `book` (a folder or a `.postext`, whose
+    /// files are changed), each at its number: it replaces the book's
+    /// chapter with that number or is added at its place. The book is
+    /// edited in place unless [`out`](Command::out) names a new `.postext`
+    /// or folder; [`dry_run`](Command::<kind::Join>::dry_run) only reports
+    /// the plan.
+    pub fn join(&self, book: impl AsRef<std::path::Path>, part: impl Into<Book>) -> Command<'_, kind::Join> {
+        Command::new(self, Books(vec![Book::Path(book.as_ref().to_path_buf()), part.into()]))
     }
 }

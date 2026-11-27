@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // @ts-expect-error -- a Node built-in: the package compiles without @types/node.
 import { readFileSync } from 'node:fs';
-import { resetViewerEdits } from '../../editor/viewerEdits.js';
-import { runTool, type WebMcpTool } from '../modelContext.js';
-import { harness, state } from './testHarness.js';
+import { resetViewerEdits } from '../../../editor/viewerEdits.js';
+import { runTool, type WebMcpTool } from '../../modelContext.js';
+import { harness, state } from '../testHarness.js';
 import { wordTools } from './word.js';
 
 /** The browser storage the templates are kept in. */
@@ -40,7 +40,7 @@ const base64 = (bytes: Uint8Array): string => {
  *  chapters with their markers (old-harbour-book), a tracked heading style
  *  (old-lantern). */
 function fixture(name: string, fileName: string): { base64: string; fileName: string } {
-  const bytes = new Uint8Array(readFileSync(new URL(`../../word/__fixtures__/${name}.docx`, import.meta.url)));
+  const bytes = new Uint8Array(readFileSync(new URL(`../../../word/__fixtures__/${name}.docx`, import.meta.url)));
   return { base64: base64(bytes), fileName };
 }
 

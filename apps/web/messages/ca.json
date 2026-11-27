@@ -6694,6 +6694,8 @@
     "partImportNoSuchChapter": "El llibre no té cap capítol __n__ per substituir.",
     "partImportSameNumber": "El número __n__ està ocupat: substitueix aquell capítol o tria un altre número.",
     "partImportBadNumber": "El número ha de ser 1 o més gran.",
+    "partImportUnnumbered": "No té cap títol numerat, de manera que els capítols que segueixen el que substitueix perdrien un número: afegeix-lo en lloc d’això.",
+    "partImportNoNumber": "__title__ (sense número de capítol)",
     "partImportClashes": "Recursos amb nom dels del llibre",
     "partImportClashesHint": "Altres capítols del llibre fan servir aquests noms. Cada recurs entra amb un de nou, i els capítols amb què arriba el citen amb aquest.",
     "partImportNewName": "Nom nou per a __id__",

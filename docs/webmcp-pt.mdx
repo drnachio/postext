@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'O que um agente de IA no navegador pode fazer no Sandbox com as 71 ferramentas WebMCP que ele oferece (olhar as páginas, mudar qualquer ajuste, editar o texto, adicionar imagens, tabelas e fontes, rodar as verificações, exportar) e como chamar cada uma, com argumentos e respostas reais',
   lang: 'pt',
-  lastUpdated: '2026-11-23',
+  lastUpdated: '2026-11-27',
   readingTime: '14 min',
   order: 54,
   plainSummary: "Esta página é para quem quer que um assistente de inteligência artificial trabalhe por você em um livro no Sandbox. Enquanto o Sandbox está aberto, ele entrega ao assistente um conjunto de ferramentas para olhar qualquer página, mudar o design, editar o texto, adicionar imagens e tabelas, encontrar problemas e salvar arquivos. Você pede com suas próprias palavras, por exemplo “aumente um pouco a letra e confira se o livro continua cabendo em 40 páginas”, e o assistente usa as ferramentas e mostra as páginas para você. Tudo fica no seu navegador. A página explica como conectar um assistente, o que ele pode fazer e como cada ferramenta é chamada.",
@@ -814,7 +814,7 @@ cada uma vêm com `postextWebMcp.listTools()`.
   `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`, `sandbox_import_chapters`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
-- **Juntar capítulos de outro `.postext`** — uma parte do livro feita à parte — com `sandbox_import_chapters`. Cada capítulo mantém o número que o seu título lhe dá: substitui o capítulo do livro com esse número ou é adicionado no seu lugar. Com `inspect: true` não muda nada e responde com o que propõe para cada capítulo e com os recursos cujo nome colide, com o que cada um tomaria; `chapters` e `renames` mudam isso. O design continua a ser o do livro.
+- **Juntar capítulos de outro `.postext`** — uma parte do livro feita à parte — com `sandbox_import_chapters`. Cada capítulo mantém o número que a diagramação lhe dá (`{startAt=N}` ou, se não houver, o seguinte ao do capítulo numerado anterior): substitui o capítulo do livro com esse número ou é adicionado no seu lugar. Com `inspect: true` não muda nada e responde com o que propõe para cada capítulo e com os recursos cujo nome colide, com o que cada um tomaria; `chapters` e `renames` mudam isso. O design continua a ser o do livro.
 - **InDesign**: `sandbox_import_idml`.
 - **Perguntas**: `sandbox_answer`.
 - **As verificações**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.

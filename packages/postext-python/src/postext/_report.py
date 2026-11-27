@@ -311,6 +311,39 @@ class ImportDocxReport(Report):
 
 
 @dataclass(frozen=True)
+class JoinReport(Report):
+    """``join``: the ``plan`` (the book's chapters with their numbers, the
+    part's, the ``choices`` made, the resource ``clashes`` and any
+    ``problems``), then what was done: the chapters ``added`` and
+    ``replaced`` (``title``, ``file``, ``number``), the ``resources``
+    brought, the ones ``renamed`` (``from``, ``to``), the ``fonts_added``
+    and the files ``written``."""
+
+    plan: Dict[str, Any] = field(default_factory=dict)
+    added: List[Dict[str, Any]] = field(default_factory=list)
+    replaced: List[Dict[str, Any]] = field(default_factory=list)
+    resources: List[str] = field(default_factory=list)
+    renamed: List[Dict[str, Any]] = field(default_factory=list)
+    fonts_added: List[str] = field(default_factory=list)
+    written: List[str] = field(default_factory=list)
+
+    @classmethod
+    def _extra(cls, d: Mapping[str, Any]) -> Dict[str, Any]:
+        def dicts(key: str) -> List[Dict[str, Any]]:
+            return [x for x in _list(d.get(key)) if isinstance(x, dict)]
+
+        return {
+            "plan": _dict(d.get("join")),
+            "added": dicts("added"),
+            "replaced": dicts("replaced"),
+            "resources": [str(x) for x in _list(d.get("resources"))],
+            "renamed": dicts("renamed"),
+            "fonts_added": [str(x) for x in _list(d.get("fontsAdded"))],
+            "written": [str(x) for x in _list(d.get("written"))],
+        }
+
+
+@dataclass(frozen=True)
 class UnpackReport(Report):
     """``unpack``: how many files the bundle held."""
 

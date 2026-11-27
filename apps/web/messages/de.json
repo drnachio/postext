@@ -6694,6 +6694,8 @@
     "partImportNoSuchChapter": "Das Buch hat kein Kapitel __n__ zum Ersetzen.",
     "partImportSameNumber": "Die Nummer __n__ ist vergeben: Ersetze dieses Kapitel oder wähle eine andere Nummer.",
     "partImportBadNumber": "Die Nummer muss 1 oder größer sein.",
+    "partImportUnnumbered": "Es hat keine nummerierte Überschrift, daher würden die Kapitel nach dem ersetzten eine Nummer verlieren: füge es stattdessen hinzu.",
+    "partImportNoNumber": "__title__ (ohne Kapitelnummer)",
     "partImportClashes": "Ressourcen mit den Namen derer des Buches",
     "partImportClashesHint": "Andere Kapitel des Buches verwenden diese Namen. Jede Ressource kommt unter einem neuen Namen, und die Kapitel, mit denen sie kommt, verweisen damit auf sie.",
     "partImportNewName": "Neuer Name für __id__",

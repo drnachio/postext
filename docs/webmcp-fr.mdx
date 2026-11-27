@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'Ce qu’un agent IA dans le navigateur peut faire avec le Sandbox grâce à ses 71 outils WebMCP (regarder les pages, changer n’importe quel réglage, modifier le texte, ajouter images, tableaux et polices, lancer les vérifications, exporter) et comment appeler chacun d’eux, avec de vrais arguments et de vraies réponses',
   lang: 'fr',
-  lastUpdated: '2026-11-23',
+  lastUpdated: '2026-11-27',
   readingTime: '14 min',
   order: 54,
   plainSummary: "Cette page s’adresse aux personnes qui veulent qu’un assistant d’intelligence artificielle travaille pour elles sur un livre dans le Sandbox. Tant que le Sandbox est ouvert, il donne à l’assistant une série d’outils : regarder n’importe quelle page, changer la maquette, modifier le texte, ajouter des images et des tableaux, trouver les problèmes et enregistrer des fichiers. Vous demandez avec vos propres mots, par exemple « grossissez un peu le texte et vérifiez que le livre tient toujours en 40 pages », et l’assistant utilise les outils et vous montre les pages. Tout reste dans votre navigateur. La page explique comment connecter un assistant, ce qu’il peut faire et comment chaque outil s’appelle.",
@@ -594,7 +594,7 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
 - **Un livre depuis le panneau Livres.** `sandbox_export` avec `format` `pdf`, `epub` ou `html` et `book: { "kind": "project", "id": "…", "language": "en" }` écrit un projet comme le fait **Télécharger en …** sur sa ligne (depuis postext 1.81) : le livre entier dans cette langue, mis en page à part du livre à l’écran, qui est enregistré avant et reste tel quel. `html` sans `book` écrit le projet à l’écran. La réponse donne le fichier, ses pages, la langue écrite et les avertissements ; `epubLayout` choisit la présentation d’un EPUB.
 - **Importer un fichier `.postext`** avec `sandbox_import_book` (`inspect: true` indique
   quelles langues il contient sans l’importer).
-- **Joindre les chapitres d'un autre `.postext`** — une partie du livre faite à part — avec `sandbox_import_chapters`. Chaque chapitre garde le numéro que lui donne son titre : il remplace le chapitre du livre portant ce numéro ou s'ajoute à sa place. Avec `inspect: true`, rien ne change et la réponse donne ce qui est proposé pour chaque chapitre et les ressources dont le nom entre en conflit, avec celui que chacune prendrait ; `chapters` et `renames` le modifient. La mise en page reste celle du livre.
+- **Joindre les chapitres d'un autre `.postext`** — une partie du livre faite à part — avec `sandbox_import_chapters`. Chaque chapitre garde le numéro que lui donne la mise en page (`{startAt=N}`, sinon celui qui suit le chapitre numéroté précédent) : il remplace le chapitre du livre portant ce numéro ou s'ajoute à sa place. Avec `inspect: true`, rien ne change et la réponse donne ce qui est proposé pour chaque chapitre et les ressources dont le nom entre en conflit, avec celui que chacune prendrait ; `chapters` et `renames` le modifient. La mise en page reste celle du livre.
 - **Créer un livre à partir d’un document InDesign** avec `sandbox_import_idml`. Avec
   `dryRun: true`, il ne crée rien et répond avec ce que contient le `.idml` et
   le rapport d’importation : la mise en page qu’il retiendrait et pourquoi, le

@@ -4,14 +4,14 @@
 // resource entries of preset.json (or of resources.json beside loose
 // Markdown). A packed book is written again with the files changed.
 
-import { existsSync, readFileSync, renameSync, rmSync, writeFileSync } from 'node:fs';
-import { basename, dirname, join } from 'node:path';
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import type { Resource } from 'postext';
 import { MANIFEST_FILE, openBundleZip, pickLocaleOverrides, zipBundle, type BundleLocaleOverrides, type BundleManifest, type BundleResourceSpec } from 'postext/bundle';
 import { applyDocxEdits, rebuildExportMap, type DocxEdit, type DocxEditResult, type DocxImportNote, type RebuiltMap } from 'postext/word';
 import { CliError, type Options } from './args';
 import { inputKind, loadBook, type Book, type BookChapter } from './input';
-import { writeStdout } from './io';
+import { writeAtomic, writeStdout } from './io';
 import { sourceAt } from './layout';
 import { style, type Reporter } from './log';
 import { chapterIds, resourceBytes, svgPicture, wordChapters } from './outputs/docx';
@@ -137,16 +137,6 @@ function editPlace(edit: DocxEdit | { chapter?: string; resourceId?: string; fie
 
 /** `data` into `path` through a file beside it renamed over it, so a
  *  write cut short never leaves a chapter or a packed book half written. */
-function writeAtomic(path: string, data: Uint8Array | string): void {
-  const temp = join(dirname(path), `.${basename(path)}.${process.pid}.tmp`);
-  try {
-    writeFileSync(temp, data);
-    renameSync(temp, path);
-  } catch (err) {
-    rmSync(temp, { force: true });
-    throw new CliError(`${path}: could not be written (${(err as Error).message})`);
-  }
-}
 
 const clip = (text: string) => {
   const flat = text.replace(/\s+/g, ' ').trim();

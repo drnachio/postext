@@ -3,14 +3,14 @@ import { unzipSync, strFromU8, zipSync } from 'fflate';
 import { buildDocument, type PostextConfig, type Resource } from 'postext';
 import { openBundle } from 'postext/bundle';
 import { idmlDocument } from 'postext-idml';
-import type { ProjectActions } from '../../context/projectActions.js';
+import type { ProjectActions } from '../../../context/projectActions.js';
 
-vi.mock('../../storage/blobStore.js', () => ({ getBlob: async () => null, putBlob: async () => 'blob' }));
+vi.mock('../../../storage/blobStore.js', () => ({ getBlob: async () => null, putBlob: async () => 'blob' }));
 // No fonts are fetched here: every face is named from its weight and slant.
-vi.mock('../../idml/idmlFonts.js', () => ({ sandboxIdmlFaces: async () => [], idmlFontWithheld: () => false }));
-vi.mock('../../controls/fonts/fontLoader.js', async (original) => ({ ...(await original<Record<string, unknown>>()), ensureConfigFontsLoaded: async () => undefined }));
+vi.mock('../../../idml/idmlFonts.js', () => ({ sandboxIdmlFaces: async () => [], idmlFontWithheld: () => false }));
+vi.mock('../../../controls/fonts/fontLoader.js', async (original) => ({ ...(await original<Record<string, unknown>>()), ensureConfigFontsLoaded: async () => undefined }));
 
-const { harness } = await import('./testHarness.js');
+const { harness } = await import('../testHarness.js');
 
 const PNG = Uint8Array.from(atob('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=='), (c) => c.charCodeAt(0));
 

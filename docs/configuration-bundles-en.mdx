@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '.postext bundles',
   description: 'How to open, lay out, render and create .postext files from code; bilingual bundles; files written by older versions; and the low-level API',
   lang: 'en',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-27',
   readingTime: '27 min',
   order: 24,
   parent: 'configuration',
@@ -256,7 +256,7 @@ const { bytes, manifest, warnings } = await createBundle({
   </tbody>
 </table>
 
-It returns the archive's `bytes`, the `manifest` written as `preset.json`, every file as `files` (path → bytes) and a list of `warnings`. Files are named after their resource id (`resources/lantern.svg`) or font file name (`fonts/…`), and chapters after their order and title (`chapters/01-dusk.md`). Fonts are declared in the manifest's `fonts`, never inside `config.customFonts`. Some things are left out, each with a warning:
+It returns the archive's `bytes`, the `manifest` written as `preset.json`, every file as `files` (path → bytes) and a list of `warnings`. Files are named after their resource id (`resources/lantern.svg`) or font file name (`fonts/…`), and chapters after their number and title (`chapters/01-dusk.md`). The number is the one the layout gives the chapter, its level-1 heading's `{startAt=N}` or one more than the numbered chapter before, so a ninth chapter that is the bundle's third file is written `chapters/09-….md`; a chapter with no numbered heading takes the number of the one before it (`00-cover.md`). Reading a bundle never depends on the names: the manifest's `chapters` gives the order. Fonts are declared in the manifest's `fonts`, never inside `config.customFonts`. Some things are left out, each with a warning:
 - a resource or font face whose payload is not in `files`
 - a `.woff` face (the PDF backend cannot embed one)
 - a family marked `redistributable: false` (when it names a `fallback`, its `fonts` entry stays, with that name and no files; since postext 1.42)
@@ -434,6 +434,24 @@ Because the Sandbox, the agent skill and the `postext` package all read and writ
 
 - **Start from a bundle.** Port an existing publication with the [agent skill](/en/docs/skill), or design a book in the [Sandbox](/en/sandbox) and export it (**Download (.postext)** in its row's ⋯ menu in the Books panel). Load the file from your program with `openBundle` to render it to canvas, HTML or PDF. Keep the file as the book's source: edit the chapters, the configuration or the resources in code and write it back with `createBundle`, or simply reload it whenever it changes.
 - **Debug and fine-tune in the Sandbox.** When something in your program's output needs work (a figure that lands on the wrong page, a heading style, the column balance), export what your program lays out with `createBundle`. Import that file in the Sandbox (*Books → New → Open a .postext file…*), fix the text, design or figures with the live preview, the Checks panel and the PDF view, then export it again. Your program then loads the corrected file with `openBundle`. Or copy what changed back into your code: the manifest's `config` holds only the values that differ from the defaults, so it reads as a short diff.
+
+### Joining a part of a book
+
+A book made in parts (chapters converted or laid out apart, each exported as its own `.postext`) joins back with `joinBundleFiles`, the function behind `postext join` and the Sandbox's **Add chapters from another book** (since postext 1.99):
+
+```ts
+import { inspectBundleJoin, joinBundleFiles, openBundleZip, zipBundle } from 'postext/bundle';
+
+const book = openBundleZip(bookBytes).files;
+const part = openBundleZip(partBytes).files;
+const plan = await inspectBundleJoin(book, part);
+// plan.part: the part's chapters with their numbers; plan.choices: replace or add for each;
+// plan.clashes: resources the book keeps using under the same id, with the name proposed.
+const joined = await joinBundleFiles(book, part, { renames: { 'fig-1-1': 'fig-9-1' } });
+const bytes = zipBundle(Object.fromEntries(joined.files));
+```
+
+`choices` (one `{ action: 'add' | 'replace' | 'skip', number }` per chapter of the part) and `renames` change what is proposed, and `locale` picks the edition of a book in several languages. Choices or names that do not fit throw, and `inspectBundleJoin` lists them first as `problems` and `badNames`. The book's manifest is edited, not written again: everything the join does not touch stays byte for byte. The rules are the Sandbox's. Chapters are counted with `chapterNumbers(chapters, config, start)`, as the layout counts them. A resource is renamed only when the book keeps using its own (in a chapter, its design or another resource), and only the font families the book lacks are taken. A host that keeps books in records of its own gets the same plan as data from `planPartJoin(book, part, choices, renames)`: the steps, the renamed resources and the fonts, with no files touched.
 
 ### Low-level API
 

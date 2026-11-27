@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '.postext-Pakete',
   description: 'Wie Sie .postext-Dateien aus Code öffnen, setzen, rendern und erstellen; außerdem zweisprachige Pakete, Dateien älterer Versionen und die API der unteren Ebene',
   lang: 'de',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-27',
   readingTime: '27 min',
   order: 24,
   parent: 'configuration',
@@ -256,7 +256,7 @@ const { bytes, manifest, warnings } = await createBundle({
   </tbody>
 </table>
 
-Die Funktion gibt die `bytes` des Archivs zurück, das als `preset.json` geschriebene `manifest`, jede Datei als `files` (Pfad → Bytes) und eine Liste von `warnings`. Dateien werden nach der ID ihrer Ressource (`resources/lantern.svg`) oder dem Namen ihrer Schriftdatei (`fonts/…`) benannt, Kapitel nach ihrer Reihenfolge und ihrem Titel (`chapters/01-dusk.md`). Schriften werden in den `fonts` des Manifests deklariert, nie in `config.customFonts`. Manches bleibt draußen, jeweils mit einer Warnung:
+Die Funktion gibt die `bytes` des Archivs zurück, das als `preset.json` geschriebene `manifest`, jede Datei als `files` (Pfad → Bytes) und eine Liste von `warnings`. Dateien werden nach der ID ihrer Ressource (`resources/lantern.svg`) oder dem Namen ihrer Schriftdatei (`fonts/…`) benannt, Kapitel nach ihrer Nummer und ihrem Titel (`chapters/01-dusk.md`). Die Nummer ist die, die der Satz dem Kapitel gibt, das `{startAt=N}` seiner Überschrift der Ebene 1 oder eins mehr als das vorige nummerierte Kapitel; ein neuntes Kapitel, das die dritte Datei des Pakets ist, wird also als `chapters/09-….md` geschrieben, und ein Kapitel ohne nummerierte Überschrift bekommt die Nummer des vorigen (`00-cover.md`). Beim Lesen eines Pakets kommt es nie auf die Namen an: Die Reihenfolge geben die `chapters` des Manifests vor. Schriften werden in den `fonts` des Manifests deklariert, nie in `config.customFonts`. Manches bleibt draußen, jeweils mit einer Warnung:
 - eine Ressource oder ein Schnitt, deren Nutzdaten nicht in `files` stehen
 - ein Schnitt `.woff` (das PDF-Backend kann ihn nicht einbetten)
 - eine Familie mit der Markierung `redistributable: false` (gibt sie einen `fallback` an, bleibt ihr `fonts`-Eintrag mit diesem Namen und ohne Dateien erhalten; seit postext 1.42)
@@ -434,6 +434,24 @@ Da die Sandbox, der Agenten-Skill und das Paket `postext` alle dieselbe Datei le
 
 - **Mit einem Paket beginnen.** Portieren Sie eine bestehende Veröffentlichung mit dem [Agenten-Skill](/de/docs/skill), oder gestalten Sie ein Buch in der [Sandbox](/de/sandbox) und exportieren Sie es (**Herunterladen (.postext)** im Menü ⋯ seiner Zeile im Bedienfeld Bücher). Laden Sie die Datei in Ihrem Programm mit `openBundle`, um sie auf Canvas, als HTML oder als PDF zu rendern. Behalten Sie die Datei als Quelle des Buches: Bearbeiten Sie die Kapitel, die Konfiguration oder die Ressourcen im Code und schreiben Sie sie mit `createBundle` zurück, oder laden Sie sie einfach neu, wann immer sie sich ändert.
 - **In der Sandbox Fehler suchen und feinabstimmen.** Wenn etwas in der Ausgabe Ihres Programms Nacharbeit braucht (eine Abbildung, die auf der falschen Seite steht, ein Überschriftenstil, der Spaltenausgleich), exportieren Sie mit `createBundle`, was Ihr Programm setzt. Importieren Sie diese Datei in die Sandbox (*Bücher → Neu → Eine .postext-Datei öffnen …*), korrigieren Sie Text, Gestaltung oder Abbildungen mit der Live-Vorschau, dem Bedienfeld Prüfungen und der PDF-Ansicht, und exportieren Sie sie dann erneut. Ihr Programm lädt danach die korrigierte Datei mit `openBundle`. Oder übernehmen Sie die Änderungen zurück in Ihren Code: Die `config` des Manifests enthält nur die Werte, die von den Standardwerten abweichen, und liest sich deshalb wie ein kurzer Diff.
+
+### Einen Teil des Buches anfügen
+
+Ein Buch, das in Teilen entsteht (Kapitel, die getrennt konvertiert oder gesetzt und jeweils als eigene `.postext` exportiert wurden), wird mit `joinBundleFiles` wieder zusammengeführt, der Funktion hinter `postext join` und **Kapitel aus einem anderen Buch hinzufügen** in der Sandbox (seit postext 1.99):
+
+```ts
+import { inspectBundleJoin, joinBundleFiles, openBundleZip, zipBundle } from 'postext/bundle';
+
+const book = openBundleZip(bookBytes).files;
+const part = openBundleZip(partBytes).files;
+const plan = await inspectBundleJoin(book, part);
+// plan.part: die Kapitel des Teils mit ihren Nummern; plan.choices: ersetzen oder einfügen, für jedes;
+// plan.clashes: Ressourcen, die das Buch unter derselben ID weiter verwendet, mit dem vorgeschlagenen Namen.
+const joined = await joinBundleFiles(book, part, { renames: { 'fig-1-1': 'fig-9-1' } });
+const bytes = zipBundle(Object.fromEntries(joined.files));
+```
+
+`choices` (ein `{ action: 'add' | 'replace' | 'skip', number }` pro Kapitel des Teils) und `renames` ändern den Vorschlag, und `locale` wählt die Ausgabe eines mehrsprachigen Buchs. Entscheidungen oder Namen, die nicht passen, lösen eine Ausnahme aus; `inspectBundleJoin` listet sie vorher als `problems` und `badNames` auf. Das Manifest des Buchs wird bearbeitet, nicht neu geschrieben: Alles, was das Zusammenführen nicht berührt, bleibt Byte für Byte gleich. Es gelten die Regeln der Sandbox. Die Kapitel werden mit `chapterNumbers(chapters, config, start)` gezählt, so wie der Satz sie zählt. Eine Ressource wird nur umbenannt, wenn das Buch seine eigene weiter verwendet (in einem Kapitel, in seiner Gestaltung oder in einer anderen Ressource), und nur die Schriftfamilien, die dem Buch fehlen, werden übernommen. Ein Host, der Bücher in eigenen Datensätzen hält, bekommt denselben Plan als Daten von `planPartJoin(book, part, choices, renames)`: die Schritte, die umbenannten Ressourcen und die Schriften, ohne dass eine Datei angefasst wird.
 
 ### API der unteren Ebene
 

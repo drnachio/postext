@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Ligne de commande',
   description: 'Un exécutable autonome pour macOS, Linux et Windows qui transforme un livre .postext, un dossier de livre ou des fichiers Markdown isolés en PDF, HTML, EPUB, images de pages et Word, crée des paquets et vérifie des livres, avec une sortie JSON pour les scripts et les agents, et des paquets Python et Rust qui le pilotent depuis le code',
   lang: 'fr',
-  lastUpdated: '2026-11-16',
+  lastUpdated: '2026-11-27',
   readingTime: '14 min',
   order: 53,
   plainSummary: "Cette page s’adresse à ceux qui veulent faire des livres avec Postext depuis un terminal plutôt que depuis le site. Vous téléchargez un seul fichier pour votre ordinateur et vous le lancez, sans rien installer. Vous lui donnez votre livre, ou quelques fichiers texte, et il produit un PDF, une page web, un livre numérique, des images des pages ou un document Word. Il peut aussi vérifier qu’un livre n’a pas de problème et réunir ses fichiers en un seul. Les programmes et les assistants d’IA peuvent l’utiliser eux aussi, car il sait répondre dans un format qu’ils lisent facilement.",
@@ -176,6 +176,7 @@ sa propre langue, sauf si `--locale` en demande une autre (`--locale en`).
     <tr><td><code>import-docx</code></td><td>Les corrections faites dans un fichier Word exporté, rapportées dans le livre ; tout autre document Word, en nouveau livre (un dossier ou un <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>Un document InDesign enregistré en IDML, ou un assemblage InDesign compressé, en nouveau livre (un dossier ou un <code>.postext</code>).</td></tr>
     <tr><td><code>design</code></td><td>La maquette d’un livre (certaines de ses parties, ou toutes) en fichier de maquette, un <code>.postext</code> sans chapitres.</td></tr>
+    <tr><td><code>join</code></td><td>Les chapitres d’un autre <code>.postext</code> (une partie du livre faite à part) joints au livre, chacun à son numéro.</td></tr>
     <tr><td><code>pack</code></td><td>Un dossier de livre ou des fichiers Markdown isolés réunis en un seul fichier <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fichier <code>.postext</code> décompressé dans un dossier.</td></tr>
     <tr><td><code>info</code></td><td>Les chapitres, les langues, les ressources et les polices du livre, et avec <code>--pages</code> son nombre de pages.</td></tr>
@@ -496,6 +497,21 @@ fixent l’identifiant, la description et la vignette du paquet ; l’identifi
 est par défaut une version simplifiée du nom (un slug). Un dossier garde ce
 qu’indique son `preset.json`. Un livre qui n’indique aucune couverture reçoit sa première page comme couverture (`thumbnail.jpg`, 1024 px sur le grand côté), l’image qu’un gestionnaire de fichiers peut afficher pour le fichier ; `--no-auto-thumbnail` l’omet. `unpack` refuse d’écrire dans un
 dossier qui n’est pas vide, sauf avec `--force`.
+
+### join
+
+```bash
+postext join book/ chapter-9.postext --dry-run
+postext join book.postext part.postext
+postext join book.postext part.postext --chapters "replace,add:5,skip" --rename fig-1-1=fig-5-1
+postext join book/ part.postext -o joined.postext --json
+```
+
+`join` fait entrer dans un livre les chapitres d’un autre `.postext` (depuis postext 1.99) : un module converti sur un autre ordinateur, quelques chapitres mis en page à part, un chapitre corrigé puis exporté de nouveau. Chaque chapitre de la partie garde le numéro que lui donne la mise en page : le `{startAt=N}` de son titre de niveau 1, sinon un de plus que le chapitre numéroté précédent (un style de titre avec `numbered: false` ne compte pas). Par défaut, un chapitre remplace le chapitre du livre qui porte le même numéro, dans le fichier de ce chapitre ; sinon il s’ajoute à sa place, dans un fichier nommé d’après son numéro (`chapters/05-wrist-and-hand.md`). Un chapitre sans titre numéroté est laissé de côté.
+
+`--chapters` dit ce que devient chaque chapitre de la partie, dans leur ordre : `add`, `add:N`, `replace`, `replace:N` ou `skip`. `--dry-run` affiche les chapitres du livre avec leurs numéros, ce qui arriverait à chaque chapitre de la partie et les ressources qui seraient renommées, sans rien écrire ; avec `--json`, la même chose sort sous forme de données. Un choix qui ne convient pas (un numéro que le livre a déjà, un remplacement sans chapitre de ce numéro) arrête la commande avec une erreur, et rien n’est écrit.
+
+Les ressources qu’utilisent les chapitres arrivent avec leurs fichiers. Une ressource qui porte le nom d’une ressource que le livre continue d’utiliser (dans un autre chapitre, dans sa maquette ou dans une autre ressource) est renommée, en `fig-1-1-2` par défaut ou avec l’identifiant que donne `--rename OLD=NEW`, ainsi que chaque référence à elle dans les chapitres et les ressources avec lesquels elle arrive ; un fichier de la partie qui tomberait sur un autre fichier du livre prend un nom libre à côté. La maquette reste celle du livre : seules les familles de polices qui lui manquent sont ajoutées, avec leurs fichiers. Le livre est modifié sur place : un dossier ne reçoit que les fichiers qu’écrit la jonction, et un `.postext` est réécrit avec tout le reste tel quel (ses autres éditions, ses couvertures et ses mises en page enregistrées). `-o` écrit le résultat ailleurs, en `.postext` ou en dossier. `--locale` choisit l’édition d’un livre en plusieurs langues à laquelle les chapitres se joignent. Le Sandbox fait la même chose depuis le panneau Texte (voir [Ajouter des chapitres d’un autre livre](/fr/docs/sandbox-books-saving#ajouter-des-chapitres-dun-autre-livre)).
 
 ### info et check
 

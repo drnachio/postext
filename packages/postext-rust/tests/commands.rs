@@ -277,3 +277,25 @@ fn run_and_root_functions() {
     let r = postext::pdf(&book).out(dir.path().join("m.pdf")).offline(true).run().unwrap();
     assert!(r.ok && dir.path().join("m.pdf").is_file());
 }
+
+#[test]
+fn join_arguments() {
+    // The arguments alone: no executable runs.
+    let client = Postext::with_binary("postext");
+    let cmd = client
+        .join("book", vec![0x50u8, 0x4b])
+        .chapters("replace,add:5")
+        .rename("fig-1-1", "fig-5-1")
+        .rename("fig-2-1", "fig-5-2")
+        .dry_run(true);
+    let args: Vec<String> = cmd.args().unwrap().iter().map(|a| a.to_string_lossy().into_owned()).collect();
+    assert_eq!(args[0], "join");
+    assert_eq!(args[1], "book");
+    assert!(args[2].ends_with("part.postext"), "{args:?}");
+    assert!(args.windows(2).any(|w| w == ["--chapters", "replace,add:5"]));
+    assert!(
+        args.windows(2).any(|w| w == ["--rename", "fig-1-1=fig-5-1"])
+            && args.windows(2).any(|w| w == ["--rename", "fig-2-1=fig-5-2"])
+    );
+    assert!(args.iter().any(|a| a == "--dry-run") && !args.iter().any(|a| a == "--out"));
+}

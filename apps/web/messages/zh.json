@@ -6694,6 +6694,8 @@
     "partImportNoSuchChapter": "书中没有可替换的第 __n__ 章。",
     "partImportSameNumber": "编号 __n__ 已被占用：请替换该章，或选择其他编号。",
     "partImportBadNumber": "编号必须大于或等于 1。",
+    "partImportUnnumbered": "它没有编号的标题，替换后其后各章会少一个编号：请改为添加。",
+    "partImportNoNumber": "__title__（无章编号）",
     "partImportClashes": "与书中资源同名的资源",
     "partImportClashesHint": "书中其他章节使用了这些名称。每个资源以新名称导入，随之而来的章节以新名称引用它。",
     "partImportNewName": "__id__ 的新名称",

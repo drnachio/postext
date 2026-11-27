@@ -412,6 +412,29 @@ detailed! {
 }
 
 detailed! {
+    /// `join`: the `plan` (the book's chapters with their numbers, the
+    /// part's, the choices made, the resource clashes and any problems),
+    /// then what was done.
+    JoinReport {
+        /// What the command saw and chose (`book`, `part`, `choices`,
+        /// `replaces`, `clashes`, `problems`, `badNames`).
+        plan: Option<Map<String, Value>> = |r| object(r.get("join")),
+        /// The chapters added (`title`, `file`, `number`).
+        added: Vec<Map<String, Value>> = |r| objects(r.get("added")),
+        /// The book's chapters replaced (`title`, `file`, `number`).
+        replaced: Vec<Map<String, Value>> = |r| objects(r.get("replaced")),
+        /// The resources brought, by their ids in the book.
+        resources: Vec<String> = |r| strings(r.get("resources")),
+        /// The clashing resources renamed (`from`, `to`).
+        renamed: Vec<Map<String, Value>> = |r| objects(r.get("renamed")),
+        /// The font families the book lacked.
+        fonts_added: Vec<String> = |r| strings(r.get("fontsAdded")),
+        /// The files written.
+        written: Vec<String> = |r| strings(r.get("written")),
+    }
+}
+
+detailed! {
     /// `unpack`: how many files the bundle held.
     UnpackReport {
         /// The number of files the bundle held.

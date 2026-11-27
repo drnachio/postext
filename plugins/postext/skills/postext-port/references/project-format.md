@@ -100,6 +100,24 @@ only drops the print master). It does **not** check `kind`, `typeId` against
 - Book layout: cover (`00-cover.md`), front matter, contents (a chapter holding
   `:::toc`), parts (`:::part` at the top of each part's first chapter),
   chapters, back matter / credits.
+- File names follow the chapter's number as the layout counts it (postext ≥
+  1.99): its H1's `{startAt=N}`, else one more than the numbered chapter
+  before; a heading style with `numbered: false` counts for nothing, and a
+  chapter with no numbered H1 takes the number before it (`00-cover.md`,
+  `00-preface.md`, `01-…`, `09-…`). `createBundle` and the Sandbox's export
+  name them so; reading never depends on the names (the array order is the
+  book's order).
+- **A book ported in parts** (one module now, the rest later; chapters 1–4
+  here, chapter 9 on another machine): give every part's first chapter its
+  real number with `{startAt=N}` on its H1 (the chapters after it in the part
+  follow on), and name its resources so they cannot clash with the other
+  parts' (`fig-9-1`, not `fig-1-1`). The parts join with `postext join
+  book/ part.postext` (`--dry-run` first; `--chapters "replace,add:5,skip"`,
+  `--rename OLD=NEW`), the Sandbox's Manuscript panel (*Add chapters from
+  another book*) or `joinBundleFiles` from `postext/bundle`: each chapter
+  replaces the book's chapter with its number or is added at its place, a
+  clashing resource is renamed with every reference, and only the font
+  families the book lacks are taken (the design stays the book's).
 
 ## 2. Languages (`localized`)
 

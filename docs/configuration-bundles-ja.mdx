@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '.postextバンドル',
   description: 'コードから.postextファイルを開き、組み、描画し、作成する方法。多言語のバンドル、古いバージョンが書き出したファイル、低レベルのAPI',
   lang: 'ja',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-27',
   readingTime: '29分',
   order: 24,
   parent: 'configuration',
@@ -256,7 +256,7 @@ const { bytes, manifest, warnings } = await createBundle({
   </tbody>
 </table>
 
-戻り値は、アーカイブの`bytes`、`preset.json`として書き出した`manifest`、すべてのファイルを収めた`files`（パス → バイト列）、`warnings`のリストです。ファイル名はリソースのid（`resources/lantern.svg`）またはフォントのファイル名（`fonts/…`）から、章のファイル名は順番とタイトル（`chapters/01-dusk.md`）から付けます。フォントはマニフェストの`fonts`で宣言し、`config.customFonts`の中には決して書きません。次のものは、それぞれ警告を出して除外します。
+戻り値は、アーカイブの`bytes`、`preset.json`として書き出した`manifest`、すべてのファイルを収めた`files`（パス → バイト列）、`warnings`のリストです。ファイル名はリソースのid（`resources/lantern.svg`）またはフォントのファイル名（`fonts/…`）から、章のファイル名は番号とタイトル（`chapters/01-dusk.md`）から付けます。番号は組版でその章に付く番号で、レベル1見出しの`{startAt=N}`、なければ前の番号付きの章の次の番号です。そのため、バンドルの3番目のファイルである第9章は`chapters/09-….md`として書き出されます。番号付きの見出しがない章は、前の章の番号を使います（`00-cover.md`）。バンドルを読むときにファイル名に頼ることはなく、順番はマニフェストの`chapters`で決まります。フォントはマニフェストの`fonts`で宣言し、`config.customFonts`の中には決して書きません。次のものは、それぞれ警告を出して除外します。
 - データ本体が`files`にないリソースやフォントのフェイス
 - `.woff`のフェイス（PDFバックエンドが埋め込めないため）
 - `redistributable: false`が付いたファミリー（`fallback`を指定している場合、その`fonts`項目は、その名前だけでファイルなしのまま残ります。postext 1.42以降）
@@ -435,6 +435,24 @@ Sandbox、エージェントスキル、`postext`パッケージはどれも同�
 
 - **バンドルから始める**。既存の出版物を[エージェントスキル](/ja/docs/skill)で移植するか、[Sandbox](/ja/sandbox)で本をデザインして書き出します（**本**パネルの、その本の行の⋯メニューにある**ダウンロード（.postext）**）。そのファイルをプログラムから`openBundle`で読み込み、canvas、HTML、PDFに描画します。ファイルを本のソースとして手元に置き、章、設定、リソースをコードで編集して`createBundle`で書き戻すか、変わるたびに読み込み直します。
 - **Sandboxでデバッグし、微調整する**。プログラムの出力に手直しが必要なとき（図が違うページに入る、見出しのスタイル、段末そろえなど）は、プログラムが組んだものを`createBundle`で書き出します。そのファイルをSandboxで読み込み（**本 → 新規 → .postextファイルを開く…**）、ライブプレビュー、**検査**パネル、PDFビューを見ながらテキスト、デザイン、図を直して、もう一度書き出します。プログラムは修正されたファイルを`openBundle`で読み込みます。あるいは、変わった部分をコードに書き戻します。マニフェストの`config`には既定値と異なる値だけが入っているので、短い差分として読めます。
+
+### 本の一部を結合する
+
+分けて作った本（別々に変換したり組んだりして、それぞれ独立した`.postext`として書き出した章）は、`joinBundleFiles`で1冊に結合し直せます。これは`postext join`と、Sandboxの**別の本から章を追加**の土台になっている関数です（postext 1.99以降）。
+
+```ts
+import { inspectBundleJoin, joinBundleFiles, openBundleZip, zipBundle } from 'postext/bundle';
+
+const book = openBundleZip(bookBytes).files;
+const part = openBundleZip(partBytes).files;
+const plan = await inspectBundleJoin(book, part);
+// plan.part：取り込む側の章とその番号。plan.choices：各章を置き換えるか追加するか。
+// plan.clashes：本が同じidで使い続けるリソースと、提案された名前。
+const joined = await joinBundleFiles(book, part, { renames: { 'fig-1-1': 'fig-9-1' } });
+const bytes = zipBundle(Object.fromEntries(joined.files));
+```
+
+`choices`（取り込む側の章ごとに1つの`{ action: 'add' | 'replace' | 'skip', number }`）と`renames`で提案を変え、`locale`で多言語の本の言語版を選びます。成り立たない指定や名前は例外を投げます。`inspectBundleJoin`は、それを先に`problems`と`badNames`として挙げます。本のマニフェストは書き直さずに編集するので、結合で触れない部分はバイト単位で元のままです。規則はSandboxと同じです。章は`chapterNumbers(chapters, config, start)`で、組版と同じように数えます。リソースの名前を変えるのは、本が自分のリソース（章、本のデザイン、別のリソースで使うもの）を使い続ける場合だけで、取り込むフォントファミリーは本にないものだけです。本を独自のレコードで保持するホストは、`planPartJoin(book, part, choices, renames)`から同じ計画をデータで受け取れます。手順、名前を変えたリソース、フォントが含まれ、ファイルには手を付けません。
 
 ### 低レベルAPI
 

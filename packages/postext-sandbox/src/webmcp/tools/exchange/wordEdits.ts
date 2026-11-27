@@ -5,16 +5,16 @@
 // dialog and review dialog do.
 
 import { DocxReadError, type DocxComment, type DocxEdit, type DocxImportNote } from 'postext/word';
-import type { SandboxState } from '../../context/SandboxContext.js';
-import { downloadBytes } from '../../storage/persistence.js';
-import { createPdfFontProvider } from '../../viewport/pdf/pdfFontProvider.js';
-import { DOCX_MIME, buildWordExport, docxFileName, type WordExportNote, type WordVariant } from '../../word/wordExport.js';
-import { isWordExport, rebuildWordMap, reviewChanges, reviewWordEdits, writeWordEdits } from '../../word/wordEdits.js';
-import { chapterText, stateReaches } from '../chapterEdits.js';
-import { layoutConfig, type SandboxToolHost } from '../host.js';
-import { ToolError, type WebMcpTool } from '../modelContext.js';
-import { WAIT_PARAM, fileParam, layoutAnswer } from './book.js';
-import { readFileInput, type FileInput } from './resources.js';
+import type { SandboxState } from '../../../context/SandboxContext.js';
+import { downloadBytes } from '../../../storage/persistence.js';
+import { createPdfFontProvider } from '../../../viewport/pdf/pdfFontProvider.js';
+import { DOCX_MIME, buildWordExport, docxFileName, type WordExportNote, type WordVariant } from '../../../word/wordExport.js';
+import { isWordExport, rebuildWordMap, reviewChanges, reviewWordEdits, writeWordEdits } from '../../../word/wordEdits.js';
+import { chapterText, stateReaches } from '../../chapterEdits.js';
+import { layoutConfig, type SandboxToolHost } from '../../host.js';
+import { ToolError, type WebMcpTool } from '../../modelContext.js';
+import { WAIT_PARAM, fileParam, layoutAnswer } from '../book.js';
+import { readFileInput, type FileInput } from '../resources.js';
 
 /** How long the edits may take to reach the state. */
 const LANDING_MS = 5000;

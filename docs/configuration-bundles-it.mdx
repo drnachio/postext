@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Pacchetti .postext',
   description: 'Come aprire, impaginare, disegnare e creare file .postext dal codice; i pacchetti bilingui; i file scritti dalle versioni precedenti; l’API di basso livello',
   lang: 'it',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-27',
   readingTime: '29 min',
   order: 24,
   parent: 'configuration',
@@ -256,7 +256,7 @@ const { bytes, manifest, warnings } = await createBundle({
   </tbody>
 </table>
 
-Restituisce i `bytes` dell’archivio, il `manifest` scritto come `preset.json`, ogni file come `files` (percorso → byte) e un elenco di `warnings`. I file prendono il nome dall’id della loro risorsa (`resources/lantern.svg`) o dal nome del file del font (`fonts/…`), e i capitoli dal loro ordine e dal titolo (`chapters/01-dusk.md`). I font sono dichiarati nei `fonts` del manifesto, mai dentro `config.customFonts`. Alcune cose vengono lasciate fuori, ciascuna con un avviso:
+Restituisce i `bytes` dell’archivio, il `manifest` scritto come `preset.json`, ogni file come `files` (percorso → byte) e un elenco di `warnings`. I file prendono il nome dall’id della loro risorsa (`resources/lantern.svg`) o dal nome del file del font (`fonts/…`), e i capitoli dal loro numero e dal titolo (`chapters/01-dusk.md`). Il numero è quello che l’impaginazione dà al capitolo, il `{startAt=N}` del suo titolo di livello 1 o uno in più del capitolo numerato precedente, quindi un nono capitolo che è il terzo file del pacchetto si scrive `chapters/09-….md`; un capitolo senza titolo numerato prende il numero di quello prima (`00-cover.md`). La lettura di un pacchetto non dipende mai dai nomi: l’ordine lo danno i `chapters` del manifesto. I font sono dichiarati nei `fonts` del manifesto, mai dentro `config.customFonts`. Alcune cose vengono lasciate fuori, ciascuna con un avviso:
 - una risorsa o un font il cui contenuto non è in `files`
 - un font `.woff` (il backend PDF non può incorporarlo)
 - una famiglia marcata `redistributable: false` (se indica un `fallback`, la sua voce `fonts` resta, con quel nome e senza file; da postext 1.42)
@@ -434,6 +434,24 @@ Dato che la Sandbox, la skill per agenti e il pacchetto `postext` leggono e scri
 
 - **Parti da un pacchetto.** Porta una pubblicazione esistente con la [skill per agenti](/it/docs/skill), oppure progetta un libro nella [Sandbox](/it/sandbox) ed esportalo (**Scarica (.postext)** nel menu ⋯ della sua riga nel pannello Libri). Carica il file dal tuo programma con `openBundle` per disegnarlo su canvas, in HTML o in PDF. Tieni il file come sorgente del libro: modifica i capitoli, la configurazione o le risorse nel codice e riscrivilo con `createBundle`, oppure ricaricalo semplicemente ogni volta che cambia.
 - **Correggi e rifinisci nella Sandbox.** Quando qualcosa nell’output del tuo programma va sistemato (una figura che finisce sulla pagina sbagliata, uno stile di titolo, il bilanciamento delle colonne), esporta con `createBundle` ciò che il tuo programma impagina. Importa quel file nella Sandbox (*Libri → Nuovo → Apri un file .postext…*), correggi il testo, il progetto grafico o le figure con l’anteprima dal vivo, il pannello **Verifiche** e la vista PDF, poi esportalo di nuovo. Il tuo programma carica allora il file corretto con `openBundle`. Oppure riporta le modifiche nel tuo codice: il `config` del manifesto contiene solo i valori diversi da quelli predefiniti, quindi si legge come un breve diff.
+
+### Unire una parte del libro
+
+Un libro fatto a parti (capitoli convertiti o impaginati a parte, ciascuno esportato come `.postext` a sé) si ricompone con `joinBundleFiles`, la funzione dietro `postext join` e dietro **Aggiungi capitoli da un altro libro** nella Sandbox (da postext 1.99):
+
+```ts
+import { inspectBundleJoin, joinBundleFiles, openBundleZip, zipBundle } from 'postext/bundle';
+
+const book = openBundleZip(bookBytes).files;
+const part = openBundleZip(partBytes).files;
+const plan = await inspectBundleJoin(book, part);
+// plan.part: i capitoli della parte con i loro numeri; plan.choices: sostituire o aggiungere, per ciascuno;
+// plan.clashes: risorse che il libro continua a usare con lo stesso id, con il nome proposto.
+const joined = await joinBundleFiles(book, part, { renames: { 'fig-1-1': 'fig-9-1' } });
+const bytes = zipBundle(Object.fromEntries(joined.files));
+```
+
+`choices` (un `{ action: 'add' | 'replace' | 'skip', number }` per ogni capitolo della parte) e `renames` cambiano ciò che viene proposto, e `locale` sceglie l’edizione di un libro in più lingue. Scelte o nomi che non vanno sollevano un’eccezione, e `inspectBundleJoin` li elenca prima come `problems` e `badNames`. Il manifesto del libro viene modificato, non riscritto: tutto ciò che l’unione non tocca resta uguale byte per byte. Le regole sono quelle della Sandbox. I capitoli si contano con `chapterNumbers(chapters, config, start)`, come li conta l’impaginazione. Una risorsa viene rinominata solo quando il libro continua a usare la propria (in un capitolo, nel suo progetto grafico o in un’altra risorsa), e si prendono solo le famiglie di font che mancano al libro. Un’applicazione ospite che tiene i libri in record propri ottiene lo stesso piano come dati da `planPartJoin(book, part, choices, renames)`: i passaggi, le risorse rinominate e i font, senza toccare alcun file.
 
 ### API di basso livello
 

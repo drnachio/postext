@@ -6694,6 +6694,8 @@
     "partImportNoSuchChapter": "The book has no chapter __n__ to replace.",
     "partImportSameNumber": "Number __n__ is taken: replace that chapter, or choose another number.",
     "partImportBadNumber": "The number must be 1 or more.",
+    "partImportUnnumbered": "It has no numbered heading, so the chapters after the one it replaces would lose a number: add it instead.",
+    "partImportNoNumber": "__title__ (no chapter number)",
     "partImportClashes": "Resources named as the book's",
     "partImportClashesHint": "The book's other chapters use these names. Each resource comes in under a new one, and the chapters it comes with refer to it by it.",
     "partImportNewName": "New name for __id__",

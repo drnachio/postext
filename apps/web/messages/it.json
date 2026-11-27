@@ -6694,6 +6694,8 @@
     "partImportNoSuchChapter": "Il libro non ha un capitolo __n__ da sostituire.",
     "partImportSameNumber": "Il numero __n__ è occupato: sostituisci quel capitolo o scegli un altro numero.",
     "partImportBadNumber": "Il numero deve essere 1 o più.",
+    "partImportUnnumbered": "Non ha un titolo numerato, quindi i capitoli dopo quello che sostituisce perderebbero un numero: aggiungilo invece.",
+    "partImportNoNumber": "__title__ (senza numero di capitolo)",
     "partImportClashes": "Risorse con il nome di quelle del libro",
     "partImportClashesHint": "Altri capitoli del libro usano questi nomi. Ogni risorsa entra con un nome nuovo, e i capitoli con cui arriva la citano così.",
     "partImportNewName": "Nuovo nome per __id__",

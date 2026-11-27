@@ -5,19 +5,19 @@
 // becomes of it: added at its number, put in place of the book's chapter
 // with that number, or left out. The resources named as ones the book keeps
 // using are listed with the name each takes. Nothing changes until the
-// dialog's button (book/partImport.ts, presets/partBundle.ts).
+// dialog's button. The plan is postext's (`planPartJoin`, the one
+// `postext join` follows); presets/partBundle.ts applies it.
 
 import { type ReactNode, type RefObject, useEffect, useId, useMemo, useRef, useState } from 'react';
 import { Dialog } from '@base-ui/react/dialog';
 import { AlertTriangle, X } from 'lucide-react';
-import { choiceProblems, partChapters, planPartImport, proposeChoices, replacedChapter, resourceClashes, type PartAction, type PartChoice } from '../book/partImport.js';
+import { choiceProblems, partChapters, planPartJoin, proposeChoices, renameProblems, replacedChapter, resourceClashes, type PartAction, type PartChoice, type PartProblem } from 'postext/bundle';
 import { useSandboxDispatch, useSandboxLabels, useSandboxStore } from '../context/SandboxContext.js';
-import { slugify } from '../panels/resources/slugify.js';
 import type { SandboxLabels } from '../types/index.js';
 import { Button, IconButton, announce, usePortalContainer } from '../ui/index.js';
 import { POPUP_SURFACE, POPUP_Z_INDEX } from '../ui/layout/surface.js';
 import { isolate } from '../word/WordImportDialog.js';
-import { joinPart, openBook, readPartBundle } from './partBundle.js';
+import { joinPart, openBook, partSide, readPartBundle } from './partBundle.js';
 import type { LoadedPreset } from './types.js';
 
 /** A .postext picked in the Manuscript panel. */
@@ -36,9 +36,10 @@ export function PartImportDialog({ file, onClose }: { file: PartImportFile | nul
 
 const WARNING = 'var(--pt-warning, #d97706)';
 
-function problemText(labels: SandboxLabels, problem: 'noSuchChapter' | 'sameNumber' | 'badNumber', n: number): string {
+function problemText(labels: SandboxLabels, problem: PartProblem, n: number): string {
   if (problem === 'noSuchChapter') return labels.partImportNoSuchChapter.replace('__n__', String(n));
   if (problem === 'sameNumber') return labels.partImportSameNumber.replace('__n__', String(n));
+  if (problem === 'unnumbered') return labels.partImportUnnumbered;
   return labels.partImportBadNumber;
 }
 
@@ -62,7 +63,7 @@ function PartImportPopup({ file, onClose }: { file: PartImportFile; onClose: () 
       .then((loaded) => {
         if (!live) return;
         setPart({ file, part: loaded });
-        setChoices(proposeChoices(openBook(store.getSnapshot()), loaded));
+        setChoices(proposeChoices(openBook(store.getSnapshot()), partSide(loaded)));
         setRenames({});
       })
       .catch((err: unknown) => {
@@ -76,17 +77,15 @@ function PartImportPopup({ file, onClose }: { file: PartImportFile; onClose: () 
 
   const loaded = part?.file === file && 'part' in part ? part.part : null;
   const book = openBook(store.getSnapshot());
-  const info = useMemo(() => (loaded ? partChapters(loaded) : []), [loaded]);
-  const clashes = loaded && choices.length === info.length ? resourceClashes(book, loaded, choices) : [];
-  const problems = loaded && choices.length === info.length ? choiceProblems(book, choices) : [];
+  const side = useMemo(() => (loaded ? partSide(loaded) : null), [loaded]);
+  const info = useMemo(() => (side ? partChapters(side) : []), [side]);
+  const ready = side !== null && choices.length === info.length;
+  const clashes = ready ? resourceClashes(book, side, choices) : [];
+  const problems = ready ? choiceProblems(book, side, choices) : [];
   const nameOf = (id: string, proposed: string) => renames[id] ?? proposed;
-  // A new name must be an id (letters, digits, hyphens) and free in the book and the part.
-  const taken = new Set([...book.resources.map((r) => r.id), ...(loaded?.resources.map((r) => r.id) ?? [])]);
-  const badNames = clashes.filter((c) => {
-    const name = nameOf(c.id, c.rename);
-    return slugify(name) !== name || (taken.has(name) && name !== c.rename) || clashes.some((o) => o !== c && nameOf(o.id, o.rename) === name);
-  }).map((c) => c.id);
-  const fontsAdded = loaded && problems.length === 0 && choices.length === info.length ? planPartImport(book, loaded, choices, renames).fontsAdded : [];
+  // A new name must be an id every reference reads, free in the book and the part.
+  const badNames = ready ? renameProblems(book, side, choices, renames) : [];
+  const fontsAdded = ready && problems.length === 0 && badNames.length === 0 ? planPartJoin(book, side, choices, renames).fontsAdded : [];
   const chosen = choices.filter((c) => c.action !== 'skip').length;
 
   if (part === null || part.file !== file) {
@@ -127,14 +126,16 @@ function PartImportPopup({ file, onClose }: { file: PartImportFile; onClose: () 
       </Dialog.Description>
       <ul className="m-0 flex list-none flex-col p-0">
         {info.map((c, i) => {
-          const choice = choices[i] ?? { action: 'skip' as PartAction, number: c.number };
+          const choice = choices[i] ?? { action: 'skip' as PartAction, number: c.number ?? 1 };
           const at = replacedChapter(book, choice);
           const problem = problems.find((p) => p.chapter === i);
           const rowId = `${titleId}-${i}`;
           return (
             <li key={i} className="flex flex-col gap-1 border-b border-(--pt-control-border) py-2 text-xs last:border-b-0">
               <span id={rowId} className="font-semibold" style={{ overflowWrap: 'anywhere' }}>
-                {labels.partImportChapter.replace('__n__', String(c.number)).replace('__title__', isolate(c.title))}
+                {c.number === null
+                  ? labels.partImportNoNumber.replace('__title__', isolate(c.title))
+                  : labels.partImportChapter.replace('__n__', String(c.number)).replace('__title__', isolate(c.title))}
               </span>
               <span className="flex flex-wrap items-center gap-2">
                 <select

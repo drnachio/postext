@@ -9,13 +9,14 @@ as ``bytes``, which go to a temporary file for the run.
 from __future__ import annotations
 
 import json
+import os
 import sys
 from typing import TYPE_CHECKING, Any, Mapping, Optional, Sequence, Union
 
 from ._args import STDOUT, BookInput, Books, PathLike, Temp, content, flag, many, opt
 from ._design_idml import DesignIdmlCommands
 from ._errors import PostextError
-from ._report import CheckReport, ImageReport, ImportDocxReport, InfoReport, Report, UnpackReport
+from ._report import CheckReport, ImageReport, ImportDocxReport, InfoReport, JoinReport, Report, UnpackReport
 from ._version import __version__
 
 if TYPE_CHECKING:
@@ -217,6 +218,39 @@ class Postext(DesignIdmlCommands):
             args += opt("config", config) + opt("name", name) + flag("report", quality_report)
             args += flag("auto-thumbnail", auto_thumbnail)
             return self._execute("import-docx", args, ImportDocxReport, raise_on_problems=raise_on_problems)
+
+    def join(
+        self,
+        book: PathLike,
+        part: BookInput,
+        *,
+        out: Optional[PathLike] = None,
+        chapters: Union[str, Sequence[str], None] = None,
+        renames: Optional[Mapping[str, str]] = None,
+        locale: Optional[str] = None,
+        dry_run: Optional[bool] = None,
+    ) -> JoinReport:
+        """Join the chapters of ``part`` (a ``.postext``, its path or bytes:
+        a part of the book made apart) to ``book`` (a folder or a
+        ``.postext``), each at its number: it replaces the book's chapter
+        with that number or is added at its place. The book is edited in
+        place unless ``out`` names a new ``.postext`` or folder; ``dry_run``
+        only reports the plan.
+
+        ``chapters``: what becomes of each chapter of the part, in its
+        order, as ``"replace,add:5,skip"`` or a list of those entries.
+        ``renames``: the id a clashing resource takes instead of the one
+        proposed (``{"fig-1-1": "fig-9-1"}``). ``locale``: the edition of a
+        book in several languages the chapters join.
+        """
+        with Temp() as temp:
+            args = [os.fspath(book), temp.file(part, "part.postext")]
+            if chapters is not None:
+                args += opt("chapters", chapters if isinstance(chapters, str) else ",".join(chapters))
+            for old, new in (renames or {}).items():
+                args += ["--rename", f"{old}={new}"]
+            args += opt("locale", locale) + flag("dry-run", dry_run) + opt("out", out)
+            return self._execute("join", args, JoinReport)
 
     def pack(
         self,
