@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: "Línia d'ordres",
   description: "Un sol executable autònom, per a macOS, Linux i Windows, que converteix un llibre .postext, una carpeta de llibre o fitxers Markdown solts en PDF, HTML, EPUB, imatges de pàgina i Word. També crea paquets i revisa llibres, i pot respondre en JSON per a scripts i agents, i paquets de Python i Rust el fan servir des del codi",
   lang: 'ca',
-  lastUpdated: '2026-11-16',
+  lastUpdated: '2026-11-27',
   readingTime: '14 min',
   order: 53,
   plainSummary: "Aquesta pàgina és per a qui vol fer llibres amb Postext des d'un terminal en lloc del web. Baixes un sol fitxer per al teu ordinador i l'executes, sense instal·lar res més. Li dones el teu llibre, o uns quants fitxers de text, i en fa un PDF, una pàgina web, un llibre electrònic, imatges de les pàgines o un document de Word. També pot revisar un llibre per trobar-hi problemes i reunir tots els fitxers del llibre en un de sol. També el poden fer servir altres programes i els assistents d'intel·ligència artificial, perquè pot respondre en un format que llegeixen sense dificultat.",
@@ -174,6 +174,7 @@ es llegeix en la llengua principal, tret que `--locale` en demani una altra (`--
     <tr><td><code>import-docx</code></td><td>Les correccions fetes en un fitxer de Word exportat, de tornada al llibre; qualsevol altre document de Word, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>Un document d'InDesign desat com a IDML, o un paquet d'InDesign comprimit, com a llibre nou (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>design</code></td><td>El disseny d'un llibre (algunes de les seves parts, o totes) com a fitxer de disseny, un <code>.postext</code> sense capítols.</td></tr>
+    <tr><td><code>join</code></td><td>Els capítols d'un altre <code>.postext</code> (una part del llibre feta a part) units al llibre, cadascun al seu número.</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de llibre o Markdown solt com un sol fitxer <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un fitxer <code>.postext</code> com a carpeta.</td></tr>
     <tr><td><code>info</code></td><td>Els capítols, les llengües, els recursos i les fonts del llibre, i amb <code>--pages</code> el nombre de pàgines.</td></tr>
@@ -490,6 +491,21 @@ coberta) fixen l'id, la descripció i la miniatura del paquet; per defecte l'id
 és un slug del nom. Una carpeta conserva el que diu el seu `preset.json`. Un llibre que no indica coberta rep la primera pàgina com a coberta (`thumbnail.jpg`, 1024 px al costat llarg), la imatge que un gestor de fitxers pot mostrar per al fitxer; `--no-auto-thumbnail` l'omet.
 `unpack` es nega a escriure en una carpeta que no sigui buida, tret que hi
 afegeixis `--force`.
+
+### join
+
+```bash
+postext join book/ chapter-9.postext --dry-run
+postext join book.postext part.postext
+postext join book.postext part.postext --chapters "replace,add:5,skip" --rename fig-1-1=fig-5-1
+postext join book/ part.postext -o joined.postext --json
+```
+
+`join` porta a un llibre els capítols d'un altre `.postext` (des de postext 1.99): un mòdul convertit en un altre ordinador, uns quants capítols maquetats a part, un capítol corregit i exportat de nou. Cada capítol de la part conserva el número que li dona la maquetació: el `{startAt=N}` del seu títol de nivell 1 o, si no en té, un més que el capítol numerat anterior (un estil de títol amb `numbered: false` no compta). Per defecte, un capítol substitueix el capítol del llibre que té el mateix número, al fitxer d'aquell capítol, i si no n'hi ha cap s'afegeix al seu lloc, en un fitxer amb el nom del seu número (`chapters/05-wrist-and-hand.md`). Un capítol sense títol numerat queda fora.
+
+`--chapters` indica què passa amb cada capítol de la part, per ordre: `add`, `add:N`, `replace`, `replace:N` o `skip`. `--dry-run` mostra els capítols del llibre amb els seus números, què passaria amb cada capítol de la part i els recursos que es canviarien de nom, i no escriu res; amb `--json`, el mateix surt com a dades. Una tria que no encaixa (un número que el llibre ja té, una substitució sense cap capítol amb aquest número) atura l'ordre amb un error, i no s'escriu res.
+
+Els recursos que fan servir els capítols arriben amb els seus fitxers. Si un es diu com un recurs que el llibre continua fent servir (en un altre capítol, en el seu disseny o en un altre recurs), se li canvia el nom, a `fig-1-1-2` per defecte o a l'id que indiqui `--rename OLD=NEW`, i amb ell cada referència que li fan els capítols i els recursos amb què arriba; un fitxer de la part que cauria sobre un altre fitxer del llibre pren un nom lliure al costat. El disseny continua essent el del llibre: només s'afegeixen, amb els seus fitxers, les famílies tipogràfiques que li falten. El llibre s'edita al seu lloc: una carpeta rep només els fitxers que escriu la unió, i un `.postext` es torna a escriure amb tota la resta com estava (les altres edicions, les cobertes i les maquetacions desades). `-o` escriu el resultat en un altre lloc, com a `.postext` o com a carpeta. `--locale` tria a quina edició d'un llibre en diverses llengües s'uneixen els capítols. El Sandbox fa el mateix des del tauler Text (vegeu [Afegir capítols d'un altre llibre](/ca/docs/sandbox-books-saving#afegir-capítols-dun-altre-llibre)).
 
 ### info i check
 

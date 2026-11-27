@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'What an AI agent in the browser can do with the Sandbox through its 71 WebMCP tools — look at the pages, change any setting, edit the text, add pictures, tables and fonts, run the checks, export — and how to call each one, with real arguments and answers',
   lang: 'en',
-  lastUpdated: '2026-11-23',
+  lastUpdated: '2026-11-27',
   readingTime: '12 min',
   order: 54,
   plainSummary: "This page is for people who want an AI helper to work on a book in the Sandbox for them. While the Sandbox is open, it gives the helper a set of tools: to look at any page, change the design, edit the text, add pictures and tables, find problems and save files. You ask in your own words, for example \"make the text a little larger and check the book still fits in 40 pages\", and the helper uses the tools and shows you the pages. Everything stays in your browser. The page explains how to connect a helper, what it can do and how each tool is called.",
@@ -592,6 +592,7 @@ The answer warns when a balloon lands on a face or runs out of its panel. See
 - **A book from the Books panel.** `sandbox_export` with `format` `pdf`, `epub` or `html` and `book: { "kind": "project", "id": "…", "language": "en" }` writes a project as its row's **Download as …** does (since postext 1.81): the whole book in that language, laid out apart from the book on screen, which is saved first and left as it is. `html` without `book` writes the project on screen. The answer gives the file, its pages, the language written and the warnings; `epubLayout` chooses the rendition of an EPUB.
 - **Import a `.postext` file** with `sandbox_import_book` (`inspect: true` says
   which languages it carries without importing it).
+- **Join chapters of another `.postext`** — a part of the book made apart — with `sandbox_import_chapters`. Each chapter keeps the number the layout gives it (`{startAt=N}`, else the one after the numbered chapter before): it replaces the book's chapter with that number or is added at its place. With `inspect: true` it changes nothing and answers with what it proposes for each chapter and the resources whose names clash, with the name each would take; `chapters` and `renames` change that. The design stays the book's.
 - **Make a book from an InDesign document** with `sandbox_import_idml`. With
   `dryRun: true` it creates nothing and answers with what the `.idml` holds and
   the import report: the layout it would take and why, the verdict, the
@@ -718,10 +719,10 @@ corrected `mapping`, then the real import with `destination: "book"` →
 
 ## What asks for your consent
 
-Six tools do things that cannot be undone, and are marked as consequential
+Seven tools do things that cannot be undone, and are marked as consequential
 (`consequentialHint`), so the browser can ask you before they run:
 `sandbox_remove_chapter`, `sandbox_delete_resource`, `sandbox_delete_book`,
-`sandbox_reset_to_original`, `sandbox_import_word` (it can replace the whole
+`sandbox_reset_to_original`, `sandbox_import_chapters`, `sandbox_import_word` (it can replace the whole
 book) and `sandbox_answer` (it can delete your copy of a book). Ask the agent
 to export a `.postext` copy first when in doubt.
 
@@ -790,7 +791,7 @@ each one come with `postextWebMcp.listTools()`.
 - **Composed pages**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
 - **Print covers**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Books and files**: `sandbox_list_books`, `sandbox_open_book`,
-  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
+  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`, `sandbox_import_chapters`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **InDesign**: `sandbox_import_idml`.

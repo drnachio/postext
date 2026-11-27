@@ -2,8 +2,8 @@
 import { readFileSync } from 'node:fs';
 import { strFromU8, strToU8, unzipSync, zipSync } from 'fflate';
 import { afterEach, describe, expect, it } from 'vitest';
-import { resetViewerEdits } from '../../editor/viewerEdits.js';
-import { harness } from './testHarness.js';
+import { resetViewerEdits } from '../../../editor/viewerEdits.js';
+import { harness } from '../testHarness.js';
 
 afterEach(() => resetViewerEdits());
 
@@ -114,7 +114,7 @@ describe('the Word round trip as tools (#1397)', () => {
     const out = await call('sandbox_export', { format: 'docx', deliver: 'data' });
     const exported = { base64: out.base64, fileName: 'Guide.docx' };
     expect((await call('sandbox_import_word', { file: exported, dryRun: true })).error).toMatch(/was exported from the Sandbox: sandbox_apply_word_edits/);
-    const old = new Uint8Array(readFileSync(new URL('../../word/__fixtures__/old-harbour.docx', import.meta.url)));
+    const old = new Uint8Array(readFileSync(new URL('../../../word/__fixtures__/old-harbour.docx', import.meta.url)));
     expect((await call('sandbox_apply_word_edits', { file: { base64: base64(old), fileName: 'harbour.docx' } })).error).toMatch(/was not exported from the Sandbox/);
     const notZip = base64(new TextEncoder().encode('{\\rtf1 not a docx}'));
     expect((await call('sandbox_apply_word_edits', { file: { base64: notZip, fileName: 'notes.rtf' } })).error).toMatch(/is not a \.docx file/);

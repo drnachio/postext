@@ -1077,6 +1077,12 @@ composed pages, `composed_check.py check my-book.postext`). Every edition
 goes in this one bundle: chapters per locale, templates, styles and
 anchors shared.
 
+A port delivered in parts (one bundle per module or per batch of chapters)
+numbers each part's first chapter with `{startAt=N}` and keeps resource ids
+unique across parts, so that `postext join book/ part.postext --dry-run`
+shows every chapter landing at its number (postext ≥ 1.99; project-format.md
+§1 Chapters).
+
 `pack` without `--manifest-only` zips the whole folder except `source/`,
 scripts, dot files and caches: a `work/` folder, label sources or tool
 outputs would ship too (`--exclude GLOB` leaves more out).

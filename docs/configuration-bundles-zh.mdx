@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: '.postext文件包',
   description: '怎样用代码打开、排版、渲染和创建.postext文件，怎样制作双语文件包，旧版本写出的文件怎样读取，以及底层API',
   lang: 'zh',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-27',
   readingTime: '20分钟',
   order: 24,
   parent: 'configuration',
@@ -256,7 +256,7 @@ const { bytes, manifest, warnings } = await createBundle({
   </tbody>
 </table>
 
-它返回压缩包的`bytes`、写成`preset.json`的`manifest`、以`files`给出的所有文件（路径 → 字节），以及一个`warnings`列表。文件按资源id（`resources/lantern.svg`）或字体文件名（`fonts/…`）命名，章节按顺序和标题命名（`chapters/01-dusk.md`）。字体声明在清单的`fonts`中，从不放在`config.customFonts`里。以下内容会被略去，并各给出一条警告：
+它返回压缩包的`bytes`、写成`preset.json`的`manifest`、以`files`给出的所有文件（路径 → 字节），以及一个`warnings`列表。文件按资源id（`resources/lantern.svg`）或字体文件名（`fonts/…`）命名，章节按编号和标题命名（`chapters/01-dusk.md`）。编号是排版给该章的编号，即一级标题的`{startAt=N}`，或前一个编号章节加一，所以作为文件包中第三个文件的第九章写成`chapters/09-….md`；没有编号标题的章节沿用前一章的编号（`00-cover.md`）。读取文件包从不依赖文件名：顺序由清单的`chapters`给出。字体声明在清单的`fonts`中，从不放在`config.customFonts`里。以下内容会被略去，并各给出一条警告：
 - 数据文件不在`files`中的资源或字面
 - `.woff`字面（PDF后端无法嵌入）
 - 标记为`redistributable: false`的字体族（写了`fallback`时，它的`fonts`条目保留，带着这个名称而不带文件；自postext 1.42起）
@@ -435,6 +435,24 @@ const config = applyDesign(otherBook.config, opened.design);
 
 - **从文件包开始**。用[智能体技能](/zh/docs/skill)移植一本现有出版物，或者在[沙盒](/zh/sandbox)中设计一本书并导出（在书库面板中该书那一行的⋯菜单里选<strong>下载（.postext）</strong>）。在你的程序中用`openBundle`加载文件，渲染到Canvas、HTML或PDF。把这个文件当作书的源文件：在代码中编辑章节、配置或资源，再用`createBundle`写回；或者在文件变动时重新加载即可。
 - **在沙盒中调试和微调**。当程序的输出有地方需要调整时（某幅图落错了页、某个标题样式、各栏齐底），用`createBundle`把程序排版的内容导出。在沙盒中导入该文件（*书库 → 新建 → 打开.postext文件…*），借助实时预览、检查面板和PDF视图修改文字、设计或图，然后再次导出。你的程序随后用`openBundle`加载修正后的文件。也可以把改动抄回代码：清单的`config`只包含与默认值不同的值，读起来就像一份简短的diff。
+
+### 并入书的一部分
+
+分开制作的书（单独转换或排版的章节，各自导出为一个`.postext`）可以用`joinBundleFiles`重新合并。`postext join`和沙盒的**从另一本书添加章节**背后都是这个函数（自postext 1.99起）：
+
+```ts
+import { inspectBundleJoin, joinBundleFiles, openBundleZip, zipBundle } from 'postext/bundle';
+
+const book = openBundleZip(bookBytes).files;
+const part = openBundleZip(partBytes).files;
+const plan = await inspectBundleJoin(book, part);
+// plan.part：并入部分的章节及其编号；plan.choices：每章是替换还是添加；
+// plan.clashes：书中仍以同一id使用的资源，以及建议的名称。
+const joined = await joinBundleFiles(book, part, { renames: { 'fig-1-1': 'fig-9-1' } });
+const bytes = zipBundle(Object.fromEntries(joined.files));
+```
+
+`choices`（并入部分每章一个`{ action: 'add' | 'replace' | 'skip', number }`）和`renames`可以更改建议，`locale`选择多语言图书的版本。行不通的选择或名称会抛出异常，`inspectBundleJoin`会事先以`problems`和`badNames`列出它们。书的清单是被编辑，而不是重新写出：合并没有触及的内容逐字节保持不变。规则与沙盒相同。章节用`chapterNumbers(chapters, config, start)`计数，与排版的计数方式一致。只有当书仍在使用自己的同名资源（在某章、书的设计或其他资源中）时，资源才会改名；字体只取本书缺少的字体族。用自己的记录保存图书的宿主，可以从`planPartJoin(book, part, choices, renames)`得到同样的计划数据：步骤、改名的资源和字体，不触动任何文件。
 
 ### 底层API
 

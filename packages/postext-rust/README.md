@@ -63,6 +63,7 @@ returns its report, and `.bytes()` returns the file instead.
 | `idml(book)` `.out` `.images` `.lines` `.spreads` `.fonts` | `postext idml` | `Report` |
 | `import_idml(idml)` `.out` `.layout` `.links` `.document` | `postext import-idml` | `ImportIdmlReport` |
 | `pack(book)` `.out` / `unpack(bundle)` `.out` | `postext pack` / `unpack` | `Report` / `UnpackReport` |
+| `join(book, part)` `.chapters` `.rename` `.dry_run` `.out` | `postext join` | `JoinReport` |
 | `design(book)` `.out` `.parts` `.design_name` | `postext design` | `DesignReport` |
 | `info(book)` `.pages` | `postext info` | `InfoReport` |
 | `check(book)` `.strict` `.preflight` `.allow_problems` | `postext check` | `CheckReport` |

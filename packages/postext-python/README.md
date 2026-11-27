@@ -60,6 +60,7 @@ Every command of the command line is a function. Each runs the command with
 | `idml(book, out=…, images=…, lines=…, spreads=…, fonts=…)` | `postext idml` | `Report` |
 | `import_idml(idml, out=…, layout=…, links=…, document=…)` | `postext import-idml` | `ImportIdmlReport` |
 | `pack(book, out=…)` / `unpack(bundle, out=…)` | `postext pack` / `unpack` | `Report` / `UnpackReport` |
+| `join(book, part, chapters=…, renames=…, dry_run=…)` | `postext join` | `JoinReport` |
 | `design(book, out=…, parts=…, design_name=…)` | `postext design` | `DesignReport` |
 | `info(book, pages=True)` | `postext info` | `InfoReport` |
 | `check(book, strict=True)` | `postext check` | `CheckReport` |

@@ -11,7 +11,7 @@ import { designItemTools } from './designItems.js';
 import { designTools } from './designs.js';
 import { editionCheckTools } from './editionChecks.js';
 import { historyTools } from './history.js';
-import { idmlTools } from './idml.js';
+import { idmlTools } from './exchange/idml.js';
 import { frameStyleTools } from './frameStyles.js';
 import { moduleTools } from './modules.js';
 import { labelTools } from './labels.js';
@@ -20,8 +20,9 @@ import { pageTools } from './pages.js';
 import { resourceTools } from './resources.js';
 import { viewTools } from './view.js';
 import { viewerCommandTools } from './viewerCommands.js';
-import { wordTools } from './word.js';
-import { wordEditTools } from './wordEdits.js';
+import { wordTools } from './exchange/word.js';
+import { partTools } from './exchange/parts.js';
+import { wordEditTools } from './exchange/wordEdits.js';
 
 /** Every tool the Sandbox hands an agent, in the order an agent meets
  *  them: what is open, the pages, the text, the design, how it is shown,
@@ -48,6 +49,7 @@ export function createSandboxTools(host: SandboxToolHost): WebMcpTool[] {
     ...comicTools(host),
     ...libraryTools(host),
     ...wordTools(host),
+    ...partTools(host),
     ...wordEditTools(host),
     ...idmlTools(host),
     ...answerTools(host),

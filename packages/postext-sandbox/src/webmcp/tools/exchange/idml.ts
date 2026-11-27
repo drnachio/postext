@@ -3,16 +3,16 @@
 // `sandbox_export` writes the IDML package of the book on screen with the
 // options of the Manuscript panel's export dialog (`exportIdmlFile`).
 
-import { layOutBookPrint } from '../../book/printChain.js';
-import { ensureConfigFontsLoaded } from '../../controls/fonts/fontLoader.js';
-import { buildIdmlExport, type IdmlExportChoices } from '../../idml/idmlExport.js';
-import { idmlFontWithheld, sandboxIdmlFaces } from '../../idml/idmlFonts.js';
-import { convertIdml, describeIdmlImport, idmlBookBundle, mainPageSize, readIdmlFile, readIdmlPackage, readIdmlPackageDocument, type IdmlImportFile, type IdmlLayoutChoice, type IdmlLinkFile } from '../../idml/sandboxIdmlImport.js';
-import { downloadBytes } from '../../storage/persistence.js';
-import { bookPagesSummary, layoutConfig, whenSettled, type SandboxToolHost } from '../host.js';
-import { ToolError, type WebMcpTool } from '../modelContext.js';
-import { WAIT_PARAM, bookIdentity, fileParam } from './book.js';
-import { readFileInput, type FileInput } from './resources.js';
+import { layOutBookPrint } from '../../../book/printChain.js';
+import { ensureConfigFontsLoaded } from '../../../controls/fonts/fontLoader.js';
+import { buildIdmlExport, type IdmlExportChoices } from '../../../idml/idmlExport.js';
+import { idmlFontWithheld, sandboxIdmlFaces } from '../../../idml/idmlFonts.js';
+import { convertIdml, describeIdmlImport, idmlBookBundle, mainPageSize, readIdmlFile, readIdmlPackage, readIdmlPackageDocument, type IdmlImportFile, type IdmlLayoutChoice, type IdmlLinkFile } from '../../../idml/sandboxIdmlImport.js';
+import { downloadBytes } from '../../../storage/persistence.js';
+import { bookPagesSummary, layoutConfig, whenSettled, type SandboxToolHost } from '../../host.js';
+import { ToolError, type WebMcpTool } from '../../modelContext.js';
+import { WAIT_PARAM, bookIdentity, fileParam } from '../book.js';
+import { readFileInput, type FileInput } from '../resources.js';
 
 const messageOf = (err: unknown): string => (err instanceof Error ? err.message : String(err));
 const sleep = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms));

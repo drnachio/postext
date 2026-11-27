@@ -16,8 +16,8 @@ import { ToolError, type WebMcpTool } from '../modelContext.js';
 import { bookIdentity, fileParam, pendingQuestion } from './book.js';
 import { readFileInput, type FileInput } from './resources.js';
 import { controlsOf } from './view.js';
-import { VARIANT_PARAM, exportWordFile } from './wordEdits.js';
-import { IDML_EXPORT_PARAMS, exportIdmlFile } from './idml.js';
+import { VARIANT_PARAM, exportWordFile } from './exchange/wordEdits.js';
+import { IDML_EXPORT_PARAMS, exportIdmlFile } from './exchange/idml.js';
 import { compileFromLibrary, compilesFromLibrary } from './compiledBook.js';
 
 /** Largest file handed back inside a result, in bytes; larger ones are

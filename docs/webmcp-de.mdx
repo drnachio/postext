@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: 'Was ein KI-Agent im Browser mit den 71 WebMCP-Werkzeugen der Sandbox tun kann – Seiten ansehen, jede Einstellung ändern, den Text bearbeiten, Bilder, Tabellen und Schriften hinzufügen, die Prüfungen ausführen, exportieren – und wie jedes Werkzeug aufgerufen wird, mit echten Argumenten und Antworten',
   lang: 'de',
-  lastUpdated: '2026-11-23',
+  lastUpdated: '2026-11-27',
   readingTime: '13 min',
   order: 54,
   plainSummary: "Diese Seite ist für alle, die einen KI-Helfer für sich an einem Buch in der Sandbox arbeiten lassen möchten. Solange die Sandbox geöffnet ist, gibt sie dem Helfer eine Reihe von Werkzeugen: um jede Seite anzusehen, die Gestaltung zu ändern, den Text zu bearbeiten, Bilder und Tabellen hinzuzufügen, Probleme zu finden und Dateien zu speichern. Sie bitten mit Ihren eigenen Worten, zum Beispiel „mach die Schrift etwas größer und prüf, ob das Buch noch auf 40 Seiten passt“, und der Helfer setzt die Werkzeuge ein und zeigt Ihnen die Seiten. Alles bleibt in Ihrem Browser. Die Seite erklärt, wie Sie einen Helfer verbinden, was er tun kann und wie jedes Werkzeug aufgerufen wird.",
@@ -625,6 +625,7 @@ ihrem Panel herausragt. Das Format beschreibt [Comics](/de/docs/comics).
 - **Ein Buch aus dem Bücher-Panel.** `sandbox_export` mit `format` `pdf`, `epub` oder `html` und `book: { "kind": "project", "id": "…", "language": "en" }` schreibt ein Projekt so, wie es **Als … herunterladen** in seiner Zeile tut (seit postext 1.81): das ganze Buch in dieser Sprache, getrennt vom Buch auf dem Bildschirm umbrochen, das vorher gespeichert wird und bleibt, wie es ist. `html` ohne `book` schreibt das Projekt auf dem Bildschirm. Die Antwort nennt die Datei, ihre Seiten, die geschriebene Sprache und die Warnungen; `epubLayout` wählt die Darstellung eines EPUB.
 - **Eine `.postext`-Datei importieren** mit `sandbox_import_book`
   (`inspect: true` sagt, welche Sprachen sie enthält, ohne sie zu importieren).
+- **Kapitel aus einem anderen `.postext` hinzufügen** – einen getrennt erstellten Teil des Buches – mit `sandbox_import_chapters`. Jedes Kapitel behält die Nummer, die ihm der Satz gibt (`{startAt=N}`, sonst die nach dem vorigen nummerierten Kapitel): Es ersetzt das Kapitel des Buches mit dieser Nummer oder wird an seiner Stelle eingefügt. Mit `inspect: true` ändert es nichts und antwortet mit dem Vorschlag für jedes Kapitel und den Ressourcen, deren Namen kollidieren, samt dem Namen, den jede bekäme; `chapters` und `renames` ändern das. Die Gestaltung bleibt die des Buches.
 - **Ein Buch aus einem InDesign-Dokument anlegen** mit `sandbox_import_idml`.
   Mit `dryRun: true` legt es nichts an und antwortet mit dem, was die `.idml`
   enthält, und mit dem Importbericht: dem Layout, das es wählen würde, und dem
@@ -766,10 +767,10 @@ Ein Rahmen einer zusammengesetzten Seite, der nicht passt, bringt seine Lösunge
 
 ## Was Ihre Zustimmung verlangt
 
-Sechs Werkzeuge tun etwas, das sich nicht zurücknehmen lässt, und sind als
+Sieben Werkzeuge tun etwas, das sich nicht zurücknehmen lässt, und sind als
 folgenreich markiert (`consequentialHint`), damit der Browser Sie fragen kann,
 bevor sie laufen: `sandbox_remove_chapter`, `sandbox_delete_resource`,
-`sandbox_delete_book`, `sandbox_reset_to_original`, `sandbox_import_word` (es
+`sandbox_delete_book`, `sandbox_reset_to_original`, `sandbox_import_chapters`, `sandbox_import_word` (es
 kann das ganze Buch ersetzen) und `sandbox_answer` (es kann Ihre Kopie eines
 Buches löschen). Bitten Sie den Agenten im Zweifel, zuerst eine Kopie als
 `.postext` zu exportieren.
@@ -844,7 +845,7 @@ und das Schema jedes Werkzeugs liefert `postextWebMcp.listTools()`.
 - **Zusammengesetzte Seiten**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
 - **Buchumschläge**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Bücher und Dateien**: `sandbox_list_books`, `sandbox_open_book`,
-  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
+  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`, `sandbox_import_chapters`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **InDesign**: `sandbox_import_idml`.

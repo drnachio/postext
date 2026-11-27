@@ -231,6 +231,21 @@ export const COMMANDS: CommandSpec[] = [
     run: () => import('./commands/importIdml'),
   },
   {
+    name: 'join',
+    summary: 'Join the chapters of another .postext (a part of the book made apart) to the book, each at its number',
+    usage: 'postext join <book> <part.postext> [--chapters LIST] [--rename OLD=NEW] [--dry-run] [-o book.postext | -o folder/]',
+    description: 'A book made in parts (a module converted on another computer, chapters laid out apart, a chapter corrected and exported again) comes back together: each chapter of the part keeps the number the layout gives it (its level-1 heading\'s {startAt=N}, else one more than the numbered chapter before; a heading style with numbered: false counts for nothing) and takes the place of the book\'s chapter with that number, or is added at its place. --chapters changes that, one entry per chapter of the part. The resources its text uses come along with their files; one named as a resource the book keeps using (in another chapter, its design or another resource) is renamed, with every reference to it. The design stays the book\'s: of the part\'s settings only the font families the book lacks are taken. The book is edited in place (its other editions, covers and stored layouts stay as they are) unless -o writes the result elsewhere; --dry-run prints what would happen. The Sandbox does the same from the Manuscript panel.',
+    options: [
+      { name: 'chapters', kind: 'string', arg: 'LIST', help: 'What becomes of each chapter of the part, in its order: add, add:N, replace, replace:N or skip (default: replace the book\'s chapter with its number, else add it)' },
+      { name: 'rename', kind: 'list', arg: 'OLD=NEW', help: 'The id a clashing resource of the part takes, instead of the one proposed (repeatable)' },
+      { name: 'locale', short: 'l', kind: 'string', arg: 'TAG', help: 'The edition of a multilingual book the chapters join, and the one the part is read in (default: the book\'s language)' },
+      { name: 'dry-run', short: 'n', kind: 'boolean', help: 'Print the plan, write nothing' },
+      { ...OUT, help: 'Write the joined book here (a .postext, or a folder) instead of in place' },
+    ],
+    examples: ['postext join book/ chapter-9.postext --dry-run', 'postext join book.postext part.postext --chapters "replace,add:5" --rename fig-1-1=fig-5-1', 'postext join book/ part.postext -o joined.postext --json'],
+    run: () => import('./commands/join'),
+  },
+  {
     name: 'pack',
     summary: 'Pack a folder or loose files into a .postext bundle',
     usage: 'postext pack <folder | files…> [-o book.postext]',

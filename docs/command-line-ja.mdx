@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'コマンドライン',
   description: 'macOS、Linux、Windowsで動く、自己完結した1つの実行ファイル。.postextの本、本のフォルダー、ばらのMarkdownからのPDF、HTML、EPUB、ページ画像、Word文書の作成、バンドルの作成、本の検査、そしてスクリプトやエージェント向けのJSON出力、PythonとRustのパッケージからの利用',
   lang: 'ja',
-  lastUpdated: '2026-11-16',
+  lastUpdated: '2026-11-27',
   readingTime: '14分',
   order: 53,
   plainSummary: "このページは、Webサイトではなくターミナルを使ってPostextで本を作りたい人のためのものです。自分のコンピューター用のファイルを1つダウンロードして実行するだけで、ほかに何もインストールする必要はありません。本や何本かのテキストファイルを渡すと、PDF、Webページ、電子書籍、ページの画像、Wordの文書を作ります。本に問題がないかを調べたり、本のファイルを1つにまとめたりすることもできます。結果をプログラムが読みやすい形で返せるので、ほかのプログラムやAIアシスタントからも使えます。",
@@ -134,6 +134,7 @@ postext image my-book.postext --page 1 -o cover.png
     <tr><td><code>import-docx</code></td><td>書き出したWordファイルに加えた校正を本に戻します。それ以外のWord文書は新しい本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
     <tr><td><code>import-idml</code></td><td>IDMLで保存したInDesignの文書、またはzipにしたInDesignパッケージを新しい本（フォルダーまたは<code>.postext</code>）にします。</td></tr>
     <tr><td><code>design</code></td><td>本のデザイン（一部のパーツ、またはすべて）を、章のない<code>.postext</code>であるデザインファイルにします。</td></tr>
+    <tr><td><code>join</code></td><td>別の<code>.postext</code>（別に作った本の一部）の章を、それぞれの番号で本に加えます。</td></tr>
     <tr><td><code>pack</code></td><td>本のフォルダーまたはばらのMarkdownを、1つの<code>.postext</code>ファイルにまとめます。</td></tr>
     <tr><td><code>unpack</code></td><td><code>.postext</code>ファイルをフォルダーに展開します。</td></tr>
     <tr><td><code>info</code></td><td>本の章、言語、リソース、フォント。<code>--pages</code>を付けるとページ数も示します。</td></tr>
@@ -295,6 +296,21 @@ postext unpack my-book.postext -o my-book/
 ```
 
 `pack`は本のフォルダーをそのままzipにするか、ばらのMarkdownからバンドルを作ります。同じ入力からはつねに同じバイト列ができるので、バンドルを比べたり、ハッシュを取ったりできます。ばらのMarkdownでは、`--id`、`--description`、`--thumbnail FILE`（表紙の画像）でバンドルのid、説明、サムネイルを設定します。idは既定で名前のスラッグです。フォルダーでは、その`preset.json`の内容がそのまま使われます。表紙を指定していない本には、最初のページが表紙として入ります（`thumbnail.jpg`、長辺1024 px）。ファイルマネージャーがファイルのアイコンとして表示できる画像です。`--no-auto-thumbnail`で省けます。`unpack`は、`--force`を付けない限り、空でないフォルダーには書き込みません。
+
+### join
+
+```bash
+postext join book/ chapter-9.postext --dry-run
+postext join book.postext part.postext
+postext join book.postext part.postext --chapters "replace,add:5,skip" --rename fig-1-1=fig-5-1
+postext join book/ part.postext -o joined.postext --json
+```
+
+`join`は、別の`.postext`の章を本に取り込みます（postext 1.99以降）。別のコンピューターで変換したモジュール、別に組んだ数章、校正して書き出し直した1章などです。取り込む側の各章は、組版で付く番号を保ちます。レベル1見出しの`{startAt=N}`があればその番号、なければ前の番号付きの章の次の番号です（`numbered: false`の見出しスタイルは数に入りません）。既定では、章は同じ番号を持つ本の章をそのファイルの中で置き換え、その番号の章がなければ、番号の位置に、番号にちなんだ名前のファイル（`chapters/05-wrist-and-hand.md`）で加わります。番号付きの見出しがない章は取り込みません。
+
+`--chapters`では、取り込む側の各章の扱いを順に指定します。`add`、`add:N`、`replace`、`replace:N`、`skip`のいずれかです。`--dry-run`は、本の章とその番号、取り込む側の各章がどうなるか、名前を変えるリソースを表示し、何も書き込みません。`--json`を付けると、同じ内容をデータで返します。成り立たない指定（本にすでにある番号、その番号の章がない置き換え）があると、コマンドはエラーで止まり、何も書き込みません。
+
+章が使うリソースは、そのファイルと一緒に入ります。本が引き続き使うリソース（別の章、本のデザイン、別のリソースで使うもの）と同じ名前のリソースは名前を変えます。既定では`fig-1-1-2`、`--rename OLD=NEW`を指定すればそのidです。一緒に入る章とリソースの中の参照も、すべて新しい名前になります。本の別のファイルと重なる取り込み側のファイルは、その隣の空いている名前になります。デザインは本のものが保たれ、本にないフォントファミリーだけがそのファイルと一緒に加わります。本はその場で書き換えます。フォルダーには結合で書き込むファイルだけが入り、`.postext`はそれ以外のもの（ほかの言語版、表紙、保存したページ割り）をそのまま残して書き直します。`-o`を指定すると、結果を別の場所に`.postext`またはフォルダーとして書き出します。`--locale`では、多言語の本のうち章を加える言語版を選びます。Sandboxでは**本文**パネルから同じことができます（[別の本から章を追加する](/ja/docs/sandbox-books-saving#別の本から章を追加する)を参照）。
 
 ### infoとcheck
 

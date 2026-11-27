@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Paquets .postext',
   description: "Com s'obren, es maqueten, es renderitzen i es creen fitxers .postext des del codi; com funcionen els paquets bilingües; com es llegeixen els fitxers de versions anteriors, i l'API de baix nivell",
   lang: 'ca',
-  lastUpdated: '2026-11-10',
+  lastUpdated: '2026-11-27',
   readingTime: '30 min',
   order: 24,
   parent: 'configuration',
@@ -255,7 +255,7 @@ const { bytes, manifest, warnings } = await createBundle({
   </tbody>
 </table>
 
-Retorna els `bytes` del fitxer, el `manifest` escrit com a `preset.json`, tots els fitxers a `files` (ruta → bytes) i una llista de `warnings`. Els fitxers s'anomenen per l'id del seu recurs (`resources/farol.svg`) o pel nom del fitxer de font (`fonts/…`), i els capítols pel seu ordre i títol (`chapters/01-anochecer.md`). Les fonts es declaren al camp `fonts` del manifest, mai dins de `config.customFonts`. Algunes coses es deixen fora, cadascuna amb un avís:
+Retorna els `bytes` del fitxer, el `manifest` escrit com a `preset.json`, tots els fitxers a `files` (ruta → bytes) i una llista de `warnings`. Els fitxers s'anomenen per l'id del seu recurs (`resources/farol.svg`) o pel nom del fitxer de font (`fonts/…`), i els capítols pel seu número i títol (`chapters/01-anochecer.md`). El número és el que la maquetació dona al capítol, el `{startAt=N}` del seu títol de nivell 1 o un més que el capítol numerat anterior, de manera que un capítol novè que és el tercer fitxer del paquet s'escriu `chapters/09-….md`; un capítol sense títol numerat pren el número de l'anterior (`00-cover.md`). La lectura d'un paquet mai no depèn dels noms: l'ordre el dona el camp `chapters` del manifest. Les fonts es declaren al camp `fonts` del manifest, mai dins de `config.customFonts`. Algunes coses es deixen fora, cadascuna amb un avís:
 - un recurs o una variant tipogràfica amb unes dades que no són a `files`
 - una variant `.woff` (el backend PDF no la pot incrustar)
 - una família marcada `redistributable: false` (si indica un `fallback`, la seva entrada de `fonts` es queda, amb aquest nom i sense fitxers; des de postext 1.42)
@@ -433,6 +433,24 @@ Com que el Sandbox, l'skill per a agents i el paquet `postext` llegeixen i escri
 
 - **Partir d'un paquet.** Passa una publicació existent a Postext amb l'[skill per a agents](/ca/docs/skill), o dissenya un llibre al [Sandbox](/ca/sandbox) i exporta'l (**Baixar (.postext)** al menú ⋯ de la seva fila del tauler Llibres). Carrega el fitxer des del teu programa amb `openBundle` per renderitzar-lo en canvas, HTML o PDF. Conserva el fitxer com a font del llibre: edita en codi els capítols, la configuració o els recursos i torna'l a escriure amb `createBundle`, o simplement torna'l a carregar cada vegada que canviï.
 - **Depurar i ajustar al Sandbox.** Quan alguna cosa del que produeix el teu programa necessita retocs (una figura que cau a la pàgina equivocada, un estil d'encapçalament, l'equilibratge de columnes), exporta amb `createBundle` el que maqueta el teu programa. Importa aquest fitxer al Sandbox (*Llibres → Nou → Obrir un fitxer .postext…*), corregeix el text, el disseny o les figures amb la previsualització en viu, el tauler Revisió i la vista PDF, i torna'l a exportar. Després el teu programa carrega el fitxer corregit amb `openBundle`. O trasllada al teu codi el que ha canviat: la `config` del manifest només conté els valors que difereixen dels valors per defecte, així que es llegeix com una llista breu de diferències.
+
+### Unir una part del llibre
+
+Un llibre fet per parts (capítols convertits o maquetats a part, cadascun exportat com el seu propi `.postext`) es torna a unir amb `joinBundleFiles`, la funció que hi ha darrere de `postext join` i d'**Afegeix capítols d'un altre llibre** al Sandbox (des de postext 1.99):
+
+```ts
+import { inspectBundleJoin, joinBundleFiles, openBundleZip, zipBundle } from 'postext/bundle';
+
+const book = openBundleZip(bookBytes).files;
+const part = openBundleZip(partBytes).files;
+const plan = await inspectBundleJoin(book, part);
+// plan.part: els capítols de la part amb els seus números; plan.choices: substituir o afegir, per a cadascun;
+// plan.clashes: recursos que el llibre continua fent servir amb el mateix id, amb el nom proposat.
+const joined = await joinBundleFiles(book, part, { renames: { 'fig-1-1': 'fig-9-1' } });
+const bytes = zipBundle(Object.fromEntries(joined.files));
+```
+
+`choices` (un `{ action: 'add' | 'replace' | 'skip', number }` per a cada capítol de la part) i `renames` canvien el que es proposa, i `locale` tria l'edició d'un llibre en diverses llengües. Les tries o els noms que no encaixen llancen una excepció, i `inspectBundleJoin` els llista abans com a `problems` i `badNames`. El manifest del llibre s'edita, no es torna a escriure: tot el que la unió no toca queda igual, byte a byte. Les regles són les del Sandbox. Els capítols es compten amb `chapterNumbers(chapters, config, start)`, igual que els compta la maquetació. Un recurs només canvia de nom quan el llibre continua fent servir el seu (en un capítol, en el seu disseny o en un altre recurs), i només es prenen les famílies tipogràfiques que li falten al llibre. Un amfitrió que desa els llibres en registres propis obté el mateix pla com a dades amb `planPartJoin(book, part, choices, renames)`: els passos, els recursos amb nom nou i les fonts, sense tocar cap fitxer.
 
 ### API de baix nivell
 

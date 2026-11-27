@@ -5,6 +5,7 @@ import { stripConfigDefaults } from '../../defaults/index.js';
 import { type ConfigOverride, leastConfigOverride } from '../../defaults/configLayers.js';
 import { uniqueSlug, slugify, extensionForVideo, extensionForBitmapFormat, extensionForPrintFormat, extensionForResource, extensionForImageMime, chapterFileName, bundleStart } from '../manifest.js';
 import { CONFIG_VERSION } from '../configVersion.js';
+import { chapterFileNumbers, chapterNumbers } from '../join/numbers.js';
 import { type TraceContourOptions, contourWantsAlpha, contourRowsOf, traceResourceContour, withContourTrace } from '../../contour/index.js';
 import type { BundleStart, BundleCanvasScope, BundleDesignSpec, BundleManifestV2, BundleBlob, BundleResourceSpec, BundleFontFamilySpec, BundleChapterSpec, BundleLocaleOverrides } from '../types.js';
 
@@ -332,10 +333,16 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   // Chapter files: `chapters/01-intro.md`, or one folder per locale when
   // any locale has chapters of its own (`chapters/es/01-intro.md`).
   const chapterFiles: BundlePlan['chapterFiles'] = [];
-  const writeChapters = (chapters: readonly { title: string; markdown: string }[], folder?: string): BundleChapterSpec[] => {
+  // Chapter files are named after the number the layout gives each chapter
+  // (#1727): `chapters/09-lumbar-spine.md` for a ninth chapter that is the
+  // book's sixth file, `00-cover.md` for one with no number before the
+  // first, so whatever reads the bundle next sees the book's numbers.
+  const writeChapters = (chapters: readonly { title: string; markdown: string }[], folder?: string, config: PostextConfig = content.config, start: BundleStart | undefined = content.start): BundleChapterSpec[] => {
     const taken = new Set<string>();
+    const numbers = chapterFileNumbers(chapterNumbers(chapters, config, start?.headings));
+    const widest = Math.max(chapters.length, ...numbers);
     return chapters.map((c, i) => {
-      const name = chapterFileName(i, c.title, taken, chapters.length);
+      const name = chapterFileName(numbers[i]! - 1, c.title, taken, widest);
       const path = folder ? name.replace(/^chapters\//, `chapters/${folder}/`) : name;
       chapterFiles.push({ path, markdown: c.markdown });
       return { title: c.title, file: path };
@@ -349,7 +356,7 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
     const map: Record<string, BundleChapterSpec[]> = { [meta.locale]: primary };
     for (const [locale, entry] of Object.entries(localized)) {
       if (entry.chapters && entry.chapters.length > 0) {
-        map[locale] = writeChapters(entry.chapters, localeFolder(locale));
+        map[locale] = writeChapters(entry.chapters, localeFolder(locale), { ...content.config, ...entry.config }, entry.start ?? content.start);
         localeChapterFiles[locale] = map[locale].map((c) => c.file);
       } else map[locale] = primary;
     }

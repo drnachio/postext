@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'WebMCP',
   description: "Què pot fer un agent d'IA al navegador amb les 71 eines WebMCP del Sandbox (mirar les pàgines, canviar qualsevol paràmetre, editar el text, afegir imatges, taules i fonts, fer les revisions, exportar) i com es crida cadascuna, amb arguments i respostes reals",
   lang: 'ca',
-  lastUpdated: '2026-11-23',
+  lastUpdated: '2026-11-27',
   readingTime: '14 min',
   order: 54,
   plainSummary: "Aquesta pàgina és per a qui vol que un assistent d'intel·ligència artificial li faci la feina en un llibre del Sandbox. Mentre el Sandbox és obert, dona a l'assistent un joc d'eines per mirar qualsevol pàgina, canviar el disseny, editar el text, afegir imatges i taules, trobar problemes i desar fitxers. Li demanes les coses amb les teves paraules, per exemple «fes la lletra una mica més grossa i comprova que el llibre encara cap en 40 pàgines», i l'assistent fa servir les eines i et mostra les pàgines. Tot es queda al teu navegador. La pàgina explica com connectar-hi un assistent, què pot fer i com es crida cada eina.",
@@ -733,10 +733,10 @@ Quan el text no cap en un marc d'una pàgina composta, l'avís inclou possibles 
 
 ## El que necessita el teu consentiment
 
-Sis eines fan coses que no es poden desfer i van marcades com a irreversibles
+Set eines fan coses que no es poden desfer i van marcades com a irreversibles
 (`consequentialHint`), perquè el navegador et pugui preguntar abans
 d'executar-les: `sandbox_remove_chapter`, `sandbox_delete_resource`,
-`sandbox_delete_book`, `sandbox_reset_to_original`, `sandbox_import_word` (pot
+`sandbox_delete_book`, `sandbox_reset_to_original`, `sandbox_import_chapters`, `sandbox_import_word` (pot
 substituir el llibre sencer) i `sandbox_answer` (pot suprimir la teva còpia
 d'un llibre). Si tens dubtes, demana a l'agent que abans n'exporti una còpia
 `.postext`.
@@ -809,9 +809,10 @@ de cadascuna s'obtenen amb `postextWebMcp.listTools()`.
 - **Pàgines compostes**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
 - **Cobertes per a impremta**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Llibres i fitxers**: `sandbox_list_books`, `sandbox_open_book`,
-  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
+  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`, `sandbox_import_chapters`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
+- **Unir capítols d'un altre `.postext`** —una part del llibre feta a part— amb `sandbox_import_chapters`. Cada capítol conserva el número que li dona la maquetació (`{startAt=N}` o, si no en té, el següent al del capítol numerat anterior): substitueix el capítol del llibre amb aquest número o s'afegeix al seu lloc. Amb `inspect: true` no canvia res i respon amb el que proposa per a cada capítol i amb els recursos amb un nom que xoca, amb el que prendria cadascun; `chapters` i `renames` ho canvien. El disseny continua essent el del llibre.
 - **InDesign**: `sandbox_import_idml`.
 - **Preguntes**: `sandbox_answer`.
 - **La revisió**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.

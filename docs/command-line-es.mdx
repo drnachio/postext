@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Línea de comandos',
   description: 'Un único ejecutable autónomo para macOS, Linux y Windows. Convierte un libro .postext, una carpeta de libro o archivos Markdown sueltos en PDF, HTML, EPUB, imágenes de las páginas y Word; además, crea paquetes, revisa libros y devuelve resultados en JSON para scripts y agentes, con paquetes de Python y Rust que lo usan desde el código',
   lang: 'es',
-  lastUpdated: '2026-11-16',
+  lastUpdated: '2026-11-27',
   readingTime: '14 min',
   order: 53,
   plainSummary: "Esta página es para quien quiere hacer libros con Postext desde una terminal en lugar de desde la web. Descargas un único archivo para tu ordenador y lo ejecutas, sin instalar nada más. Le das tu libro, o unos cuantos archivos de texto, y te hace un PDF, una página web, un libro electrónico, imágenes de las páginas o un documento de Word. También puede revisar un libro en busca de problemas y juntar todos sus archivos en uno. Otros programas y los asistentes de inteligencia artificial también pueden usarlo, porque sabe responder en un formato que leen con facilidad.",
@@ -170,6 +170,7 @@ pida otro (`--locale en`).
     <tr><td><code>import-docx</code></td><td>Las correcciones hechas en un archivo de Word exportado, de vuelta en el libro; cualquier otro documento de Word, como libro nuevo (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>Un documento de InDesign guardado como IDML, o un armado de InDesign comprimido, como libro nuevo (una carpeta o un <code>.postext</code>).</td></tr>
     <tr><td><code>design</code></td><td>El diseño de un libro (algunas de sus partes, o todas) como archivo de diseño, un <code>.postext</code> sin capítulos.</td></tr>
+    <tr><td><code>join</code></td><td>Los capítulos de otro <code>.postext</code> (una parte del libro hecha aparte) unidos al libro, cada uno en su número.</td></tr>
     <tr><td><code>pack</code></td><td>Una carpeta de libro o Markdown suelto como un único archivo <code>.postext</code>.</td></tr>
     <tr><td><code>unpack</code></td><td>Un archivo <code>.postext</code> como carpeta.</td></tr>
     <tr><td><code>info</code></td><td>Los capítulos, idiomas, recursos y fuentes del libro y, con <code>--pages</code>, su número de páginas.</td></tr>
@@ -482,6 +483,21 @@ suelto. La misma entrada da siempre los mismos bytes, así que se pueden compara
 su hash. Con Markdown suelto, `--id`, `--description` y `--thumbnail FILE` (una
 imagen de cubierta) fijan el id, la descripción y la miniatura del paquete; por defecto, el id
 es el nombre convertido en slug. Una carpeta conserva lo que diga su `preset.json`. Un libro que no indica cubierta recibe su primera página como tal (`thumbnail.jpg`, 1024 px en su lado largo), la imagen que un gestor de archivos puede mostrar para el fichero; `--no-auto-thumbnail` la omite. `unpack` no escribe en una carpeta que no esté vacía, salvo que se indique `--force`.
+
+### join
+
+```bash
+postext join book/ chapter-9.postext --dry-run
+postext join book.postext part.postext
+postext join book.postext part.postext --chapters "replace,add:5,skip" --rename fig-1-1=fig-5-1
+postext join book/ part.postext -o joined.postext --json
+```
+
+`join` lleva a un libro los capítulos de otro `.postext` (desde postext 1.99): un módulo convertido en otro ordenador, unos capítulos maquetados aparte, un capítulo corregido y exportado de nuevo. Cada capítulo de la parte conserva el número que le da la maquetación: el `{startAt=N}` de su encabezado de nivel 1 o, si no lo tiene, uno más que el capítulo numerado anterior (un estilo de encabezado con `numbered: false` no cuenta). Por defecto, un capítulo sustituye al capítulo del libro que tiene el mismo número, en el archivo de ese capítulo, y si no lo hay se añade en su sitio, en un archivo con el nombre de su número (`chapters/05-wrist-and-hand.md`). Un capítulo sin encabezado numerado se deja fuera.
+
+`--chapters` indica qué pasa con cada capítulo de la parte, por orden: `add`, `add:N`, `replace`, `replace:N` o `skip`. `--dry-run` muestra los capítulos del libro con sus números, lo que pasaría con cada capítulo de la parte y los recursos que se renombrarían, y no escribe nada; con `--json`, lo mismo sale como datos. Una elección que no encaja (un número que el libro ya tiene, una sustitución sin capítulo con ese número) detiene el comando con un error, y no se escribe nada.
+
+Los recursos que usan los capítulos llegan con sus archivos. Si uno se llama como un recurso que el libro sigue usando (en otro capítulo, en su diseño o en otro recurso), se renombra, a `fig-1-1-2` por defecto o al id que indique `--rename OLD=NEW`, y con él cada referencia que le hacen los capítulos y recursos con los que llega; un archivo de la parte que caería sobre otro archivo del libro toma un nombre libre a su lado. El diseño sigue siendo el del libro: solo se añaden, con sus archivos, las familias tipográficas que le faltan. El libro se edita en su sitio: una carpeta recibe solo los archivos que escribe la unión, y un `.postext` se vuelve a escribir con todo lo demás como estaba (sus otras ediciones, cubiertas y maquetaciones guardadas). `-o` escribe el resultado en otro lugar, como `.postext` o como carpeta. `--locale` elige a qué edición de un libro en varios idiomas se unen los capítulos. El Sandbox hace lo mismo desde el panel **Texto** (véase [Añadir capítulos de otro libro](/es/docs/sandbox-books-saving#añadir-capítulos-de-otro-libro)).
 
 ### info y check
 

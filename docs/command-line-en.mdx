@@ -5,7 +5,7 @@ export const metadata = {
   sidebarTitle: 'Command line',
   description: 'A single self-contained executable for macOS, Linux and Windows. It turns a .postext book, a book folder or loose Markdown into PDF, HTML, EPUB, page images and Word, packs bundles, checks books, and gives JSON output for scripts and agents, with Python and Rust packages that drive it from code',
   lang: 'en',
-  lastUpdated: '2026-11-16',
+  lastUpdated: '2026-11-27',
   readingTime: '14 min',
   order: 53,
   plainSummary: "This page is for people who want to make books with Postext from a terminal instead of the website. You download one file for your computer and run it, with nothing to install. You give it your book, or a few text files, and it makes a PDF, a web page, an e-book, pictures of the pages or a Word document. It can also check a book for problems and pack its files into one. Programs and AI helpers can use it too, because it can answer in a format they read easily.",
@@ -171,6 +171,7 @@ own configuration. A multilingual bundle is read in its own language unless
     <tr><td><code>import-docx</code></td><td>The corrections made in an exported Word file, back into the book; any other Word document as a new book (a folder or a <code>.postext</code>).</td></tr>
     <tr><td><code>import-idml</code></td><td>An InDesign document saved as IDML, or a zipped InDesign package, as a new book (a folder or a <code>.postext</code>).</td></tr>
     <tr><td><code>design</code></td><td>The design of a book (some of its parts, or all) as a design file, a <code>.postext</code> with no chapters.</td></tr>
+    <tr><td><code>join</code></td><td>The chapters of another <code>.postext</code> (a part of the book made apart) joined to the book, each at its number.</td></tr>
     <tr><td><code>pack</code></td><td>A book folder or loose Markdown as one <code>.postext</code> file.</td></tr>
     <tr><td><code>unpack</code></td><td>A <code>.postext</code> file as a folder.</td></tr>
     <tr><td><code>info</code></td><td>The book's chapters, languages, resources and fonts, and with <code>--pages</code> its page count.</td></tr>
@@ -470,6 +471,21 @@ hashed. For loose Markdown, `--id`, `--description` and `--thumbnail FILE` (a
 cover picture) set the bundle's id, description and thumbnail; the id is a slug
 of the name by default. A folder keeps what its `preset.json` says. A book that names no cover gets its first page as one (`thumbnail.jpg`, 1024 px on its long side), the picture a file manager can show for the file; `--no-auto-thumbnail` leaves it out. `unpack` refuses to write into a folder that is not empty unless
 `--force` is given.
+
+### join
+
+```bash
+postext join book/ chapter-9.postext --dry-run
+postext join book.postext part.postext
+postext join book.postext part.postext --chapters "replace,add:5,skip" --rename fig-1-1=fig-5-1
+postext join book/ part.postext -o joined.postext --json
+```
+
+`join` brings the chapters of another `.postext` into a book (since postext 1.99): a module converted on another computer, a few chapters laid out apart, a chapter corrected and exported again. Each chapter of the part keeps the number the layout gives it: its level-1 heading's `{startAt=N}`, else one more than the numbered chapter before (a heading style with `numbered: false` counts for nothing). By default a chapter replaces the book's chapter with the same number, in that chapter's file, and otherwise is added at its place, in a file named after its number (`chapters/05-wrist-and-hand.md`). A chapter with no numbered heading is left out.
+
+`--chapters` says what becomes of each chapter of the part, in its order: `add`, `add:N`, `replace`, `replace:N` or `skip`. `--dry-run` prints the book's chapters with their numbers, what would happen to each chapter of the part and the resources that would be renamed, and writes nothing; with `--json` the same comes as data. A choice that does not fit (a number the book already has, a replace with no chapter of that number) stops the command with an error, and nothing is written.
+
+The resources the chapters use come along with their files. One named as a resource the book keeps using (in another chapter, its design or another resource) is renamed, `fig-1-1-2` by default or the id `--rename OLD=NEW` gives, with every reference to it in the chapters and resources it comes with; a file of the part that would land on a different file of the book takes a free name beside it. The design stays the book's: only the font families the book lacks are added, with their files. The book is edited in place: a folder gets only the files the join writes, and a `.postext` is written again with everything else as it was (its other editions, covers and stored layouts). `-o` writes the result elsewhere, as a `.postext` or a folder. `--locale` picks the edition of a book in several languages that the chapters join. The Sandbox does the same from the Manuscript panel (see [Adding chapters from another book](/en/docs/sandbox-books-saving#adding-chapters-from-another-book)).
 
 ### info and check
 
