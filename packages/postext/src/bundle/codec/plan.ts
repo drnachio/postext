@@ -5,8 +5,25 @@ import { stripConfigDefaults } from '../../defaults/index.js';
 import { type ConfigOverride, leastConfigOverride } from '../../defaults/configLayers.js';
 import { uniqueSlug, slugify, extensionForVideo, extensionForBitmapFormat, extensionForPrintFormat, extensionForResource, extensionForImageMime, chapterFileName, bundleStart } from '../manifest.js';
 import { CONFIG_VERSION } from '../configVersion.js';
+import { parseMarkdownMemo } from '../../parse/index.js';
+import { headingCounterStart } from '../../numerals/numbering/headings.js';
 import { type TraceContourOptions, contourWantsAlpha, contourRowsOf, traceResourceContour, withContourTrace } from '../../contour/index.js';
 import type { BundleStart, BundleCanvasScope, BundleDesignSpec, BundleManifestV2, BundleBlob, BundleResourceSpec, BundleFontFamilySpec, BundleChapterSpec, BundleLocaleOverrides } from '../types.js';
+
+/** Each chapter's number as the book counts it: its level-1 heading's
+ *  `startAt`, else one more than the chapter before. Chapter files are
+ *  named after it (`chapters/09-lumbar-spine.md` for a ninth chapter that
+ *  is the book's sixth file), so a book exported, edited elsewhere and
+ *  imported again keeps the numbers its chapters were given instead of
+ *  being renumbered by position. */
+export function chapterOrdinals(chapters: readonly { markdown: string }[]): number[] {
+  let n = 0;
+  return chapters.map((c) => {
+    const heading = parseMarkdownMemo(c.markdown).find((b) => b.type === 'heading' && b.level === 1);
+    n = (heading ? headingCounterStart(heading) : undefined) ?? n + 1;
+    return n;
+  });
+}
 
 // ---------------------------------------------------------------------------
 // Writing
@@ -334,8 +351,10 @@ export function planBundle(meta: BundleMeta, content: BundleContent): BundlePlan
   const chapterFiles: BundlePlan['chapterFiles'] = [];
   const writeChapters = (chapters: readonly { title: string; markdown: string }[], folder?: string): BundleChapterSpec[] => {
     const taken = new Set<string>();
+    const ordinals = chapterOrdinals(chapters);
+    const widest = Math.max(chapters.length, ...ordinals);
     return chapters.map((c, i) => {
-      const name = chapterFileName(i, c.title, taken, chapters.length);
+      const name = chapterFileName(ordinals[i]! - 1, c.title, taken, widest);
       const path = folder ? name.replace(/^chapters\//, `chapters/${folder}/`) : name;
       chapterFiles.push({ path, markdown: c.markdown });
       return { title: c.title, file: path };
