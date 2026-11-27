@@ -594,6 +594,7 @@ La réponse prévient quand une bulle tombe sur un visage ou sort de sa case. Vo
 - **Un livre depuis le panneau Livres.** `sandbox_export` avec `format` `pdf`, `epub` ou `html` et `book: { "kind": "project", "id": "…", "language": "en" }` écrit un projet comme le fait **Télécharger en …** sur sa ligne (depuis postext 1.81) : le livre entier dans cette langue, mis en page à part du livre à l’écran, qui est enregistré avant et reste tel quel. `html` sans `book` écrit le projet à l’écran. La réponse donne le fichier, ses pages, la langue écrite et les avertissements ; `epubLayout` choisit la présentation d’un EPUB.
 - **Importer un fichier `.postext`** avec `sandbox_import_book` (`inspect: true` indique
   quelles langues il contient sans l’importer).
+- **Joindre les chapitres d'un autre `.postext`** — une partie du livre faite à part — avec `sandbox_import_chapters`. Chaque chapitre garde le numéro que lui donne son titre : il remplace le chapitre du livre portant ce numéro ou s'ajoute à sa place. Avec `inspect: true`, rien ne change et la réponse donne ce qui est proposé pour chaque chapitre et les ressources dont le nom entre en conflit, avec celui que chacune prendrait ; `chapters` et `renames` le modifient. La mise en page reste celle du livre.
 - **Créer un livre à partir d’un document InDesign** avec `sandbox_import_idml`. Avec
   `dryRun: true`, il ne crée rien et répond avec ce que contient le `.idml` et
   le rapport d’importation : la mise en page qu’il retiendrait et pourquoi, le
@@ -730,10 +731,10 @@ avec `action: "new_blank"` → `sandbox_import_word` avec `dryRun: true` →
 
 ## Ce qui demande votre accord
 
-Six outils effectuent des opérations irréversibles et sont marqués comme ayant des conséquences
+Sept outils effectuent des opérations irréversibles et sont marqués comme ayant des conséquences
 (`consequentialHint`), pour que le navigateur puisse vous demander votre accord avant leur exécution :
 `sandbox_remove_chapter`, `sandbox_delete_resource`, `sandbox_delete_book`,
-`sandbox_reset_to_original`, `sandbox_import_word` (il peut remplacer tout le
+`sandbox_reset_to_original`, `sandbox_import_chapters`, `sandbox_import_word` (il peut remplacer tout le
 livre) et `sandbox_answer` (il peut supprimer votre copie d’un livre). En cas de doute, demandez
 d’abord à l’agent d’exporter une copie `.postext`.
 
@@ -802,7 +803,7 @@ chacun s’obtiennent avec `postextWebMcp.listTools()`.
 - **Pages composées** : `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
 - **Couvertures imprimées** : `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Livres et fichiers** : `sandbox_list_books`, `sandbox_open_book`,
-  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
+  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`, `sandbox_import_chapters`,
   `sandbox_export`.
 - **Word** : `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
 - **InDesign** : `sandbox_import_idml`.

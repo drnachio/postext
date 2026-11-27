@@ -437,6 +437,7 @@ await browser.close();
 
 - **本パネルから本を書き出す**：`format`に`pdf`、`epub`、`html`のいずれかと`book: { "kind": "project", "id": "…", "language": "en" }`を渡した`sandbox_export`は、行の **… でダウンロード** と同じようにプロジェクトを書き出します（postext 1.81 以降）。その言語の本全体を、画面上の本とは別に組みます。画面上の本は先に保存され、そのまま残ります。`book`のない`html`は画面上のプロジェクトを書き出します。応答にはファイル、ページ数、書き出した言語、警告が入ります。`epubLayout`でEPUBの体裁を選べます。
 - **`.postext`ファイルを読み込む**：`sandbox_import_book`を使います（`inspect: true`を渡すと、読み込まずに、どの言語が入っているかを返します）。
+- **別の `.postext` の章を加える**（別に作った本の一部）には `sandbox_import_chapters`。各章は見出しが与える番号を保ち、本のその番号の章を置き換えるか、その位置に加わります。`inspect: true` では何も変えず、各章への提案と、名前が衝突するリソースとそれぞれが取る名前を返します。`chapters` と `renames` で変更できます。デザインは本のものが保たれます。
 - **InDesignの文書から本を作る**：`sandbox_import_idml`を使います。`dryRun: true`を渡すと何も作らずに、`.idml`の内容と読み込みレポートを返します。採用するレイアウトとその理由、判定、指摘、本に必要なフォント、まだ見つからないリンク画像です。`layout`で`pages`か`flow`を選び、`links`でリンク画像を渡します。画像はそれぞれ`fileName`で照合されます。`file`にはzipにしたInDesignパッケージも渡せます。そのリンク画像とフォントは本に入り（`linksFromPackage`、`fontsFromPackage`）、IDMLが複数入っているときは`document`で読み込むものを指定します（回答の`documents`に一覧が出ます）。
 - **Wordの原稿を取り込む**：`sandbox_import_word`を使います。最初に`dryRun: true`で実行してください。何も変えずに、品質レポート、Wordのスタイルごとに何になるか、作られる章とリソースを返します。そのあとで対応づけを直し、本番の読み込みを実行します。
 
@@ -488,7 +489,7 @@ await browser.close();
 
 ## あなたの同意を求めるツール
 
-元に戻せない操作をする6つのツールには、重大な操作の印（`consequentialHint`）が付いており、実行の前にブラウザーがあなたに確認を求められます。`sandbox_remove_chapter`、`sandbox_delete_resource`、`sandbox_delete_book`、`sandbox_reset_to_original`、`sandbox_import_word`（本全体を置き換えることがあります）、`sandbox_answer`（手元の本のコピーを削除することがあります）です。迷うときは、先に`.postext`のコピーを書き出すようエージェントに頼んでください。
+元に戻せない操作をする7つのツールには、重大な操作の印（`consequentialHint`）が付いており、実行の前にブラウザーがあなたに確認を求められます。`sandbox_remove_chapter`、`sandbox_delete_resource`、`sandbox_delete_book`、`sandbox_reset_to_original`、`sandbox_import_chapters`、`sandbox_import_word`（本全体を置き換えることがあります）、`sandbox_answer`（手元の本のコピーを削除することがあります）です。迷うときは、先に`.postext`のコピーを書き出すようエージェントに頼んでください。
 
 読み取るだけのツールには`readOnlyHint`が付いています。ページ自身が書いたのではないテキスト（本の本文、取得したファイル）を応答に含むツールには`untrustedContentHint`が付いており、ブラウザーはそのテキストが指示として扱われないようにできます。
 
@@ -528,7 +529,7 @@ Sandboxが登録するときのまとまりで並べています。各ツール�
 - **漫画**：`sandbox_inspect_comic`、`sandbox_edit_comic`。
 - **テンプレートページ**：`sandbox_modules`、`sandbox_create_module`、`sandbox_rename_module`、`sandbox_insert_module`、`sandbox_extract_module`、`sandbox_frames_to_grid`、`sandbox_edit_labels`。
 - **印刷用の表紙**：`sandbox_cover_get`、`sandbox_cover_write_text`、`sandbox_cover_export`、`sandbox_cover_sheet_design`、`sandbox_cover_set_collection`、`sandbox_cover_text_box`。
-- **本とファイル**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_export`。
+- **本とファイル**：`sandbox_list_books`、`sandbox_open_book`、`sandbox_save_book`、`sandbox_delete_book`、`sandbox_import_book`、`sandbox_import_chapters`、`sandbox_export`。
 - **Word**：`sandbox_import_word`、`sandbox_apply_word_edits`、`sandbox_word_templates`。
 - **InDesign**：`sandbox_import_idml`。
 - **確認**：`sandbox_answer`。

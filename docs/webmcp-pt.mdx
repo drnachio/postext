@@ -737,10 +737,10 @@ com `action: "new_blank"` → `sandbox_import_word` com `dryRun: true` →
 
 ## O que pede o seu consentimento
 
-Seis ferramentas fazem coisas que não podem ser desfeitas e são marcadas como consequentes
+Sete ferramentas fazem coisas que não podem ser desfeitas e são marcadas como consequentes
 (`consequentialHint`), para que o navegador possa perguntar a você antes de
 executá-las: `sandbox_remove_chapter`, `sandbox_delete_resource`,
-`sandbox_delete_book`, `sandbox_reset_to_original`, `sandbox_import_word`
+`sandbox_delete_book`, `sandbox_reset_to_original`, `sandbox_import_chapters`, `sandbox_import_word`
 (pode substituir o livro inteiro) e `sandbox_answer` (pode apagar a sua cópia
 de um livro). Na dúvida, peça ao agente que exporte antes uma cópia
 `.postext`.
@@ -811,9 +811,10 @@ cada uma vêm com `postextWebMcp.listTools()`.
 - **Páginas compostas**: `sandbox_modules`, `sandbox_create_module`, `sandbox_rename_module`, `sandbox_insert_module`, `sandbox_extract_module`, `sandbox_frames_to_grid`, `sandbox_edit_labels`.
 - **Capas para impressão**: `sandbox_cover_get`, `sandbox_cover_write_text`, `sandbox_cover_export`, `sandbox_cover_sheet_design`, `sandbox_cover_set_collection`, `sandbox_cover_text_box`.
 - **Livros e arquivos**: `sandbox_list_books`, `sandbox_open_book`,
-  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`,
+  `sandbox_save_book`, `sandbox_delete_book`, `sandbox_import_book`, `sandbox_import_chapters`,
   `sandbox_export`.
 - **Word**: `sandbox_import_word`, `sandbox_apply_word_edits`, `sandbox_word_templates`.
+- **Juntar capítulos de outro `.postext`** — uma parte do livro feita à parte — com `sandbox_import_chapters`. Cada capítulo mantém o número que o seu título lhe dá: substitui o capítulo do livro com esse número ou é adicionado no seu lugar. Com `inspect: true` não muda nada e responde com o que propõe para cada capítulo e com os recursos cujo nome colide, com o que cada um tomaria; `chapters` e `renames` mudam isso. O design continua a ser o do livro.
 - **InDesign**: `sandbox_import_idml`.
 - **Perguntas**: `sandbox_answer`.
 - **As verificações**: `sandbox_get_warnings`, `sandbox_get_composed_checks`, `sandbox_apply_proposal`.

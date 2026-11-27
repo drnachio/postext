@@ -572,6 +572,7 @@ await browser.close();
 - **كتاب من لوحة الكتب.** يكتب `sandbox_export` مع `format` بقيمة `pdf` أو `epub` أو `html` ومع `book: { "kind": "project", "id": "…", "language": "en" }` مشروعًا كما يفعل بند **تنزيل بصيغة …** في صفّه (منذ postext 1.81): الكتاب كله بتلك اللغة، منضَّدًا بمعزل عن الكتاب المعروض على الشاشة، الذي يُحفظ أولًا ويبقى كما هو. ويكتب `html` من دون `book` المشروع المعروض على الشاشة. ويعطي الرد الملف وعدد صفحاته واللغة المكتوبة والتحذيرات؛ ويختار `epubLayout` طريقة عرض ملف EPUB.
 - **استيراد ملف `.postext`** بـ`sandbox_import_book` (ومع `inspect: true` يذكر
   اللغات التي في الملف دون استيراده).
+- **ضمّ فصول من ملف `.postext` آخر** — جزء من الكتاب صُنع على حدة — باستخدام `sandbox_import_chapters`. يحتفظ كل فصل بالرقم الذي يعطيه له عنوانه: فيستبدل فصل الكتاب الذي يحمل ذلك الرقم أو يُضاف في موضعه. مع `inspect: true` لا يغيّر شيئًا ويجيب بما يقترحه لكل فصل وبالموارد التي تتعارض أسماؤها، مع الاسم الذي سيأخذه كل منها؛ ويغيّر ذلك `chapters` و`renames`. ويبقى التصميم تصميم الكتاب.
 - **إنشاء كتاب من مستند InDesign** بـ`sandbox_import_idml`. مع `dryRun: true` لا
   ينشئ شيئًا، ويجيب بمحتويات ملف `.idml` وبتقرير الاستيراد: التخطيط الذي سيعتمده
   وسببه، والحكم، والملاحظات، والخطوط التي يحتاجها الكتاب، والصور المرتبطة التي ما
@@ -688,10 +689,10 @@ await browser.close();
 
 ## ما يحتاج إلى موافقتك
 
-ست أدوات تفعل ما لا يمكن التراجع عنه، وهي موسومة بأنها ذات عواقب
+سبع أدوات تفعل ما لا يمكن التراجع عنه، وهي موسومة بأنها ذات عواقب
 (`consequentialHint`)، ليتمكّن المتصفح من سؤالك قبل أن تعمل:
 `sandbox_remove_chapter`، و`sandbox_delete_resource`، و`sandbox_delete_book`،
-و`sandbox_reset_to_original`، و`sandbox_import_word` (إذ قد يستبدل الكتاب كله)،
+و`sandbox_reset_to_original`، و`sandbox_import_chapters`، و`sandbox_import_word` (إذ قد يستبدل الكتاب كله)،
 و`sandbox_answer` (إذ قد يحذف نسختك من كتاب). وإن ساورك شك، فاطلب من الوكيل أن
 يصدّر نسخة `.postext` أولًا.
 
@@ -754,7 +755,7 @@ Sandbox، ويواصل العمل هناك بأدوات `sandbox_*`.
 - **الصفحات المركّبة**: `sandbox_modules`، و`sandbox_create_module`، و`sandbox_rename_module`، و`sandbox_insert_module`، و`sandbox_extract_module`، و`sandbox_frames_to_grid`، و`sandbox_edit_labels`.
 - **أغلفة الطباعة**: `sandbox_cover_get`، و`sandbox_cover_write_text`، و`sandbox_cover_export`، و`sandbox_cover_sheet_design`، و`sandbox_cover_set_collection`، و`sandbox_cover_text_box`.
 - **الكتب والملفات**: `sandbox_list_books`، و`sandbox_open_book`،
-  و`sandbox_save_book`، و`sandbox_delete_book`، و`sandbox_import_book`،
+  و`sandbox_save_book`، و`sandbox_delete_book`، و`sandbox_import_book`، و`sandbox_import_chapters`،
   و`sandbox_export`.
 - **Word**: `sandbox_import_word`، و`sandbox_apply_word_edits`، و`sandbox_word_templates`.
 - **InDesign**: `sandbox_import_idml`.
